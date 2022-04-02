@@ -1,0 +1,78 @@
+V "GNAT Lib v10"
+A -gnatA
+A -mtune=generic
+A -march=i686
+P ZX
+
+RN
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U host_functions_thin%s	host_functions_thin.ads	dd3c97fc NE OO PK
+W interfaces%s		interfac.ads		interfac.ali
+W interfaces.c%s	i-c.adb			i-c.ali
+W interfaces.c.pointers%s
+W interfaces.c.strings%s  i-cstrin.adb		i-cstrin.ali
+W system%s		system.ads		system.ali
+
+D ada.ads		20200723063517 76789da1 ada%s
+D a-unccon.ads		20200723063517 0e9b276f ada.unchecked_conversion%s
+D host_functions_thin.ads  20200407014410 419ee5cb host_functions_thin%s
+D interfac.ads		20200723063517 5ab55268 interfaces%s
+D i-c.ads		20200723063517 5421119b interfaces.c%s
+D i-cpoint.ads		20200723063517 ee8a93ec interfaces.c.pointers%s
+D i-cpoint.adb		20200723063517 d5172521 interfaces.c.pointers%b
+D i-cstrin.ads		20200723063517 341d0ddf interfaces.c.strings%s
+D system.ads		20200723063517 4635ec04 system%s
+D s-exctab.ads		20200723063517 54135002 system.exception_table%s
+D s-parame.ads		20200723063517 48ec542b system.parameters%s
+D s-stalib.ads		20200723063517 09bd3940 system.standard_library%s
+G a e
+G c Z s s [c_gethostname host_functions_thin 50 13 none]
+G c Z s s [c_gethostname host_functions_thin 55 13 none]
+G c Z s s [c_execve host_functions_thin 60 13 none]
+G c Z s s [c_execvp host_functions_thin 72 13 none]
+G c Z s s [c_execlp host_functions_thin 84 13 none]
+G c Z s s [c_fork host_functions_thin 93 13 none]
+X 3 host_functions_thin.ads
+37K9*Host_Functions_Thin 101E34 107l5 107e24
+39K12*C=39:33 40r28 41r37 43r13 47r23 48r23 52r15 53r11 57r15 58r11 64r11
+. 75r11 86r40 87r11 93r27
+40K12*Strings=40:30 51r15 61r16 62r16 63r16 73r16 74r16 85r16 86r11
+41k20*Pointers
+47i4*Success{5|35I9}
+48i4*Failure{5|35I9}
+50V13*C_Gethostname{5|35I9} 51>5 52>4 101b<c,gethostname>19
+51p5 Name{8|47P9}
+52i4 Namelen{5|35I9}
+55V13*C_Gethostname{5|35I9} 56>5 57>4 101b<c,gethostname>19
+56m5 Name{9|67M9}
+57i4 Namelen{5|35I9}
+60V13*C_Execve{5|35I9} 61>5 62>4 63>4 102b<c,execve>19
+61p5 filename{8|47P9}
+62a4 argv{8|50A9}
+63a4 envp{8|50A9}
+72V13*C_Execvp{5|35I9} 73>5 74>4 103b<c,execvp>19
+73p5 filename{8|47P9}
+74a4 argv{8|50A9}
+84V13*C_Execlp{5|35I9} 85>5 86>4 86>30 104b<c,execlp>19
+85p5 filename{8|47P9}
+86p4 arg0{8|47P9}
+86i30 nullptr{5|35I9}
+93V13*C_Fork{5|35I9} 105b<c,fork>19
+X 4 interfac.ads
+38K9*Interfaces 3|33r6 34r6 39r22 4|184e15
+X 5 i-c.ads
+18K20*C 3|33r17 34r17 39r33 5|230e17
+35I9*int<integer> 3|43r15 47r25 48r25 52r17 53r13 57r17 58r13 64r13 75r13
+. 86r42 87r13 93r29
+X 6 i-cpoint.ads
+44k22*Pointers 3|33w19 41r39 6|102e26
+X 8 i-cstrin.ads
+36K22*Strings 3|34w19 40r30 8|106e25
+47P9*chars_ptr 3|51r23 61r24 73r24 85r24 86r19
+50A9*chars_ptr_array(47P9)<5|60M9> 3|62r24 63r24 74r24
+X 9 system.ads
+37K9*System 3|35w6 56r15 9|156e11
+67M9*Address 3|56r22
+

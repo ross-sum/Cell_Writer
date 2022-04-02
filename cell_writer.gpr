@@ -1,0 +1,75 @@
+   -----------------------------------------------------------------------
+   --                                                                   --
+   --                         C E L L _ W R I T E R                     --
+   --                                                                   --
+   --                             P r o j e c t                         --
+   --                                                                   --
+   --                           $Revision: 1.0 $                        --
+   --                                                                   --
+   --  Copyright (C) 2022  Hyper Quantum Pty Ltd, prior Michael Levin.  --
+   --  Written by Ross Summerfield and Michael Levin.                   --
+   --                                                                   --
+   --  Cell Writer  is  a grid-entry natural  handwriting  recognition  --
+   --  input  panel.   As you write characters into  the  cells,  your  --
+   --  writing  is instantly recognised at the character  level.  When  --
+   --  you  press 'Enter' on the panel, the input you entered is  sent  --
+   --  to  the  currently  focused  application as  if  typed  on  the  --
+   --  keyboard.                                                        --
+   --                                                                   --
+   --  Version History:                                                 --
+   --  $Log$
+   --                                                                   --
+   --  Urine_Records is free software; you can redistribute it  and/or  --
+   --  modify  it under terms of the GNU  General  Public  Licence  as  --
+   --  published by the Free Software Foundation; either version 2, or  --
+   --  (at   your  option)  any  later  version.    Urine_Records   is  --
+   --  distributed  in  hope that it will be useful, but  WITHOUT  ANY  --
+   --  WARRANTY; without even the implied warranty of  MERCHANTABILITY  --
+   --  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public  --
+   --  Licence for  more details.  You should have received a copy  of  --
+   --  the GNU General Public Licence distributed with  Urine_Records.  --
+   --  If  not,  write to the Free Software  Foundation,  51  Franklin  --
+   --  Street, Fifth Floor, Boston, MA 02110-1301, USA.                 --
+   --                                                                   --
+   -----------------------------------------------------------------------
+with "gtkada";
+with "adasockets";
+with "gnatcoll", "gnatcoll_sql", "gnatcoll_sqlite";
+with "../dynamic-strings/dstrings";
+-- with "../tools/tools.gpr";
+project Cell_Writer is
+
+   type Hware_Option is ("sparc", "amd64", "x86", "pi");
+   Hware : Hware_Option := external ("hware", "amd64");
+
+   for Languages use ("ada");
+   case Hware is
+   when "pi" =>
+      for Source_Dirs use ("src/", "src/pi/", "../tools/");
+   when others =>
+      for Source_Dirs use ("src/", "src/non_pi/", "../tools/");
+   end case;
+   for Main use ("cell_writer.adb");
+   --  Using "hware" variable for obj directory
+   for Object_Dir use "obj_" & hware & "/";
+
+   package Ide is
+      for Documentation_Dir use "doc/";
+   end Ide;
+
+   for Source_Files use ("error_log.adb",
+      "blobs.ads", "blobs-base_64.ads", "blobs-base_64.adb",
+      "gnatcoll-sql_blob.ads", "gnatcoll-sql_blob.adb",
+      "database_names.ads", "database.ads", "database.adb",
+      "error_log.ads", "general_storage_pool.adb", "general_storage_pool.ads",
+      "host_functions.ads", "host_functions.adb", "host_functions_thin.ads", 
+      "generic_command_parameters.ads", "generic_command_parameters.adb", 
+      "interlocks.ads", "interlocks.adb",
+      "calendar_extensions.adb", "calendar_extensions.ads", 
+      "dynamic_lists.adb", "dynamic_lists.ads", 
+      "string_functions.ads", "string_functions.adb",
+      "string_conversions.ads", "string_conversions.adb",
+      "generic_versions.ads", "generic_versions.adb", "cell_writer_version.ads",
+      "cell_writer.adb");
+
+end Cell_Writer;

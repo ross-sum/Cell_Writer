@@ -1,0 +1,173 @@
+V "GNAT Lib v10"
+A -gnatA
+A -mtune=generic
+A -march=i686
+P ZX
+
+RN
+RV NO_ALLOCATORS
+RV NO_DIRECT_BOOLEAN_OPERATORS
+RV NO_FINALIZATION
+RV NO_LOCAL_ALLOCATORS
+RV NO_UNCHECKED_DEALLOCATION
+RV NO_DEFAULT_INITIALIZATION
+RV NO_DYNAMIC_SIZED_OBJECTS
+RV NO_IMPLEMENTATION_PRAGMAS
+RV SPARK_05
+
+U dynamic_lists%b	dynamic_lists.adb	8e29ad25 NE OO PK GE
+
+U dynamic_lists%s	dynamic_lists.ads	afeface8 BN EE NE OO PK GE
+W ada%s			ada.ads			ada.ali
+W ada.finalization%s	a-finali.ads		a-finali.ali
+W general_storage_pool%s  general_storage_pool.adb  general_storage_pool.ali
+Z system.pool_size%s	s-poosiz.adb		s-poosiz.ali
+Z system.storage_pools%s  s-stopoo.adb		s-stopoo.ali
+W unchecked_deallocation%s
+
+D ada.ads		20200723063517 76789da1 ada%s
+D a-except.ads		20200723063517 a7106115 ada.exceptions%s
+D a-finali.ads		20200723063517 bf4f806b ada.finalization%s
+D a-stream.ads		20200723063517 119b8fb3 ada.streams%s
+D a-tags.ads		20200723063517 491b781d ada.tags%s
+D a-unccon.ads		20200723063517 0e9b276f ada.unchecked_conversion%s
+D dynamic_lists.ads	20200325232713 53411fa5 dynamic_lists%s
+D dynamic_lists.adb	20200326033147 dd68b280 dynamic_lists%b
+D general_storage_pool.ads  20120218085340 62a42582 general_storage_pool%s
+D system.ads		20200723063517 4635ec04 system%s
+D s-exctab.ads		20200723063517 54135002 system.exception_table%s
+D s-finroo.ads		20200723063517 4ff27390 system.finalization_root%s
+D s-parame.ads		20200723063517 48ec542b system.parameters%s
+D s-poosiz.ads		20200723063517 9d8c569f system.pool_size%s
+D s-secsta.ads		20200723063517 20bbe636 system.secondary_stack%s
+D s-soflin.ads		20200723063517 a7318a92 system.soft_links%s
+D s-stache.ads		20200723063517 a37c21ec system.stack_checking%s
+D s-stalib.ads		20200723063517 09bd3940 system.standard_library%s
+D s-stoele.ads		20200723063517 2dc34a04 system.storage_elements%s
+D s-stopoo.ads		20200723063517 b16154c2 system.storage_pools%s
+D s-traent.ads		20200723063517 005bf670 system.traceback_entries%s
+D unchdeal.ads		20200723063517 214516a4 unchecked_deallocation%s
+G a e
+G c Z s b [dynamic_lists standard 38 9 none]
+X 1 ada.ads
+16K9*Ada 20e8 7|31r6 32r6
+X 3 a-finali.ads
+40K13*Finalization 68e21 7|31w10 32r10
+43H9*Controlled<12|40R9> 59e72 7|40r21 134r21
+X 7 dynamic_lists.ads
+35+6 T 47r64 88r55 91r57 93r37 126r17 8|49r65 203r11 210r57 294r35
+36i1 storage_size{9|40I15} 118r13
+38k9*Dynamic_Lists 35z6 36z1 112E9 142l5 142e18 8|37b14 327l5 327t18
+40R9*list<3|43R9> 46P14 46r44 47p14 47r44 48P14 48r43 49P14 49r41 51P14 51r26
+. 51r39 53p14 53r38 55p14 55r35 55r53 62p13 62r41 66p14 66r69 70p14 70r44
+. 73p14 73r44 76p14 76r44 80p14 80r44 84p14 84r40 88p14 88r42 91p14 91r37
+. 92p14 92r46 93p14 93r61 101p14 101r54 103p14 103r57 105p13 105r45 114p14
+. 114r54 134c9 140e17 8|41r45 49r44 57r43 64r38 74r41 95r35 95r53 106r26
+. 106r39 120r54 132r41 144r69 151r42 159r42 167r44 181r44 195r40 202r42 210r37
+. 256r46 294r58 304r54 309r57 314r45
+41P9*list_node 62r54 66r36 122c9 123r19 125r17 127r17 129r8 132r37 135r33
+. 136r33 137r33 8|75r17 76r17 77r17 78r17 107r16 108r16 121r18 123r18 132r54
+. 144r36 226r17 227r17 228r17 229r17 261r16 262r16 263r16 295r17
+46U14*Initialize<3|46p14> 46=26 8|41b14 47l8 47t18
+46r26 the_list{40R9} 8|41b27 43m7 44m7 45m7 46m7
+47U14*Initialise 47=26 47>50 8|49b14 55l8 55t18
+47r26 the_list{40R9} 8|49b26 51m7 52m7 52r32 53m7 53r32 54m7
+47*50 with_data{35+6} 8|49b50 51r48
+48U14*Finalize<3|48p14> 48=25 8|57b14 62l8 62t16
+48r25 the_list{40R9} 8|57b25 59r10 60m16
+49U14*Adjust<3|47p14> 49=23 8|74b14 93l8 93t14
+49r23 the_list{40R9} 8|74b23 75r30 80r14 90m7 91m7 92m7
+51V14*"="{boolean} 51>19 51>32 8|106b14 118l9 118t11
+51r19 f{40R9} 8|106b19 107r29
+51r32 s{40R9} 8|106b32 108r29
+53U14*Clear 53=20 8|60s10 64b14 72l8 72t13
+53r20 the_list{40R9} 8|64b20 66r10 67m26 68m10 69m10 70m10
+55U14*Assign 55>21 55=41 8|95b14 104l8 104t14
+55r21 the_list{40R9} 8|95b21 100r26 101r26 102r26
+55r41 to{40R9} 8|95b41 99m7 100m7 101m7 102m7 103m7
+62V13*Handle{41P9} 62>20 8|132b13 142l8 142t14
+62r20 to_current_list{40R9} 8|132b20 137r10 138r17 140r17
+66U14*Go_To 66>20 66=47 8|144b14 149l8 149t13
+66p20 the_handle{41P9} 8|144b20 148r36
+66r47 for_the_list{40R9} 8|144b47 148m7
+70U14*First 70=23 8|151b14 157l8 157t13
+70r23 in_the_list{40R9} 8|151b21 155m7 155r35
+73U14*Last 73=23 8|159b14 165l8 165t12
+73r23 in_the_list{40R9} 8|159b21 163m7 163r35
+76U14*Next 76=23 8|167b14 179l8 179t12
+76r23 in_the_list{40R9} 8|167b23 175r10 176m10 177r13
+80U14*Previous 80=23 8|181b14 193l8 193t16
+80r23 in_the_list{40R9} 8|181b23 189r10 190m10 191r13
+84V14*Is_End{boolean} 84>23 8|195b14 200l8 200t14
+84r23 of_the_list{40R9} 8|195b23 199r14
+88V14*Deliver{35+6} 88>23 8|202b14 208l8 208t15
+88r23 from_the_list{40R9} 8|202b23 207r14
+91U14*Insert 91=23 91>43 8|210b14 254l8 254t14 300s10
+91r23 into{40R9} 8|210b23 227r30 228m35 228r35 229m35 229r35 236m13 241m13
+. 253m7 253r26 300r17
+91*43 the_data{35+6} 8|210b43 233r41 238r41 244r46 300r39
+92U14*Delete 92=23 8|256b14 292l8 292t14
+92r23 from_the_list{40R9} 8|256b23 261r29 262m34 262r34 263m34 263r34 283m13
+. 285m13 287m13 290m10 290r38
+93U14*Replace 93>23 93=40 8|294b14 302l8 302t15
+93*23 the_data{35+6} 8|294b23 298r26 300r51
+93r40 for_the_list{40R9} 8|294b38 295r30 300m25
+101U14*Allow_Shallow_Copy 101=33 8|304b14 307l8 307t26
+101r33 of_the_list{40R9} 8|304b33 306m7
+103U14*Disallow_Shallow_Copy 103=36 8|309b14 312l8 312t29
+103r36 of_the_list{40R9} 8|309b36 311m7
+105V13*Count{natural} 105>19 8|314b13 317l8 317t13
+105r19 of_items_in_the_list{40R9} 8|314b19 316r22
+107V13*Pool_Usage{wide_string} 8|319b13 323l8 323t18
+112I9 counter<integer> 139r25
+114U14 Release_Storage 114=32 8|67s10 120b14 130l8 130t23
+114r32 for_the_list{40R9} 8|120b32 121r31
+117r4 the_pool{9|49R12} 129r35 8|322r46
+121R9 node 122r33 124c9 128e17 132r31 8|51r36 84r22 233r29 238r29 244r26
+125p10 prev{41P9} 8|191r38 244r40 245r21 248r20 248r21 250m18 266r21 267r20
+. 267r21 275m26 275r42 277r29 284r24 285r51
+126*10 item{35+6} 8|84r46 111r20 111r35 207r41 298m18
+127p10 next{41P9} 8|86m44 88r29 114r27 115r27 127r30 177r38 239m22 248m26
+. 267m26 267r42 269r30 274r21 275r20 275r21 282r21 283r51
+131U14 Dispose_Node[22|20] 8|128s10 289s10
+135p10 first_node{41P9} 8|43m16 51m16 52r41 53r41 66r19 68m19 75r39 90m16
+. 100m10 100r35 107r31 108r31 121r44 140r33 155r47 228m40 262m48
+136p10 last_node{41P9} 8|44m16 52m16 91m16 101m10 101r35 163r47 229m40 263m48
+137p10 current_node{41P9} 8|45m16 53m16 69m19 92m16 102m10 102r35 137r26
+. 138r33 148m20 155m19 163m19 175r22 176m22 177r24 177r25 189r22 190m22 191r24
+. 191r25 199r26 207r27 207r28 227r35 236m18 241m18 261r43 283m27 285m27 287m27
+. 295r43
+138b10 deep_copy{boolean} 8|59r19 80r23 99m10 103m10 306m19 311m19
+139i10 item_count{112I9} 8|46m16 54m16 70m19 253m12 253r31 290m24 290r52
+. 316r43
+X 8 dynamic_lists.adb
+75p7 current{7|41P9} 83r13 84r38 88m10 88r21
+76p7 last{7|41P9} 84m10 85r40 86r52 87r22 91r32
+77p7 previous{7|41P9} 84r28 86r13 86r35 87m10
+78p7 first{7|41P9} 85r13 85m31 90r32 92r32
+107p7 f_node{7|41P9} 110r13 111r13 114m10 114r20 117r14
+108p7 s_node{7|41P9} 110r32 111r28 115m10 115r20 117r23
+121p7 current{7|41P9} 125r13 126r22 127m10 127r22
+123p7 old_node{7|41P9} 126m10 128m23 128r23
+226p7 new_node{7|41P9} 233m13 234r22 235r22 236r34 238m13 239r30 240r30 241r34
+. 244m10 246r30 248r34 250r30
+227p7 current{7|41P9} 231r10 244r32 244r56 245r13 248r13 250r10
+228p7 first{7|41P9} 232r13 234r13 246r13
+229p7 last{7|41P9} 235r13 238r35 239r13 240r13
+261p7 current{7|41P9} 265r10 266r13 267r13 267r34 269r22 274r13 275r13 275r34
+. 277r21 282r13 283r43 284r16 285r43 289m23 289r23
+262p7 first{7|41P9} 269r13 270r16 279r16
+263p7 last{7|41P9} 271r16 277r13 278r16
+295p7 current{7|41P9} 297r10 298r10
+X 9 general_storage_pool.ads
+36K12*General_Storage_Pool 7|33w6 36r16 117r15 119r30 8|322r14 9|95e28
+40I15*Storage_Count{19|62I12} 7|36r37
+42n45*unmonitored{42E12} 7|119r51
+49R12*general_pool<20|42R9> 7|117r36 9|93e20
+75V16*Pool_Usage{wide_string} 8|322s35
+X 19 s-stoele.ads
+54I9*Storage_Offset<integer>
+62I12*Storage_Count{54I9}
+X 22 unchdeal.ads
+20u11*Unchecked_Deallocation 7|31w24 132r8
+

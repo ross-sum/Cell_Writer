@@ -1,0 +1,64 @@
+# Cell Writer Database Schema File
+# (View in emacs viz <meta>-x org-mode)
+#
+# This file defines  the database schema.
+#
+# To build the database in sqlite3, do the following:
+#   gnatcoll_db2ada -dbtype=sqlite -createdb -dbmodel=<filename> \
+#                   -dbname=urine_records.db
+# To build the Ada source, code, type the following:
+#   gnatcoll_db2ada -dbmodel=<filename> -api=Database -adacreate
+#
+# where <filename> is the name of this file (nominally database_schema.dbmodel).
+
+# Configuration details table for special information used by the application.
+| TABLE        | Configurations | configs     || Configuration details       |
+| ID           | INTEGER        | PK,NOT NULL || Index into config items     |
+| Name         | CHARACTER(100) |             || Could be a file name, etc.  |
+| DetFormat    | Character(1)   |             || Detls fmt: T=Text,B=Base64  |
+| Details      | TEXT           |             || (actually a blob)           |
+
+# Languages look-up table for drop-down list
+| TABLE        | Languages       | languages    || Languages known by system  |
+| Name         | CHARACTER(25)   | NOT NULL     || Language Name for look-up  |
+| ID           | INTEGER         | PK,NOT NULL  || Language unique identifier |
+| Start        | INTEGER         | NOT NULL     || Character set start        |
+| End          | INTEGER         |              || Character set end          |
+| Description  | CHARACTER(100)  |              || Details about this lingo   |
+
+# User ID look-up table
+| TABLE        | UserIDs        | user_ids    || The users within this DB    |
+| ID           | INTEGER        | PK,NOT NULL || User unique identifier      |
+| Logon        | CHARACTER(100) | NOT NULL    || System identifier for user  |
+| Name         | CHARACTER(100) |             || The user's name             |
+| Language     | INTEGER        |             || The language preferred      |
+
+# Urine Record from normal (post catheter removal) voiding via penis
+# Note that sqlite does not have a boolean data type, so represent as 0 or 1
+# This applies to No2.
+| TABLE (urineRecords) | UrineRecord | urine_record | urination record         |
+| PadVolume | INTEGER                | |       | weight (g) of pad + its urine |
+| Hold      | FK HoldStates(HoldID)  | |       | hold ability mid-stream       |
+| Leakage   | FK Leakage(LeakValue)  | |       | none,some, pad change, etc.   |
+| PadType   | FK PadSizes(PadID)     | |       | Pad brand and clean weight    |
+| No2       | BOOLEAN                | | 0     | Passed stools at this time?   |
+| Urges     | INTEGER                | | 0     | Number of urges experienced   |
+| Spasm     | FK Spasms(Spasm)       | |       | Any spasm endured intensity   |
+| SpasmCount| INTEGER                | | 0     | Number of spasms experienced  |
+| Notes     | TEXT                   | |       | Any points to note about it   |
+
+# Reports table for Cell Writer
+| TABLE     | Reports         | report       |   | List of all the reports     |
+| ID        | INTEGER         | PK,NOT NULL  |   | Report ID/number            |
+| Name      | CHARACTER(80)   | NOT NULL     |   | Report Name/Heading         |
+| Filename  | CHARACTER(255)  | NOT NULL     |   | file name for report files  |
+| HasGraph  | BOOLEAN         |              | 0 | Does it have graph(s)?      |
+| R         | TEXT            |              |   | Graph instructions (in R)   |
+| LaTex     | TEXT            | NOT NULL     |   | Report construction 'howto' |
+
+# Queries table, containing the queries that relate to each report
+| TABLE     | Queries         | query        |   | List of queries for reports |
+| ID        | FK Reports(Report) | PK        |   | This query's report         |
+| Q_Number  | INTEGER         | PK,NOT NULL  |   | Query number in report      |
+| TargetTbl | CHARACTER(50)   |              |   | Target table name (if any)  |
+| SQL       | TEXT            | NOT NULL     |   | SQL to run                  |
