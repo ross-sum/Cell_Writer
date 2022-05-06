@@ -70,6 +70,9 @@ project Cell_Writer is
       "string_functions.ads", "string_functions.adb",
       "string_conversions.ads", "string_conversions.adb",
       "generic_versions.ads", "generic_versions.adb", "cell_writer_version.ads",
+      "report_processor.ads", "report_processor.adb",
+      "help_about.ads", "help_about.adb", "setup.ads", "setup.adb",
+      "main_menu.ads", "main_menu.adb",
       "cell_writer.adb");
 
 end Cell_Writer;

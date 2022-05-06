@@ -6,6 +6,9 @@
 ACC=gprbuild
 TA=cell_writer
 TS=$(TA).gpr
+BA=tobase64
+BS=$(BA).gpr
+DB=$(TA).db
 HOST_TYPE := $(shell uname -m)
 ARCH := $(shell dpkg --print-architecture)
 ifeq ($(HOST_TYPE),amd)
@@ -27,7 +30,7 @@ else ifeq ($(HOST_TYPE),armv7l)
 endif
 BIN=/usr/local/bin
 ETC=/usr/local/etc
-VAR=/var/local
+VAR=/var/local/lib
 TD=obj_$(TARGET)
 SD=system
 ifeq ("$1.",".")
@@ -42,13 +45,18 @@ endif
 cellwriter:
 	$(ACC) -P $(TS) $(FLAGS)
 
+tobase64s:
+	$(ACC) -P $(BS) $(FLAGS)
+
 # Define the target "all"
 all:
 	cellwriter:
+	tobase64s:
 
 # Clean up to force the next compilation to be everything
 clean:
 	gprclean -P $(TS)
+	gprclean -P $(BS)
 
 dist-clean: distclean
 
@@ -56,10 +64,11 @@ distclean: clean
 
 install:
 	cp $(TD)/$(TA) $(BIN)
-ifneq (,$(wildcard $(VAR)/$(TA).xml)) 
-	echo "Not overwriting $(VAR)/$(TA).xml"
+	cp $(TD)/$(BA) $(BIN)
+ifneq (,$(wildcard $(VAR)/$(DB))) 
+	echo "Not overwriting $(VAR)/$(DB)."
 else
-	cp $(SD)/$(TA).xml $(VAR)
+	cp $(SD)/$(DB) $(VAR)
 endif
 	cp $(SD)/$(TA).xsd $(ETC)
 	mkdir -p $(ETC)/init.d/

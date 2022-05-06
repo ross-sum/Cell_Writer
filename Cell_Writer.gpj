@@ -1,9 +1,10 @@
-!1427;s
+!1467;s
 A
 SAa0cellwriter
 SAb0cellwriter
 SAK0user: make
 SAU0
+SAT0%<PROJECT_PATH>/src/cell_writer.adb
 SCU0JGRASP_MAIN_BOUNDS=%<CONTROL_SHELL_BOUNDS>\012PATH+=%<JGRASP_PATHS>%;\012PATH=+%;%<JGRASP_C_PATHS>\012CYGWIN=nodosfilewarning\012GCC_COLORS=\012-Run\012ADD_EXE_PATH==Y\012
 S+U0JGRASP_MAIN_BOUNDS=%<CONTROL_SHELL_BOUNDS>\012PATH+=%<JGRASP_PATHS>%;\012PATH=+%;%<JGRASP_C_PATHS>\012CYGWIN=nodosfilewarning\012GCC_COLORS=\012-Run\012ADD_EXE_PATH==Y\012
 SJU0JGRASP_MAIN_BOUNDS=%<CONTROL_SHELL_BOUNDS>\012CLASSPATH=+%;%<EXTENSION_CLASSPATHS>\012CLASSPATH+=%<JGRASP_CLASSPATHS>%;\012File\012CLASSPATH+=.%;\012CLASSPATH+=%<SRC_CLASSPATHS>%;\012ProjectOrFile\012PATH+=%<JAVA_BIN_DIR>%;\012PATH+=%<JGRASP_PATHS>%;\012Debug +Debug_Applet\012CLASSPATH=+%;%<INJECTION_CLASSPATHS>\012Compile\012NOT_FOUND_MESSAGE==Make sure you have the full JDK, not just the JRE, installed.\\nThe JDK is available from https://www.oracle.com/technetwork/java/index.html.\012Run_Applet +Debug_Applet\012ADD_APPLETVIEWER_CLASSPATH==Y\012Document\012CLASSPATH=+%;%<TOOL_CLASSPATHS>\012CLASSPATH+=%<CLASSES_DIR>%;\012
@@ -19,20 +20,28 @@ s#m0src
 s#p0doc
 s#q0test
 s#r0obj_amd64
-!204;g
+!294;g
+%\011src%ssetup.ads
 %\011src%sdatabase_names.ads
+%\011src%ssetup.adb
 %\011src%smain_menu.ads
 %\011src%sdatabase.adb
+%\011src%shelp_about.adb
 %\011src%sdatabase.ads
+%\011src%shelp_about.ads
 %\011src%scell_writer_version.ads
 %\011src%smain_menu.adb
 %\011cell_writer.gpr
 %\011src%scell_writer.adb
-!204;f
+!294;f
+%\011src%ssetup.ads
 %\011src%sdatabase_names.ads
+%\011src%ssetup.adb
 %\011src%smain_menu.ads
 %\011src%sdatabase.adb
+%\011src%shelp_about.adb
 %\011src%sdatabase.ads
+%\011src%shelp_about.ads
 %\011src%scell_writer_version.ads
 %\011src%smain_menu.adb
 %\011cell_writer.gpr

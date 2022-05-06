@@ -5,30 +5,31 @@
 #
 # To build the database in sqlite3, do the following:
 #   gnatcoll_db2ada -dbtype=sqlite -createdb -dbmodel=<filename> \
-#                   -dbname=urine_records.db
+#                   -dbname=cell_writer.db
 # To build the Ada source, code, type the following:
 #   gnatcoll_db2ada -dbmodel=<filename> -api=Database -adacreate
 #
 # where <filename> is the name of this file (nominally database_schema.dbmodel).
 
 # Configuration details table for special information used by the application.
-| TABLE       | Configurations   | configs     || Configuration details        |
+| TABLE       | Configurations   | config      || Configuration details        |
 | ID          | INTEGER          | PK,NOT NULL || Index into config items      |
 | Name        | CHARACTER(100)   |             || Could be a file name, etc.   |
-| DetFormat   | Character(1)     |             || Details fmt: T=Text,B=Base64 |
+| DetFormat   | CHARACTER(1)     |             || Details fmt: T=Text,B=Base64 |
 | Details     | TEXT             |             || (actually a blob)            |
 
 # Languages look-up table for drop-down list
-| TABLE       | Languages        | languages    || Languages known by system   |
-| Name        | CHARACTER(25)    | NOT NULL     || Language Name for look-up   |
-| ID          | INTEGER          | PK,NOT NULL  || Language unique identifier  |
-| Start       | INTEGER          | NOT NULL     || Character set start         |
-| End         | INTEGER          |              || Character set end           |
-| Description | CHARACTER(100)   |              || Details about this lingo    |
+| TABLE       | Languages        | language    |  | Languages known by system  |
+| Name        | CHARACTER(25)    | NOT NULL    |  | Language Name for look-up  |
+| ID          | INTEGER          | PK,NOT NULL |  | Language unique identifier |
+| Start       | INTEGER          | NOT NULL    |  | Character set start        |
+| EndChar     | INTEGER          |             |  | Character set end          |
+| Description | CHARACTER(100)   |             |  | Details about this lingo   |
+| Selected    | BOOLEAN          |             | 0| Is this a char set used?   |
 
 # User ID look-up table
-| TABLE       | UserIDs           | user_ids    || The users within this DB    |
-| ID          | INTEGER           | PK,NOT NULL || User unique identifier      |
+| TABLE       | UserIDs           | user_id     || The users within this DB    |
+| UID         | INTEGER           | PK,NOT NULL || User unique identifier      |
 | Logon       | CHARACTER(100)    | NOT NULL    || System identifier for user  |
 | Name        | CHARACTER(100)    |             || The user's name             |
 | Language    | FK Languages(ID)  |             || The language preferred      |
@@ -36,7 +37,7 @@
 # Words table, listing all the words that can be learnt as a single item to
 # wrtite (in a single cell) in using Cell Writer.  The ID is 1 based (i.e. the
 # first word has an ID = 1).
-| TABLE       | Words            | words        || Words that can be written   |
+| TABLE       | Words            | word         || Words that can be written   |
 | Language    | FK Languages(ID) | PK,NOT NULL  || Language of the word        |
 | ID          | INTEGER          | PK,NOT NULL  || Word Unique identifier      |
 | word        | CHARACTER(100)   | NOT NULL     || UTF-8 word                  |
@@ -46,18 +47,19 @@
 # words.  The ID is an offset from Language(Start), but if after Language(End),
 # then it refers to a word (0 offset from the Words table)
 | TABLE       | LearntData       | learnt_data  || Character and words learnt  |
-| User        | FK UserIDs(ID)   | PK,NOT NULL  || ID of the user              |
+| User        | FK UserIDs(UID)  | PK,NOT NULL  || ID of the user              |
 | Language    | FK Languages(ID) | PK,NOT NULL  || Language identifier         |
 | ID          | INTEGER          | PK,NOT NULL  || Offset from Language Start  |
 | Description | CHARACTER(20)    |              || Important details           |
 
 # Training data table, for each learnt_data entry
-| TABLE    | TrainingData        | training     || Training data learnt        |
-| User     | FK LearntData(User) | PK,NOT NULL  || ID of the user              |
-| Language | FK LearntData(Language | PK,NOT NULL || Language of the word      |
-| ID       | FK LearntData(ID)   | PK,NOT NULL  || Word unique identifier      |
-| SampleNo | INTEGER             | PK,NOT NULL  || Sample number recorded      |
-| Sample   | TEXT                | NOT NULL     || The sample                  |
+| TABLE       | TrainingData     | trainingdata || Training data learnt        |
+| User        | INTEGER          | PK,NOT NULL  || ID of the user              |
+| Language    | INTEGER          | PK,NOT NULL  || Language identifier         |
+| ID          | INTEGER          | PK,NOT NULL  || Offset from Language Start  |
+| SampleNo    | INTEGER          | PK,NOT NULL  || Sample number recorded      |
+| Sample      | TEXT             | NOT NULL     || The sample                  |
+# | FK:       | LearntData       | User,Language,ID | User,Language,ID         |
 
 # Reports table for Cell Writer
 | TABLE     | Reports         | report       |   | List of all the reports     |

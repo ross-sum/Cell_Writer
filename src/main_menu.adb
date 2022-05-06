@@ -43,7 +43,7 @@ with Error_Log;
 with String_Conversions;
 with Ada.Characters.Conversions;
 with Cell_Writer_Version;
-with Help_About, Help_Manual, Error_Dialogue, Check_For_Deletion;
+with Help_About, Setup;
 with Report_Processor;
 -- with GNATCOLL.SQL.Exec;
 package body Main_Menu is
@@ -52,44 +52,20 @@ package body Main_Menu is
       use Gtk.Button, Gtk.Menu, Gtk.Menu_Item;
       use Report_Processor;
       use String_Conversions;
-      report_button : Gtk.Button.Gtk_Button;
       parent_menu   : Gtk.Menu.Gtk_Menu;
       report_menu   : Gtk.Menu_Item.Gtk_Menu_Item;
    begin
-      parent_menu := gtk_menu(Get_Object(Builder, "menu_repts_child"));
+      parent_menu := gtk_menu(Get_Object(Builder, "menu_reports"));
       for report_num in 1 .. Number_of_Reports loop
-         if report_num in 1 .. 4 then  -- within range of buttons
-            case report_num is
-               when 1 => 
-                  report_button:=gtk_button(Get_Object(Builder,"btn_1_report"));
-               when 2 => 
-                  report_button:=gtk_button(Get_Object(Builder,"btn_2_report"));
-               when 3 => 
-                  report_button:=gtk_button(Get_Object(Builder,"btn_3_report"));
-                  null;
-               when 4 => 
-                  report_button:=gtk_button(Get_Object(Builder,"btn_4_report"));
-               when others => null;  -- do nothing
-            end case;
-            -- Give the button its correct label
-            Error_Log.Debug_Data(at_level => 6, 
-                      with_details=>"Set_Up_Reports_Menu_and_Buttons: report "&
-                 To_Wide_String(Report_Name(for_report_number => report_num)));
-            Set_Label(report_button,
-                      Report_Name(for_report_number => report_num));
-            -- set up the button's call-back
-            report_button.On_Clicked(Call => 
-                                     Urine_Records_Report_Clicked_CB'Access);
-         end if;
          -- Create the report menu item
          Gtk_New_With_Label(report_menu, 
                             Report_Name(for_report_number => report_num));
          Set_Action_Name(report_menu, "on_report_click");
-         Attach(parent_menu, report_menu, 0, 1, 
-                Glib.Guint(report_num - 1), Glib.Guint(report_num));
+         -- Attach(parent_menu, report_menu, 0, 1, 
+            --     Glib.Guint(report_num - 1), Glib.Guint(report_num));
          Set_Sensitive(report_menu, true);
          -- Set the report menu item's call-back
-         report_menu.On_Activate(Call=>Urine_Records_Report_Clicked_CB'Access, 
+         report_menu.On_Activate(Call=>Cell_Writer_Report_Clicked_CB'Access, 
                                  After=>False);
       end loop;
    end Set_Up_Reports_Menu_and_Buttons;
@@ -100,11 +76,11 @@ package body Main_Menu is
                            with_pdf_path : text;
                            with_R_path   : text;
                            path_to_temp  : string := "/tmp/";
-                           glade_filename: string := "urine_records.glade") is
+                           glade_filename: string := "cell_writer.glade") is
       use Glib.Error, Ada.Characters.Conversions;
       type GError_Access is access Glib.Error.GError;
       Builder : Gtkada_Builder;
-      Error   : GError_Access; -- access Glib.Error.GError;
+      Error   : GError_Access := null; -- access Glib.Error.GError;
       count   : Glib.Guint;
    begin
       -- Set the locale specific data (e.g time and date format)
@@ -128,11 +104,11 @@ package body Main_Menu is
                        Handler_Name => "help_about_select_cb",
                        Handler      => Menu_Help_About_Select_CB'Access);
       Register_Handler(Builder      => Builder,
-                       Handler_Name => "help_manual_activate_cb",
-                       Handler      => Menu_Manual_Select_CB'Access);
+                       Handler_Name => "btn_train_clicked_cb",
+                       Handler      => Training_Select_CB'Access);
       Register_Handler(Builder      => Builder,
-                       Handler_Name => "file_new_activate_cb",
-                       Handler      => Menu_File_New_Select_CB'Access);
+                       Handler_Name => "btn_setup_clicked_cb",
+                       Handler      => Setup_Select_CB'Access);
       Register_Handler(Builder      => Builder,
                        Handler_Name => "file_exit_select_cb",
                        Handler      => Menu_File_Exit_Select_CB'Access);
@@ -140,14 +116,63 @@ package body Main_Menu is
                        Handler_Name => "form_main_destroy_cb",
                        Handler      => Menu_File_Exit_Select_CB'Access);
       Register_Handler(Builder      => Builder,
-                       Handler_Name => "btn_patient_details_clicked_cb",
-                       Handler      => Btn_Patient_Details_Clicked_CB'Access);
+                       Handler_Name => "btn_clear_clicked_cb",
+                       Handler      => Btn_Clear_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
-                       Handler_Name => "btn_catheter_urine_records_clicked_cb",
-                       Handler      => Btn_Catheter_Urine_Records_Clicked_CB'Access);
+                       Handler_Name => "btn_keys_clicked_cb",
+                       Handler      => Btn_Keys_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
-                       Handler_Name => "btn_urine_records_clicked_cb",
-                       Handler      => Btn_Urine_Records_Clicked_CB'Access);
+                       Handler_Name => "btn_enter_clicked_cb",
+                       Handler      => Btn_Enter_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_tab_clicked_cb",
+                       Handler      => Btn_Tab_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_backspace_clicked_cb",
+                       Handler      => Btn_Backspace_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_del_clicked_cb",
+                       Handler      => Btn_Del_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_space_clicked_cb",
+                       Handler      => Btn_Space_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_up_clicked_cb",
+                       Handler      => Btn_Up_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_down_clicked_cb",
+                       Handler      => Btn_Down_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_left_clicked_cb",
+                       Handler      => Btn_Left_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_right_clicked_cb",
+                       Handler      => Btn_Right_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_home_clicked_cb",
+                       Handler      => Btn_Home_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_end_clicked_cb",
+                       Handler      => Btn_End_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_pageup_clicked_cb",
+                       Handler      => Btn_PageUp_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_pagedown_clicked_cb",
+                       Handler      => Btn_PageDown_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "combo_language_changed_cb",
+                       Handler      => Combo_Language_Changed_CB'Access);
+      -- Drawing Event handlers
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "draw_1_01_button_press_event_cb",
+                       Handler      => Btn_Draw_Press_Event_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "draw_1_01_draw_cb",
+                       Handler      => Draw_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "draw_1_01_motion_notify_event_cb",
+                       Handler      => Motion_Notify_CB'Access);
       
       -- Point images in Glade file to unloaded area in the temp directory
       declare
@@ -157,21 +182,15 @@ package body Main_Menu is
          file_name  : constant string := path_to_temp & "toilet_action.jpeg";
       begin
          no_2_image := gtk_image(Get_Object(Builder, image_name));
-         Set(image => no_2_image, Filename=> file_name);
+         --Set(image => no_2_image, Filename=> file_name);
       end;
       
       -- Set up child forms
+      Setup.Initialise_Setup(Builder, DB_Descr, usage);
       Help_About.Initialise_Help_About(Builder, usage);
-      Help_Manual.Initialise_Manual(Builder);
-      Get_Date_Calendar.Initialise_Calendar(Builder);
-      Urine_Colour_Selector.Initialise_Colour_Selector(Builder, DB_Descr,
-                                                       path_to_temp);
-      Check_For_Deletion.Initialise(Builder);
-      Patient_Details.Initialise_Patient_Details(Builder, DB_Descr);
-      Urine_Records_Form.Initialise_Urine_Records(Builder, DB_Descr);
-      Catheter_Urine_Records_Form.Initialise_Catheter_Urine_Records(Builder, 
-                                                                    DB_Descr);
-      Error_Dialogue.Initialise_Dialogue(Builder);
+      -- Get_Date_Calendar.Initialise_Calendar(Builder);
+      -- Urine_Colour_Selector.Initialise_Colour_Selector(Builder, DB_Descr,
+         --                                               path_to_temp);
       Report_Processor.Initialise(with_DB_descr => DB_Descr,
                                   with_tex_path => with_tex_path,
                                   with_pdf_path => with_pdf_path,
@@ -193,39 +212,39 @@ package body Main_Menu is
       Unref (Builder);
    end Initialise_Main_Menu;
 
-   procedure Btn_Patient_Details_Clicked_CB 
+   procedure Btn_Clear_Clicked_CB 
                 (Object : access Gtkada_Builder_Record'Class) is
        
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                        with_details=>"Btn_Patient_Details_Clicked_CB: Start");
-      Patient_Details.Show_Patient_Details(Gtkada_Builder(Object));
-   end Btn_Patient_Details_Clicked_CB;
+                        with_details=>"Btn_Clear_Clicked_CB: Start");
+      -- Patient_Details.Show_Patient_Details(Gtkada_Builder(Object));
+   end Btn_Clear_Clicked_CB;
 
-   procedure Btn_Urine_Records_Clicked_CB
+   procedure Btn_Enter_Clicked_CB
             (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                        with_details=>"Btn_Urine_Records_Clicked_CB: Start");
-      Urine_Records_Form.Show_Urine_Records(Gtkada_Builder(Object));
-   end Btn_Urine_Records_Clicked_CB;
+                        with_details=>"Btn_Enter_Clicked_CB: Start");
+      -- Urine_Records_Form.Show_Urine_Records(Gtkada_Builder(Object));
+   end Btn_Enter_Clicked_CB;
 
-   procedure Btn_Catheter_Urine_Records_Clicked_CB
+   procedure Btn_Keys_Clicked_CB
             (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                 with_details=>"Btn_Catheter_Urine_Records_Clicked_CB: Start");
-      Catheter_Urine_Records_Form.Show_Catheter_Urine_Records
-                        (Gtkada_Builder(Object));
-   end Btn_Catheter_Urine_Records_Clicked_CB;
+                 with_details=>"Btn_Keys_Clicked_CB: Start");
+      --Catheter_Urine_Records_Form.Show_Catheter_Urine_Records
+         --               (Gtkada_Builder(Object));
+   end Btn_Keys_Clicked_CB;
 
-   procedure Menu_File_New_Select_CB  
+   procedure Setup_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                              with_details=> "Menu_File_New_Select_CB: Start");
-      null;
-   end Menu_File_New_Select_CB;
+                              with_details=> "Setup_Select_CB: Start");
+      Setup.Show_Setup(Gtkada_Builder(Object));
+   end Setup_Select_CB;
 
    procedure Menu_File_Exit_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is
@@ -233,9 +252,7 @@ package body Main_Menu is
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Menu_File_Exit_Select_CB: Start");
       -- Shut down sub-forms where required
-      Patient_Details.Finalise;
-      Catheter_Urine_Records_Form.Finalise;
-      Urine_Records_Form.Finalise;
+      --Urine_Records_Form.Finalise;
       -- and shut ourselves down
       Gtk.Main.Main_Quit;
    end Menu_File_Exit_Select_CB;
@@ -249,43 +266,177 @@ package body Main_Menu is
       Help_About.Show_Help_About(Gtkada_Builder(Object));
    end Menu_Help_About_Select_CB;
 
-   procedure Menu_Manual_Select_CB
+   procedure Training_Select_CB
                 (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Menu_Manual_Select_CB: Start");
-      Help_Manual.Show_Manual(Gtkada_Builder(Object));
-   end Menu_Manual_Select_CB;
+                           with_details => "Training_Select_CB: Start");
+      -- Help_Manual.Show_Manual(Gtkada_Builder(Object));
+   end Training_Select_CB;
 
-   procedure Urine_Records_Report_Clicked_CB(label : string) is
+   procedure Btn_Tab_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Tab_Clicked_CB: Start");
+      null;
+   end Btn_Tab_Clicked_CB;
+   
+   procedure Btn_Backspace_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Backspace_Clicked_CB: Start");
+      null;
+   end Btn_Backspace_Clicked_CB;
+   
+   procedure Btn_Del_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Del_Clicked_CB: Start");
+      null;
+   end Btn_Del_Clicked_CB;
+   
+   procedure Btn_Space_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Spacel_Clicked_CB: Start");
+      null;
+   end Btn_Space_Clicked_CB;
+   
+   procedure Btn_Up_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Up_Clicked_CB: Start");
+      null;
+   end Btn_Up_Clicked_CB;
+   
+   procedure Btn_Down_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Down_Clicked_CB: Start");
+      null;
+   end Btn_Down_Clicked_CB;
+   
+   procedure Btn_Left_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Left_Clicked_CB: Start");
+      null;
+   end Btn_Left_Clicked_CB;
+   
+   procedure Btn_Right_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Right_Clicked_CB: Start");
+      null;
+   end Btn_Right_Clicked_CB;
+   
+   procedure Btn_Home_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Home_Clicked_CB: Start");
+      null;
+   end Btn_Home_Clicked_CB;
+   
+   procedure Btn_End_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_End_Clicked_CB: Start");
+      null;
+   end Btn_End_Clicked_CB;
+   
+   procedure Btn_PageUp_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_PageUp_Clicked_CB: Start");
+      null;
+   end Btn_PageUp_Clicked_CB;
+   
+   procedure Btn_PageDown_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_PageDown_Clicked_CB: Start");
+      null;
+   end Btn_PageDown_Clicked_CB;
+
+   procedure Combo_Language_Changed_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+      new_language : natural;
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Combo_Language_Changed_CB: Start");
+      Setup.Combo_Language_Changed(Object, to_language => new_language);
+      -- Display or hide the top row of combining accents based on language
+      null;
+   end Combo_Language_Changed_CB;
+
+   function Btn_Draw_Press_Event_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Draw_Press_Event_CB: Start");
+      null;
+      return true;
+   end Btn_Draw_Press_Event_CB;
+   
+   function Draw_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Draw_CB: Start");
+      null;
+      return true;
+   end Draw_CB;
+   
+   function Motion_Notify_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean is
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Motion_Notify_CB: Start");
+      null;
+      return true;
+   end Motion_Notify_CB;
+
+   procedure Cell_Writer_Report_Clicked_CB(label : string) is
      -- Print the specified report (for the defined report Name).
       use Report_Processor;
       use String_Conversions;
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Urine_Records_Report_Clicked_CB: "&
+                           with_details => "Cell_Writer_Report_Clicked_CB: "&
                                            To_Wide_String(label) & ".");
       Run_The_Report(with_id => Report_ID(for_report_name => label));
-   end Urine_Records_Report_Clicked_CB;
+   end Cell_Writer_Report_Clicked_CB;
 
-   procedure Urine_Records_Report_Clicked_CB
+   procedure Cell_Writer_Report_Clicked_CB
                 (Object : access Gtk.Menu_Item.Gtk_Menu_Item_Record'Class) is
       -- Get the name of the report menu item and then print the report.
       use Gtk.Menu_Item;
    begin
        -- Get the name of the report menu item and then print the report.
-      Urine_Records_Report_Clicked_CB(label=>Get_Label(Gtk_Menu_Item(Object)));
-   end Urine_Records_Report_Clicked_CB;
+      Cell_Writer_Report_Clicked_CB(label=>Get_Label(Gtk_Menu_Item(Object)));
+   end Cell_Writer_Report_Clicked_CB;
 
-   procedure Urine_Records_Report_Clicked_CB
+   procedure Cell_Writer_Report_Clicked_CB
                 (Object : access Gtk.Button.Gtk_Button_Record'Class) is
       -- Get the name of the report button and then print the report.
       use Gtk.Button;
    begin
-      Urine_Records_Report_Clicked_CB(label=>Get_Label(Gtk_Button(Object)));
-   end Urine_Records_Report_Clicked_CB;
+      Cell_Writer_Report_Clicked_CB(label=>Get_Label(Gtk_Button(Object)));
+   end Cell_Writer_Report_Clicked_CB;
 
 begin
-   Urine_Record_Version.Register(revision => "$Revision: v1.0.2$",
+   Cell_Writer_Version.Register(revision => "$Revision: v1.0.2$",
                                  for_module => "Main_Menu");
 end Main_Menu;
