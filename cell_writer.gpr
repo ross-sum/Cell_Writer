@@ -45,9 +45,9 @@ project Cell_Writer is
    for Languages use ("ada");
    case Hware is
    when "pi" =>
-      for Source_Dirs use ("src/", "src/pi/", "../tools/");
+      for Source_Dirs use ("src/", "src/pi/", "../tools/", "src/xdotool-c");
    when others =>
-      for Source_Dirs use ("src/", "src/non_pi/", "../tools/");
+      for Source_Dirs use ("src/", "src/non_pi/", "../tools/", "src/xdotool-c");
    end case;
    for Main use ("cell_writer.adb");
    --  Using "hware" variable for obj directory
@@ -69,7 +69,17 @@ project Cell_Writer is
       "dynamic_lists.adb", "dynamic_lists.ads", 
       "string_functions.ads", "string_functions.adb",
       "string_conversions.ads", "string_conversions.adb",
+      "set_of.ads", "set_of.adb",
       "generic_versions.ads", "generic_versions.adb", "cell_writer_version.ads",
+      "report_processor.ads", "report_processor.adb",
+      "help_about.ads", "help_about.adb", "setup.ads", "setup.adb",
+      "main_menu.ads", "main_menu.adb",
+      "keyboard.ads", "keyboard.adb",
+      "css_management.ads", "css_management.adb",
+      "cursor_management.ads", "cursor_management.adb",
+      "key_sym_def.ads", "key_sym_def.adb", "xdo.ads",
+      "keyboard_emulation.ads", "keyboard_emulation.adb",
+      "grid_management.ads", "grid_management.adb",
       "cell_writer.adb");
 
 end Cell_Writer;

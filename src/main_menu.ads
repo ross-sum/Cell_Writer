@@ -39,24 +39,77 @@ package Main_Menu is
 
    procedure Initialise_Main_Menu(usage : in text;
                            DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
+                           with_tex_path : text;
+                           with_pdf_path : text;
+                           with_R_path   : text;
                            path_to_temp  : string := "/tmp/";
-                           glade_filename: string := "urine_records.glade");
+                           glade_filename: string := "cell_writer.glade");
+   procedure Btn_Enter_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
 
 private
 
-   procedure Menu_File_New_Select_CB  
+    -- Main toolbar buttons
+   procedure Menu_Help_About_Select_CB 
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Menu_File_Exit_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class);
-   procedure Menu_Manual_Select_CB
+   procedure Btn_Clear_Clicked_CB  
                 (Object : access Gtkada_Builder_Record'Class);
-   procedure Menu_Help_About_Select_CB 
+   procedure Training_Select_CB
                 (Object : access Gtkada_Builder_Record'Class);
-   procedure Btn_Train_Clicked_CB 
+   procedure Setup_Select_CB 
                 (Object : access Gtkada_Builder_Record'Class);
-   procedure Btn_Setup_Clicked_CB
+   procedure Btn_Keys_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
-   procedure Btn_Language_Clicked_CB
+                
+    -- Combo box drop down list selection handler
+   procedure Combo_Language_Changed_CB
                 (Object : access Gtkada_Builder_Record'Class);
+    
+    -- Navigation toolbars buttons
+   procedure Btn_Tab_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Backspace_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Del_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Space_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Up_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Down_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Left_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Right_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Home_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_End_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_PageUp_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_PageDown_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+    
+    -- Draw event Callbacks
+   function Btn_Draw_Press_Event_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean;
+   function Draw_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean;
+   function Motion_Notify_CB
+                (Object : access Gtkada_Builder_Record'Class) return Boolean;
+    
+    -- Print the specified report (given the report name from the menu item or
+    -- button).
+   procedure Cell_Writer_Report_Clicked_CB(label : string);
+      -- Print the specified report (for the defined report Name).
+   procedure Cell_Writer_Report_Clicked_CB
+                (Object : access Gtk.Menu_Item.Gtk_Menu_Item_Record'Class);
+       -- Get the name of the report menu item and then print the report.
+   procedure Cell_Writer_Report_Clicked_CB
+                (Object : access Gtk.Button.Gtk_Button_Record'Class);
+       -- Get the name of the report button and then print the report.
        
 end Main_Menu;

@@ -9,11 +9,13 @@
 --  Copyright (C) 2020  Hyper Quantum Pty Ltd.                       --
 --  Written by Ross Summerfield and Michael Levin.                   --
 --                                                                   --
---  This application is a grid based character recognition input method.  --
+--  This  application is a grid based character  recognition  input  --
+--  method.                                                          --
 --                                                                   --
 --  This application is a fork of the cellwriter program written in  --
 --  C  by  Michael Levin <risujin@risujin.org> (main  author  whose  --
---  intellectual property exists throughout the product) and .  --
+--  intellectual  property  exists throughout the product)  and  is  --
+--  Copyright (c) 2007.                                              --
 --  It is completely based on their edition, but written in Ada and  --
 --  also written to accommodate Blissymbolocs.  The main  objective  --
 --  of  the  rewrite  is to allow for the output  of  a  string  of  --
@@ -22,7 +24,7 @@
 --  method  is important to making it highly useful for a  language  --
 --  like Blissymbolics.                                              --
 --  The  other main change is to use Glade for the  graphical  user  --
---  interface.                                                       --
+--  interface and the use of xdotool for XKB keyboard emulation.     --
    --                                                                   --
 --  Version History:                                                 --
 --  $Log$
@@ -43,6 +45,7 @@
 with DStrings;            use DStrings;
 with dStrings.IO;         use dStrings.IO;
 with Calendar_Extensions; use Calendar_Extensions;
+with String_Conversions;
 with Error_Log;
 with Host_Functions;
 with Generic_Command_Parameters;
@@ -53,10 +56,18 @@ with GNATCOLL.SQL.Sqlite;   -- or Postgres
 with GNATCOLL.SQL.Exec;
 with GNATCOLL.SQL, GNATCOLL.SQL.Exec.Tasking, GNATCOLL.SQL_BLOB;
 with Ada.Sequential_IO;
+with Ada.Directories;
 procedure Cell_Writer is
 
-   default_log_file_name : constant wide_string := 
-                           "/var/log/cell_writer.log";
+   default_log_file_name : constant wide_string := "/var/log/cell_writer.log";
+   default_path_to_temp  : constant wide_string := "/tmp/";
+   default_db_path       : constant wide_string := "~/var/lib/cellwriter/";
+   default_db_file_name  : constant wide_string := "cell_writer.db";
+   default_db_name       : constant wide_string := default_db_path &
+                                                   default_db_file_name;
+   default_tex_name      : constant wide_string := "/usr/bin/pdflatex";
+   default_pdf_name      : constant wide_string := "/usr/bin/xpdf";
+   default_R_name        : constant wide_string := "/usr/bin/R";
 
    package Parameters is new Generic_Command_Parameters
       (Cell_Writer_Version.Version,
@@ -64,6 +75,12 @@ procedure Cell_Writer is
                  ",path to the system writable temporary directory;" &
        "b,db,string," & default_db_name &
                  ",path and file name for the urine records database;" &
+       "t,tex,string," & default_tex_name &
+                 ", Path to LaTex PDF output generator;" & 
+       "p,pdf,string," & default_pdf_name &
+                 ", Path to PDF display tool;" &
+       "r,R,string," & default_R_name &
+                 ", Path to GNU R graph generating tool;" &
        "l,log,string," & default_log_file_name & 
                  ",log file name with optional path;" &
        "d,debug,integer,0,debug level (0=none + 9=max);" &
@@ -89,7 +106,9 @@ procedure Cell_Writer is
          (Fields  => Configurations.ID & Configurations.Name & 
                      Configurations.DetFormat & Configurations.Details,
           From    => Configurations,
-          Where   => Configurations.ID > 0,
+          Where   => (Configurations.ID > 0) AND
+                     ((Configurations.DetFormat = "B") OR -- blob
+                      (Configurations.DetFormat = "T")),  -- text
           Order_By=> Configurations.ID);
       R_config.Fetch (Connection => DB, Query => Q_config);
       if Success(DB) and then Has_Row(R_config) then
@@ -97,8 +116,8 @@ procedure Cell_Writer is
             -- get the configuration data for the Name thing, and write out
             if Value(R_config, 2) = "B" then -- reformatting on the way
                declare
-                  use string_conversions, Byte_IO;
-                  output_file : file_type;
+                  use String_Conversions, Byte_IO;
+                  output_file : Byte_IO.file_type;
                   the_data    : blob := Blob_Value(R_config, 3);
                   file_name   : constant string := at_temp_path &
                                                    Value(R_config, 1);
@@ -111,15 +130,15 @@ procedure Cell_Writer is
                      Close(output_file);
                   end if;
                   exception
-                     when Status_Error => null;  -- file already exists
+                     when Byte_IO.Status_Error => null;  -- file already exists
                end;
             else  -- just write out
                declare
-                  use string_conversions, Ada.Text_IO;
-                  output_file : Ada.Text_IO.file_type;
-                  the_data    : String := Value(R_config, 3);
-                  file_name   : constant string := at_temp_path &
-                                                   Value(R_config, 1);
+                  use String_Conversions;
+                  output_file: dStrings.IO.file_type;
+                  the_data   : Wide_String:= To_Wide_String(Value(R_config,3));
+                  file_name  : constant string := at_temp_path &
+                                                  Value(R_config, 1);
                begin
                   if the_data'Length > 0 then
                      Create(output_file, Out_File, file_name);
@@ -127,7 +146,7 @@ procedure Cell_Writer is
                      Close(output_file);
                   end if;
                   exception
-                     when Ada.Text_IO.Status_Error => 
+                     when dStrings.IO.Status_Error => 
                         null;  -- file already exists
                end;
             end if;
@@ -136,16 +155,57 @@ procedure Cell_Writer is
       end if;
    end Load_Configuration_Parameters;
    
-   procedure Initialise is
-     -- Initialise the configuration database if it does not exist.
-     -- By default, put the db in var/lib/ and put any configuration
-     -- setup parameters in etc/ beneath the home directory, sourcing the
-     -- default files from either /var/lib/ or /var/local/lib and from
-     -- either /etc/ or /usr/local/etc/.
+   procedure Initialise(db_name : string) is
+      -- Initialise the configuration database if it does not exist.
+      -- By default, put the db in var/lib/ and put any configuration
+      -- setup parameters in etc/ beneath the home directory, sourcing the
+      -- default files from either /var/lib/ or /var/local/lib and from
+      -- either /etc/ or /usr/local/etc/.
+      use Ada.Directories, String_Conversions;
+      db_full_path_name : text;
    begin
-   -- check for existence
-   -- if the DB doesn't exist, assume nothing does.  So copy it in.
-      null;
+      if (db_name'Length > 0) and then
+         (db_name(db_name'First) /= '/') then
+         if db_name(db_name'First) = '~' then -- user's home directory
+            db_full_path_name:= Host_Functions.Get_Environment_Value(
+                                                for_variable => "HOME") &
+                                Value(db_name(db_name'First+1..db_name'Last));
+         else  -- current directory
+            db_full_path_name:= Value(Current_Directory) & "/" & Value(db_name);
+         end if;
+      else
+         db_full_path_name := Value(db_name);
+      end if;
+      Error_Log.Debug_Data(at_level => 3, 
+                        with_details => "DB path=" & Value(db_full_path_name));
+      -- check for existence  #######MODIFY TO ALSO CHECK FOR POSTGRESQL######
+      if not Exists(Value(db_full_path_name)) then
+         -- if the DB doesn't exist, assume nothing does.  So copy it in.
+         -- First, create the target directory if necessary
+         begin
+            -- Note: path needs to be absolute; "~/" doesn't work
+            Create_Path(Containing_Directory(Value(db_full_path_name)));
+            exception
+               when others =>
+                  Error_Log.Debug_Data(at_level => 1, 
+                                   with_details => "Didn't create a DB path.");
+                  null;
+         end;
+         -- Second check in /var/lib and then in /var/local/lib
+         if Exists("/var/lib/" & To_String(default_db_file_name)) then
+            -- copy from /var/lib/
+            Copy_File(source_name=>"/var/lib/"&To_String(default_db_file_name),
+                      target_name=>db_name, form=>"");
+         elsif Exists("/var/local/lib/" &To_String(default_db_file_name)) then
+            Copy_File(source_name=>"/var/local/lib/"&
+                                   To_String(default_db_file_name),
+                      target_name=>db_name, form=>"");
+         else   -- don't know where to look
+            Put_Line("Cannot locate " & default_db_file_name & 
+                     " to initialise it.");
+            null;  -- do nothing for now, but should error!
+         end if;
+      end if;
    end Initialise;
 
    procedure Terminate_Us is
@@ -156,6 +216,9 @@ procedure Cell_Writer is
 
    still_running : boolean := true;
    DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
+   tex_path : text := Parameter(with_flag => flag_type'('t'));
+   pdf_path : text := Parameter(with_flag => flag_type'('p'));
+   R_path   : text := Parameter(with_flag => flag_type'('r'));
    temp_path: text := Parameter(with_flag => flag_type'('z'));
       
 begin  -- Cell_Writer
@@ -170,14 +233,14 @@ begin  -- Cell_Writer
       -- Host_Functions.Check_Reservation;
    end if;
    if  Parameters.is_invalid_parameter or
-   Parameters.is_help_parameter or
-   Parameters.is_version_parameter then
+       Parameters.is_help_parameter or
+       Parameters.is_version_parameter then
       -- abort Cell_Writer;
       return;
    end if;
    
    -- Initialise files if necessary
-   Initialise;
+   Initialise(Value(Parameter(with_flag => flag_type'('b'))));
 
    if Parameter(with_flag => flag_type'('i')) then
       Put_Line("Setting Log file to '" & 
@@ -216,12 +279,29 @@ begin  -- Cell_Writer
          return;  -- exit gracefully
       end if;
    else  -- interactive, set up and run as per normal
-      null;  
+      null;
+      still_running := false;
    end if;
    
    -- Set up the database
-   DB_Descr := GNATCOLL.SQL.Sqlite.Setup
-                            (Value(Parameter(with_flag => flag_type'('x'))));
+   declare
+      db_full_path_name : text;
+      db_name : string := Value(Parameter(with_flag => flag_type'('b')));
+      use Ada.Directories, String_Conversions;
+   begin
+      if db_name(db_name'First) = '~' then -- user's home directory
+         db_full_path_name:= Host_Functions.Get_Environment_Value(
+                                                for_variable => "HOME") &
+                                Value(db_name(db_name'First+1..db_name'Last));
+      elsif db_name(db_name'First) = '/' then -- absolute path
+         db_full_path_name:= Value(db_name);
+      else  -- current directory
+         db_full_path_name:= Value(Current_Directory) & "/" & Value(db_name);
+      end if;
+      Error_Log.Debug_Data(at_level => 3, 
+                        with_details => "DB path=" & Value(db_full_path_name));
+      DB_Descr := GNATCOLL.SQL.Sqlite.Setup(Value(db_full_path_name));
+   end;
    -- Load in the configuration data
    Load_Configuration_Parameters(for_database => DB_Descr, 
                                  at_temp_path => Value(temp_path));

@@ -1,3 +1,0 @@
-cell_writer.adb:51:06: file "gnatcoll-sql_date_and_time.ads" not found
-cell_writer.adb:51:06: "Cell_Writer (body)" depends on "Database (spec)"
-cell_writer.adb:51:06: "Database (spec)" depends on "Gnatcoll.Sql_Date_And_Time (spec)"
