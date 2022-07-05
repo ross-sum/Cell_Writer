@@ -27,6 +27,42 @@
 | Description | CHARACTER(100)   |             |  | Details about this lingo   |
 | Selected    | BOOLEAN          |             | 0| Is this a char set used?   |
 
+# Languages combining character buttons table
+| TABLE       | CombiningChrs    | CombiningChr | | Combining Characters       |
+| Language    | FK Languages(ID) | PK,NOT NULL  | | Language for this CChar    |
+| ButtonNum   | INTEGER          | PK,NOT NULL  | | Button number for this chr |
+| CChar       | CHARACTER(1)     | NOT NULL     | | The combining character    |
+| ToolTip     | CHARACTER(25)    |              | | Tool Tip for the button    |
+
+# Keyboard keys definition table (for each language or default = 1)
+| TABLE       | KeyDefinitions   | KeyDefinition || Keyboard key definitions   |
+| Language    | FK Languages(ID) | PK,NOT NULL  | | Language for this key def  |
+| Key_ID      | INTEGER          | PK,NOT NULL  | | Key to apply the def to    |
+| UnShiftDisp | CHARACTER(30)    |      | '     ' | Display char - caps off    |
+| ShiftDisp   | CHARACTER(30)    |      | '     ' | Display char - caps lck on |
+| USChrSpace  | CHARACTER(1)     |      |         | Unshifted char - Space pos |
+| USChrASky   | CHARACTER(1)     |      |         | Unshifted char - Above Sky |
+| USChrSky    | CHARACTER(1)     |      |         | Unshifted char - Sky posn  |
+| USChrBSky   | CHARACTER(1)     |      |         | Unshifted char - Below Sky |
+| USChrUpper  | CHARACTER(1)     |      |         | Unshifted char - Upper pos |
+| USChrMiddle | CHARACTER(1)     |      |         | Unshifted char - Middle    |
+| USChrLower  | CHARACTER(1)     |      |         | Unshifted char - Lower pos |
+| USChrGround | CHARACTER(1)     |      |         | Unshifted char - Ground    |
+| USChrJBGnd  | CHARACTER(1)     |      |         | Unshifted char - Jst B.Gnd |
+| USChrBGnd   | CHARACTER(1)     |      |         | Unshifted char - Below Gnd |
+| USChrCore   | CHARACTER(1)     |      |         | Unshifted char - Core pos  |
+| SChrSpace   | CHARACTER(1)     |      |         | Shifted char - Space pos'n |
+| SChrASky    | CHARACTER(1)     |      |         | Shifted char - Above Sky   |
+| SChrSky     | CHARACTER(1)     |      |         | Shifted char - Sky positn  |
+| SChrBSky    | CHARACTER(1)     |      |         | Shifted char - Below Sky   |
+| SChrUpper   | CHARACTER(1)     |      |         | Shifted char - Upper posn  |
+| SChrMiddle  | CHARACTER(1)     |      |         | Shifted char - Middle posn |
+| SChrLower   | CHARACTER(1)     |      |         | Shifted char - Lower posn  |
+| SChrGround  | CHARACTER(1)     |      |         | Shifted char - Ground pos  |
+| SChrJBGnd   | CHARACTER(1)     |      |         | Shifted char - Just B. Gnd |
+| SChrBGnd    | CHARACTER(1)     |      |         | Shifted char - Below Gnd   |
+| SChrCore    | CHARACTER(1)     |      |         | Shifted char - Core posn   |
+
 # User ID look-up table
 | TABLE       | UserIDs           | user_id     || The users within this DB    |
 | UID         | INTEGER           | PK,NOT NULL || User unique identifier      |

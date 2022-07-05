@@ -9,11 +9,13 @@
 --  Copyright (C) 2020  Hyper Quantum Pty Ltd.                       --
 --  Written by Ross Summerfield and Michael Levin.                   --
 --                                                                   --
---  This application is a grid based character recognition input method.  --
+--  This  application is a grid based character  recognition  input  --
+--  method.                                                          --
 --                                                                   --
 --  This application is a fork of the cellwriter program written in  --
 --  C  by  Michael Levin <risujin@risujin.org> (main  author  whose  --
---  intellectual property exists throughout the product) and .  --
+--  intellectual  property  exists throughout the product)  and  is  --
+--  Copyright (c) 2007.                                              --
 --  It is completely based on their edition, but written in Ada and  --
 --  also written to accommodate Blissymbolocs.  The main  objective  --
 --  of  the  rewrite  is to allow for the output  of  a  string  of  --
@@ -22,7 +24,7 @@
 --  method  is important to making it highly useful for a  language  --
 --  like Blissymbolics.                                              --
 --  The  other main change is to use Glade for the  graphical  user  --
---  interface.                                                       --
+--  interface and the use of xdotool for XKB keyboard emulation.     --
    --                                                                   --
 --  Version History:                                                 --
 --  $Log$

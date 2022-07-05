@@ -6,7 +6,7 @@
 --                                                                   --
 --                           $Revision: 1.0 $                        --
 --                                                                   --
---  Copyright (C) 2020  Hyper Quantum Pty Ltd.                       --
+--  Copyright (C) 2022  Hyper Quantum Pty Ltd.                       --
 --  Written by Ross Summerfield.                                     --
 --                                                                   --
 --  This  package displays the setup dialogue box,  which  contains  --
@@ -33,11 +33,12 @@
 --                                                                   --
 -----------------------------------------------------------------------
 with Gtkada.Builder;  use Gtkada.Builder;
-with Glib.Object;
+with Gtk.Combo_Box;
+with Glib.Object, Gdk.RGBA;
 with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
 package Setup is
-
+   use GLib;
 
    procedure Initialise_Setup(Builder : in out Gtkada_Builder;
                               DB_Descr: GNATCOLL.SQL.Exec.Database_Description;
@@ -45,8 +46,41 @@ package Setup is
    procedure Show_Setup(Builder : in Gtkada_Builder);
    procedure Combo_Language_Changed(Object:access Gtkada_Builder_Record'Class;
                                     to_language : out positive);
+      -- Save the selected language to the database and return the selected
+      -- language number.
+   procedure Set_Up_Combining(Object:access Gtkada_Builder_Record'Class;
+                              for_language : in positive);
+      -- Display the top row of combining character buttons, assuming 
+      -- the selected language  is set up for such buttons.  These buttons
+      -- are used to apply an accent type (i.e. on the top of the character)
+      -- combining characters to the character/word currently written.
+
+   function The_Font(Builder : in Gtkada_Builder) return UTF8_string;
+      -- The currently selected font for the system
+   function Font_Start_Character return wide_character;
+      -- The character to start switching from the default font to the
+      -- specified font.
+
+   function Button_Colour(Builder: in Gtkada_Builder) return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected keyboard button colour for the system
+
+   function Used_Cell_Colour(Builder: in Gtkada_Builder) 
+   return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected used cell colour for the system
+
+   function Text_Colour(Builder : in Gtkada_Builder) 
+   return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected text colour for the system
+
+   function Button_Text_Colour(Builder : in Gtkada_Builder) 
+   return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected key text colour for the system
 
 private
+
+   default_font_start_chr : constant wide_character := 
+                                     wide_character'Val(16#A000#);
+   font_start_char        : wide_character := default_font_start_chr;
 
    procedure Setup_Cancel_CB (Object : access Gtkada_Builder_Record'Class);
    procedure Setup_Close_CB (Object : access Gtkada_Builder_Record'Class);
@@ -56,8 +90,11 @@ private
             (Object : access Glib.Object.GObject_Record'Class) return Boolean;
    procedure Setup_Show_Help (Object : access Gtkada_Builder_Record'Class);
    procedure Load_Data_From(database : GNATCOLL.SQL.Exec.Database_Connection;
-                            Builder : in Gtkada_Builder);
+                            Builder  : in Gtkada_Builder);
    procedure Load_Data_To(database : GNATCOLL.SQL.Exec.Database_Connection;
-                          Builder : in Gtkada_Builder);
+                          Builder  : in Gtkada_Builder);
+   procedure Set_To_ID(Builder    : access Gtkada_Builder_Record'Class;
+                       combo      : Gtk.Combo_Box.gtk_combo_box;
+                       list_store : string; id : natural);
 
 end Setup;

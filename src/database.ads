@@ -10,6 +10,34 @@ package database is
    pragma Style_Checks (Off);
    pragma Elaborate_Body;
 
+   type T_Abstract_Combiningchrs
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Combiningchrs, Instance, Index) with
+   record
+      Language : SQL_Field_Integer (Ta_Combiningchrs, Instance, N_Language, Index);
+      --  Language for this CChar
+
+      Buttonnum : SQL_Field_Integer (Ta_Combiningchrs, Instance, N_Buttonnum, Index);
+      --  Button number for this chr
+
+      Cchar : SQL_Field_Text (Ta_Combiningchrs, Instance, N_Cchar, Index);
+      --  The combining character
+
+      Tooltip : SQL_Field_Text (Ta_Combiningchrs, Instance, N_Tooltip, Index);
+      --  Tool Tip for the button
+
+   end record;
+
+   type T_Combiningchrs (Instance : Cst_String_Access)
+      is new T_Abstract_Combiningchrs (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Combiningchrs (Index : Integer)
+      is new T_Abstract_Combiningchrs (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
    type T_Abstract_Configurations
       (Instance : Cst_String_Access;
        Index    : Integer)
@@ -36,6 +64,100 @@ package database is
 
    type T_Numbered_Configurations (Index : Integer)
       is new T_Abstract_Configurations (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
+   type T_Abstract_Keydefinitions
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Keydefinitions, Instance, Index) with
+   record
+      Language : SQL_Field_Integer (Ta_Keydefinitions, Instance, N_Language, Index);
+      --  Language for this key def
+
+      Key_Id : SQL_Field_Integer (Ta_Keydefinitions, Instance, N_Key_Id, Index);
+      --  Key to apply the def to
+
+      Unshiftdisp : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Unshiftdisp, Index);
+      --  Display char - caps off
+
+      Shiftdisp : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Shiftdisp, Index);
+      --  Display char - caps lck on
+
+      Uschrspace : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrspace, Index);
+      --  Unshifted char - Space pos
+
+      Uschrasky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrasky, Index);
+      --  Unshifted char - Above Sky
+
+      Uschrsky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrsky, Index);
+      --  Unshifted char - Sky posn
+
+      Uschrbsky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrbsky, Index);
+      --  Unshifted char - Below Sky
+
+      Uschrupper : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrupper, Index);
+      --  Unshifted char - Upper pos
+
+      Uschrmiddle : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrmiddle, Index);
+      --  Unshifted char - Middle
+
+      Uschrlower : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrlower, Index);
+      --  Unshifted char - Lower pos
+
+      Uschrground : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrground, Index);
+      --  Unshifted char - Ground
+
+      Uschrjbgnd : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrjbgnd, Index);
+      --  Unshifted char - Jst B.Gnd
+
+      Uschrbgnd : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrbgnd, Index);
+      --  Unshifted char - Below Gnd
+
+      Uschrcore : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Uschrcore, Index);
+      --  Unshifted char - Core pos
+
+      Schrspace : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrspace, Index);
+      --  Shifted char - Space pos'n
+
+      Schrasky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrasky, Index);
+      --  Shifted char - Above Sky
+
+      Schrsky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrsky, Index);
+      --  Shifted char - Sky positn
+
+      Schrbsky : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrbsky, Index);
+      --  Shifted char - Below Sky
+
+      Schrupper : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrupper, Index);
+      --  Shifted char - Upper posn
+
+      Schrmiddle : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrmiddle, Index);
+      --  Shifted char - Middle posn
+
+      Schrlower : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrlower, Index);
+      --  Shifted char - Lower posn
+
+      Schrground : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrground, Index);
+      --  Shifted char - Ground pos
+
+      Schrjbgnd : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrjbgnd, Index);
+      --  Shifted char - Just B. Gnd
+
+      Schrbgnd : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrbgnd, Index);
+      --  Shifted char - Below Gnd
+
+      Schrcore : SQL_Field_Text (Ta_Keydefinitions, Instance, N_Schrcore, Index);
+      --  Shifted char - Core posn
+
+   end record;
+
+   type T_Keydefinitions (Instance : Cst_String_Access)
+      is new T_Abstract_Keydefinitions (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Keydefinitions (Index : Integer)
+      is new T_Abstract_Keydefinitions (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
    type T_Abstract_Languages
@@ -249,12 +371,16 @@ package database is
       is new T_Abstract_Words (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
+   function FK (Self : T_Combiningchrs'Class; Foreign : T_Languages'Class) return SQL_Criteria;
+   function FK (Self : T_Keydefinitions'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Learntdata'Class; Foreign : T_Userids'Class) return SQL_Criteria;
    function FK (Self : T_Learntdata'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Queries'Class; Foreign : T_Reports'Class) return SQL_Criteria;
    function FK (Self : T_Userids'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Words'Class; Foreign : T_Languages'Class) return SQL_Criteria;
+   Combiningchrs : T_Combiningchrs (null);
    Configurations : T_Configurations (null);
+   Keydefinitions : T_Keydefinitions (null);
    Languages : T_Languages (null);
    Learntdata : T_Learntdata (null);
    Queries : T_Queries (null);

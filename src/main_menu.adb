@@ -31,7 +31,7 @@
 --                                                                   --
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
-with Gtk.Widget, Gtk.Image;
+with Gtk.Widget, Gtk.Image, Gtk.Toggle_Tool_Button;
 with Gtk.Main;
 with Gtk.Enums;
 with Glib, Glib.Error;
@@ -43,7 +43,9 @@ with Error_Log;
 with String_Conversions;
 with Ada.Characters.Conversions;
 with Cell_Writer_Version;
-with Help_About, Setup;
+with Help_About, Setup, CSS_Management, Keyboard, Grid_Management,
+     Cursor_Management, Keyboard_Emulation;
+with Key_Sym_Def;
 with Report_Processor;
 -- with GNATCOLL.SQL.Exec;
 package body Main_Menu is
@@ -78,15 +80,18 @@ package body Main_Menu is
                            path_to_temp  : string := "/tmp/";
                            glade_filename: string := "cell_writer.glade") is
       use Glib.Error, Ada.Characters.Conversions;
-      type GError_Access is access Glib.Error.GError;
+      -- type GError_Access is access Glib.Error.GError;
       Builder : Gtkada_Builder;
-      Error   : GError_Access := null; -- access Glib.Error.GError;
+      Error   : Glib.Error.GError_Access := null;
       count   : Glib.Guint;
    begin
       -- Set the locale specific data (e.g time and date format)
       -- Gtk.Main.Set_Locale;
       -- Create a Builder and add the XML data
       Gtk.Main.Init;
+      -- Connect to the style sheet
+      CSS_Management.Set_Up_CSS(for_file => path_to_temp & "cell_writer,css");
+      -- Set up the Builder whti the Glade file
       Gtk_New (Builder);
       count := Add_From_File (Builder, path_to_temp & glade_filename, Error);
       if Error /= null then
@@ -186,6 +191,8 @@ package body Main_Menu is
       end;
       
       -- Set up child forms
+      Grid_Management.Initialise_Grid(Builder, DB_Descr);
+      Keyboard.Initialise_Keyboard(Builder, DB_Descr);
       Setup.Initialise_Setup(Builder, DB_Descr, usage);
       Help_About.Initialise_Help_About(Builder, usage);
       -- Get_Date_Calendar.Initialise_Calendar(Builder);
@@ -202,40 +209,70 @@ package body Main_Menu is
       
       -- Initialise
       Do_Connect (Builder);
-      
+   
       --  Find our main window, then display it and all of its children. 
       Gtk.Widget.Show_All (Gtk.Widget.Gtk_Widget 
                            (Gtkada.Builder.Get_Object (Builder, "form_main")));
+      --form_main's kill is a kill all:
+      -- c code: window.signal_connect("destroy") { Gtk.main_quit }
+      -- where window=Gtkada.Builder.Get_Object (Builder, "form_main")
       Gtk.Main.Main;
       
       -- Clean up memory when done
       Unref (Builder);
    end Initialise_Main_Menu;
-
+   
    procedure Btn_Clear_Clicked_CB 
                 (Object : access Gtkada_Builder_Record'Class) is
-       
+      use Cursor_Management;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                         with_details=>"Btn_Clear_Clicked_CB: Start");
-      -- Patient_Details.Show_Patient_Details(Gtkada_Builder(Object));
+      -- clear the display
+      null;
+      -- and clear the buffer
+      Clear_String;
    end Btn_Clear_Clicked_CB;
 
    procedure Btn_Enter_Clicked_CB
             (Object : access Gtkada_Builder_Record'Class) is
+     -- Enter generally means transmit the data, including the Enter key
+      use Cursor_Management;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                         with_details=>"Btn_Enter_Clicked_CB: Start");
-      -- Urine_Records_Form.Show_Urine_Records(Gtkada_Builder(Object));
+      if Cursor_Management.Number_Of_Keystrokes > 0
+      then  -- Transmit the data and clear the buffer
+         Keyboard_Emulation.Transmit(the_buffer => All_Keystrokes);
+         -- Clear the string
+         Cursor_Management.Clear_String;
+         -- And clear the display
+         null;
+      else  -- Transmit the Enter key
+         Keyboard_Emulation.Transmit(key_press=> Keyboard.enter_key);
+      end if;   
    end Btn_Enter_Clicked_CB;
 
    procedure Btn_Keys_Clicked_CB
             (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                  with_details=>"Btn_Keys_Clicked_CB: Start");
-      --Catheter_Urine_Records_Form.Show_Catheter_Urine_Records
-         --               (Gtkada_Builder(Object));
+      if Get_Active(Gtk_Toggle_Tool_Button(
+                Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_keys")))
+      then
+      -- Hide ourself
+         Gtk.Widget.Hide(Gtk.Widget.Gtk_Widget 
+              (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"form_main")));
+      -- Toggle the btn_keys button in preparation for showing
+      -- ourselves again
+         Set_Active(Gtk_Toggle_Tool_Button(
+                Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_keys")),
+                    Is_Active => False);
+      -- And show the Keyboard
+         Keyboard.Show_Keyboard (Gtkada_Builder(Object));
+      end if;
    end Btn_Keys_Clicked_CB;
 
    procedure Setup_Select_CB  
@@ -276,109 +313,124 @@ package body Main_Menu is
 
    procedure Btn_Tab_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Tab_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Tab));
    end Btn_Tab_Clicked_CB;
    
    procedure Btn_Backspace_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Backspace_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_BackSpace));
    end Btn_Backspace_Clicked_CB;
    
    procedure Btn_Del_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Del_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Delete));
    end Btn_Del_Clicked_CB;
    
    procedure Btn_Space_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation;
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Btn_Spacel_Clicked_CB: Start");
-      null;
+                           with_details => "Btn_Space_Clicked_CB: Start");
+      Transmit(key_press => ' ');
    end Btn_Space_Clicked_CB;
    
    procedure Btn_Up_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Up_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Up));
    end Btn_Up_Clicked_CB;
    
    procedure Btn_Down_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Down_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Down));
    end Btn_Down_Clicked_CB;
    
    procedure Btn_Left_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Left_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Left));
    end Btn_Left_Clicked_CB;
    
    procedure Btn_Right_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Right_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Right));
    end Btn_Right_Clicked_CB;
    
    procedure Btn_Home_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Home_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Home));
    end Btn_Home_Clicked_CB;
    
    procedure Btn_End_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_End_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_End));
    end Btn_End_Clicked_CB;
    
    procedure Btn_PageUp_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_PageUp_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Up));
    end Btn_PageUp_Clicked_CB;
    
    procedure Btn_PageDown_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_PageDown_Clicked_CB: Start");
-      null;
+      Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Down));
    end Btn_PageDown_Clicked_CB;
 
    procedure Combo_Language_Changed_CB
                 (Object : access Gtkada_Builder_Record'Class) is
-      new_language : natural;
+      new_language : positive;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Combo_Language_Changed_CB: Start");
       Setup.Combo_Language_Changed(Object, to_language => new_language);
       -- Display or hide the top row of combining accents based on language
-      null;
+      Setup.Set_Up_Combining(Object, for_language => new_language);
+      -- And set up the keyboard to the selected language
+      Keyboard.Load_Keyboard(for_language => new_language,
+                             at_object => Gtkada_Builder(Object));
    end Combo_Language_Changed_CB;
 
    function Btn_Draw_Press_Event_CB

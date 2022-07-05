@@ -44,6 +44,8 @@ package Main_Menu is
                            with_R_path   : text;
                            path_to_temp  : string := "/tmp/";
                            glade_filename: string := "cell_writer.glade");
+   procedure Btn_Enter_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
 
 private
 
@@ -59,8 +61,6 @@ private
    procedure Setup_Select_CB 
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Keys_Clicked_CB
-                (Object : access Gtkada_Builder_Record'Class);
-   procedure Btn_Enter_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
                 
     -- Combo box drop down list selection handler

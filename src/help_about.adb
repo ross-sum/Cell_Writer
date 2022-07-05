@@ -31,7 +31,7 @@
 --                                                                   --
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
-with Gtk.Widget;
+with Gtk.Widget, Gtk.Window;
 with Error_Log;
 with Cell_Writer_Version;
 with Gtk.Label;
@@ -42,13 +42,19 @@ package body Help_About is
 
    procedure Initialise_Help_About(Builder : in out Gtkada_Builder;
                                    usage : in text) is
-      use Gtk.Label, String_Conversions;
+      use Gtk.Window, Gtk.Label, String_Conversions;
       the_revision : gtk_label;
       the_version  : constant string:= "Revision " & 
                                        To_String(Cell_Writer_Version.Version);
       revision_list: gtk_label;
       usage_dets   : gtk_label;
    begin
+      -- Initialise: hide the close button in the top right hand corner
+      Set_Deletable(Gtk_Window(Builder.Get_Object("dialogue_about")), false);
+      -- Gtk.Window.
+         -- On_Delete_Event(Gtk_Window(Builder.Get_Object("dialogue_about")),
+         --                 Gtk.Window.Hide_On_Delete'access, 
+         --                 After => false);
       -- set up: load the Version into label_revision.Label and
       --         label_revision1.Label
       Error_Log.Debug_Data(at_level => 6, 

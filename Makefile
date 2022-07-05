@@ -38,9 +38,7 @@ ifeq ("$1.",".")
 else
 	FLAGS=-Xhware=$(TARGET) $1
 endif
-ifeq ($(TARGET),pi)
-	FLAGS+=-largs -lwiringPi
-endif
+FLAGS+=-largs -lxdo
 
 cellwriter:
 	$(ACC) -P $(TS) $(FLAGS)
