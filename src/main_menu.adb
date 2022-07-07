@@ -213,6 +213,15 @@ package body Main_Menu is
       --  Find our main window, then display it and all of its children. 
       Gtk.Widget.Show_All (Gtk.Widget.Gtk_Widget 
                            (Gtkada.Builder.Get_Object (Builder, "form_main")));
+      -- Show/hide the combining character buttons (must be done after unhiding
+      -- the main window).
+      declare
+         new_language : positive;
+      begin
+         Setup.Combo_Language_Changed(Builder, to_language => new_language);
+         -- Display or hide the top row of combining accents based on language
+         Setup.Set_Up_Combining(Builder, for_language => new_language);
+      end;
       --form_main's kill is a kill all:
       -- c code: window.signal_connect("destroy") { Gtk.main_quit }
       -- where window=Gtkada.Builder.Get_Object (Builder, "form_main")

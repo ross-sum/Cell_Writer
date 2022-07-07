@@ -518,6 +518,10 @@ package body Keyboard is
       -- And show the keyaboard
       Gtk.Widget.Show_All(Gtk.Widget.Gtk_Widget 
                         (Gtkada.Builder.Get_Object(Builder,"form_keyboard")));
+      -- Hiding and showing things doesn't work while a form is not visible,
+      -- so the following procedure, which sets up the correct visibility of
+      -- keys, is run after making the keyboard visible.
+      Toggle_Caps(Object => Builder);
    end Show_Keyboard;
 
     -- The tool bar buttons and other buttons
@@ -541,6 +545,15 @@ package body Keyboard is
       -- Show the main menu
          Gtk.Widget.Show_All(Gtk.Widget.Gtk_Widget 
                         (Gtkada.Builder.Get_Object(Object,"form_main")));
+      -- Show/hide the combining character buttons (must be done after unhiding
+      -- the main window).
+      declare
+         new_language : positive;
+      begin
+         Setup.Combo_Language_Changed(Object, to_language => new_language);
+         -- Display or hide the top row of combining accents based on language
+         Setup.Set_Up_Combining(Object, for_language => new_language);
+      end;
       -- and then hide ourselves
          Gtk.Widget.Hide(Gtk.Widget.Gtk_Widget 
             (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"form_keyboard")));
@@ -702,24 +715,24 @@ package body Keyboard is
              or Get_Active(gtk_toggle_button(Get_Object(Object,right_shift))))
          then  -- Shift/Caps Lock is depressed (active) - display upper case
             if the_key < space_keys then
-               Set_Label(key_btn, Text_To_UTF8(key_characters(the_key).shifted_display));
+               Set_Label(key_btn,Text_To_UTF8(key_characters(the_key).shifted_display));
                Set_Visible(key_btn, not (
                   key_characters(the_key).shifted_result(shift_level) = ' ' or
                   key_characters(the_key).shifted_result(shift_level) = null_char));
             else
-               Set_Label(key_lbl, Text_To_UTF8(key_characters(the_key).shifted_display));
+               Set_Label(key_lbl,Text_To_UTF8(key_characters(the_key).shifted_display));
                Set_Visible(key_lbl, not (
                   key_characters(the_key).shifted_result(shift_level) = ' ' or
                   key_characters(the_key).shifted_result(shift_level) = null_char));
             end if;
          else  -- Shift/Caps Lock is not depressed - display lower case
             if the_key < space_keys then
-               Set_Label(key_btn, Text_To_UTF8(key_characters(the_key).unshifted_display));
+               Set_Label(key_btn,Text_To_UTF8(key_characters(the_key).unshifted_display));
                Set_Visible(key_btn, not (
                   key_characters(the_key).unshifted_result(shift_level) = ' ' or
                   key_characters(the_key).unshifted_result(shift_level) = null_char));
             else
-               Set_Label(key_lbl, Text_To_UTF8(key_characters(the_key).unshifted_display));
+               Set_Label(key_lbl,Text_To_UTF8(key_characters(the_key).unshifted_display));
                Set_Visible(key_lbl, not (
                   key_characters(the_key).unshifted_result(shift_level) = ' ' or
                   key_characters(the_key).unshifted_result(shift_level) = null_char));
@@ -747,9 +760,11 @@ package body Keyboard is
          key_btn := gtk_button(Get_Object(Object,Key_As_String(the_key)));
          if num_lock_on
          then  -- Num Lock is depressed (active) - display and use numbers
-            Set_Label(key_btn, Text_To_UTF8(key_characters(the_key).shifted_display));
+            Set_Label(key_btn, 
+                      Text_To_UTF8(key_characters(the_key).shifted_display));
          else  -- Num Lock is not depressed (not active) - display cursor keys
-            Set_Label(key_btn, Text_To_UTF8(key_characters(the_key).unshifted_display));
+            Set_Label(key_btn, 
+                      Text_To_UTF8(key_characters(the_key).unshifted_display));
          end if;
          exit when the_key >= Last_In(the_set => keypad_keys);
          the_key := Next_In(the_set => keypad_keys, from => the_key);
@@ -784,9 +799,6 @@ package body Keyboard is
       -- Load in the new character if displayable
       if Get_Active(gtk_toggle_tool_button(Get_Object(at_object,"btn_kbd_edit")))
       then  -- depressed button to use cursor control to edit the line
-         Error_Log.Debug_Data(at_level => 9, 
-                           with_details=> "Process_Key_Clicked: cursor_pos=: '" &
-                                To_Wide_String(Integer'Image(Integer(Get_Position(the_label))))&"'");
          -- The following should be a case statement but Ada thinks that
          -- the comparison points, e.g. insert_char, delete_char, are not
          -- constants (tried pragmas inline and elaborate with no success),
@@ -818,8 +830,6 @@ package body Keyboard is
             else
                Add(a_character => for_key);
             end if;
-            Error_Log.Debug_Data(at_level => 9, 
-                           with_details=> "Process_Key_Clicked: others=>append");
          end if;
       else  -- don't do line editing, assume data is to be transmitted
          if for_key = kpad_000
@@ -834,8 +844,6 @@ package body Keyboard is
          else
             Add(a_character => for_key);
          end if;
-         Error_Log.Debug_Data(at_level => 9, 
-                           with_details=> "Process_Key_Clicked: else append");
       end if;
       Set_Position(the_label, Glib.Gint(Cursor_Position));
       -- display the result and act on it if ncessary
@@ -876,7 +884,7 @@ package body Keyboard is
       supr_state : boolean := 
            Get_Active(gtk_toggle_button(Get_Object(at_object, super_key)));
    begin
-      Error_Log.Debug_Data(at_level => 6, 
+      Error_Log.Debug_Data(at_level => 7, 
                            with_details=> "Key_Clicked: Start: '" &
                                 To_Wide_String(Key_As_String(for_key_id))&"'");
       if ctrl_state or alt_state or supr_state
@@ -1496,7 +1504,7 @@ package body Keyboard is
 
       -- Keyboard management functions
    procedure Load_Keyboard(for_language : in positive;
-                           at_object: Gtkada_Builder) is -- access Gtkada_Builder_Record'Class) is
+                           at_object: Gtkada_Builder) is
       -- Loads the keyboard key display characters and definitions from the
       --  database
       use GNATCOLL.SQL.Exec, Gtk.Button, Gtk.Radio_Button, Gtk.Toggle_Button;
@@ -1533,7 +1541,7 @@ package body Keyboard is
       right_ctrl : constant string := Key_As_String(key_E4);
       left_alt   : constant string := Key_As_String(key_E2);
       right_alt  : constant string := Key_As_String(key_E6);
-      super_key  : constant string := Key_As_String(key_E3);  -- aka Windows key
+      super_key  : constant string := Key_As_String(key_E3); -- aka Windows key
       shift_mid  : constant string := "shift_lvl_mid";
       R_keyboard : Forward_Cursor;
       lingo_parm : SQL_Parameters (1 .. 1);
@@ -1573,9 +1581,6 @@ package body Keyboard is
             key_disp : Gtk.Label.gtk_label;
          begin
             loop
-               Error_Log.Debug_Data(at_level => 7, 
-                                     with_details=>"Load_Keyboard: clearing " &
-                                       To_Wide_String(Key_As_String(the_key)));
                Clear(key_characters(the_key).unshifted_display);
                key_characters(the_key).unshifted_result(middle) := null_char;
                Clear(key_characters(the_key).shifted_display);
@@ -1594,15 +1599,10 @@ package body Keyboard is
                key : key_id_types := To_Key_ID(Integer_Value(R_keyboard,1));
                char : key_character_display renames key_characters(key);
             begin
-               Error_Log.Debug_Data(at_level => 7, 
-                           with_details=>"Load_Keyboard: Has_Row(R_keyboard)" --);
-                            & To_Wide_String(Key_As_String(key)));
                Clear(char.unshifted_display); -- clear out
                char.unshifted_display := Field_To_Text(R_keyboard,2);
                Clear(char.shifted_display); -- clear out
                char.shifted_display   := Field_To_Text(R_keyboard,3);
-               Error_Log.Debug_Data(at_level => 6, 
-                         with_details=>"Load_Keyboard: getting shift values.");
                char.unshifted_result(space)         := To_Char(R_keyboard, 4);
                char.unshifted_result(above_sky)     := To_Char(R_keyboard, 5);
                char.unshifted_result(sky)           := To_Char(R_keyboard, 6);
@@ -1638,7 +1638,6 @@ package body Keyboard is
          begin
             loop
                char := key_characters(the_key);
-               Error_Log.Debug_Data(at_level => 9, with_details=>"Load_Keyboard: for key "  & To_Wide_String(Key_As_String(the_key)) &":");
                -- Set up the colour for the buttons themselves (but not
                -- specifically the label by setting the background colour of
                -- the button grids.
@@ -1659,12 +1658,8 @@ package body Keyboard is
                -- Load the key with the lower case character
                case the_key is
                   when key_28 .. key_2C | key_76 =>
-                     Error_Log.Debug_Data(at_level => 9, 
-                        with_details=> "Load_Keyboard: Setting button disp.");
                      Set_Label(key_button, Text_To_UTF8(char.unshifted_display));
                   when space_key_range =>
-                     Error_Log.Debug_Data(at_level => 9, 
-                        with_details=>"Load_Keyboard: Setting space button disp.");
                      Set_Label(key_button, Text_To_UTF8(char.unshifted_display));
                      if Length(char.unshifted_display) > 1 and then
                         Wide_Element(char.unshifted_display,2) > 
@@ -1675,21 +1670,15 @@ package body Keyboard is
                         Modify_Font(key_button, null);
                      end if;
                   when key_39 | key_53 | toggle_key_pt_range =>
-                     Error_Log.Debug_Data(at_level => 9, 
-                        with_details=> "Load_Keyboard: Setting toggle disp.");
                      Set_Label(the_toggle,Text_To_UTF8(char.unshifted_display));
                      null;  -- Otherwise ignore these as it shouldn't be defined
                   when cursor_key_range =>
                     -- cursor movement buttons
-                     Error_Log.Debug_Data(at_level => 9, 
-                         with_details=>"Load_Keyboard: Setting cursor button.");
                      Modify_Font(key_button, null);
                      -- end if;
                      Set_Label(key_button, Text_To_UTF8(char.unshifted_display));
                   when keypad_key_pt_range | key_67 | key_B1 | key_BB =>
                     -- numeric keypad buttons
-                     Error_Log.Debug_Data(at_level => 9, 
-                         with_details=>"Load_Keyboard: Setting keypad button.");
                      key_disp:= gtk_label(Get_Object(at_object,"l" & 
                                                      Key_As_String(the_key)));
                      if Length(char.unshifted_display) > 1 and then
@@ -1707,8 +1696,6 @@ package body Keyboard is
                   when others =>
                      -- enter the value into the custom content, after setting
                      -- the font
-                     Error_Log.Debug_Data(at_level => 9, 
-                         with_details=>"Load_Keyboard: Setting button label.");
                      key_disp:= gtk_label(Get_Object(at_object,"l" & 
                                                      Key_As_String(the_key)));
                      -- Set the font (exctracting the font from Setup.The_Font)

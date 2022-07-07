@@ -415,7 +415,6 @@ package body Setup is
                                           for_used_background  => grid_UBG);
       Grid_Management.Set_Writing_Size(width=>cell_horiz, height=>cell_vert);
       Keyboard.Load_Keyboard(for_language=> lang_no, at_object=> Builder);
-      Keyboard.Toggle_Caps(Object => Builder);
    end Load_Data_From;
       
    procedure Load_Data_To(database : GNATCOLL.SQL.Exec.Database_Connection;

@@ -166,11 +166,6 @@ package Keyboard is
        -- Load the list of words that pertain to the specified language.  This
        -- procedure is called by Load_Keyboard.
 
-    -- The modifier (caps lock, shift, control, alt) buttons
-   procedure Toggle_Caps       (Object : access Gtkada_Builder_Record'Class);
-       -- Display the keys in either the capitals state or the lower csse state
-       -- depending on the status of the shift and caps lock keys.
-
 private
     -- control variables
    shift_level    : shift_level_types := middle;
@@ -469,6 +464,11 @@ private
        -- the display of the output stream.
    function Key_As_String(key : in key_id_types) return string;
    function Text_To_UTF8(for_text : in text)return Glib.UTF8_String;
+
+    -- The modifier (caps lock, shift, control, alt) buttons
+   procedure Toggle_Caps       (Object : access Gtkada_Builder_Record'Class);
+       -- Display the keys in either the capitals state or the lower csse state
+       -- depending on the status of the shift and caps lock keys.
    
     -- The shift level radio buttons
    procedure Shift_Level_Toggled(to_level : in shift_level_types;
