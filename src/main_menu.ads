@@ -25,13 +25,13 @@
 --  without even the implied warranty of MERCHANTABILITY or FITNESS  --
 --  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
 --  for  more details.  You should have received a copy of the  GNU  --
---  General Public Licence distributed with  Urine_Records. If not,  --
+--  General  Public Licence distributed with  Cell_Writer.  If not,  --
 --  write  to  the Free Software Foundation,  51  Franklin  Street,  --
 --  Fifth Floor, Boston, MA 02110-1301, USA.                         --
 --                                                                   --
 -----------------------------------------------------------------------
 with Gtkada.Builder;  use Gtkada.Builder;
-with Gtk.Button, Gtk.Menu_Item;
+with Gtk.Button, Gtk.Menu_Item, Gtk.Widget;
 with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
 package Main_Menu is
@@ -46,13 +46,14 @@ package Main_Menu is
                            glade_filename: string := "cell_writer.glade");
    procedure Btn_Enter_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
+   procedure Menu_File_Exit_Select_CB  
+                (Object : access Gtkada_Builder_Record'Class);
 
 private
+   use Gtk.Widget;
 
     -- Main toolbar buttons
    procedure Menu_Help_About_Select_CB 
-                (Object : access Gtkada_Builder_Record'Class);
-   procedure Menu_File_Exit_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Clear_Clicked_CB  
                 (Object : access Gtkada_Builder_Record'Class);
@@ -74,7 +75,11 @@ private
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Del_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Ins_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Space_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Separator_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Up_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
@@ -92,14 +97,12 @@ private
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_PageDown_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
-    
-    -- Draw event Callbacks
-   function Btn_Draw_Press_Event_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean;
-   function Draw_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean;
-   function Motion_Notify_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean;
+   
+    -- Window destruction management
+   procedure On_Window_Destroy(the_window : access Gtk_Widget_Record'Class;
+                               cb : Cb_Gtk_Widget_Void);
+   procedure On_Window_Close_Request(the_window: access Gtk_Widget_Record'Class);
+      -- Called when the X in the top right hand corner is clicked
     
     -- Print the specified report (given the report name from the menu item or
     -- button).

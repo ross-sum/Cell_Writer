@@ -1,6 +1,6 @@
  -----------------------------------------------------------------------
 --                                                                   --
---                 C U R S O R   M A N A G E M E N T                 --
+--                K E Y B O A R D _ E M U L A T I O N                --
 --                                                                   --
 --                     S p e c i f i c a t i o n                     --
 --                                                                   --
@@ -9,16 +9,11 @@
 --  Copyright (C) 2022  Hyper Quantum Pty Ltd.                       --
 --  Written by Ross Summerfield.                                     --
 --                                                                   --
---  This package manages the cursor for the keyboard display cache.  --
---  This  display  cache is also used by the main  form  under  the  --
---  covers  for  data control.  Management is  essentially  keeping  --
---  track of where the cursor is and allowing crude editing (delete  --
---  and backspace).                                                  --
---  Typically,  this  package is used to manage  the  contents  and  --
---  cursor  position  for a Gtk_Entry (in Gtk.GEntry)  widget.   It  --
---  allows  full  cursor movement and also  supports  deleting  and  --
---  inserting  characters or  strings  anywhere  in  the   curently  --
---  composed display string.                                         --
+--  This  package  emulates  the  keyboard  operation,  essentially  --
+--  acting  as  a  virtual  keyboard  for  the  currentlhy   active  --
+--  application, providing it with the keystrokes that the user has  --
+--  entered (eithe by the on-screen keyboard or by the hand-written  --
+--  keystrokes).                                                     --
 --                                                                   --
 --  Version History:                                                 --
 --  $Log$

@@ -59,15 +59,19 @@ with Ada.Sequential_IO;
 with Ada.Directories;
 procedure Cell_Writer is
 
-   default_log_file_name : constant wide_string := "/var/log/cell_writer.log";
-   default_path_to_temp  : constant wide_string := "/tmp/";
-   default_db_path       : constant wide_string := "~/var/lib/cellwriter/";
-   default_db_file_name  : constant wide_string := "cell_writer.db";
-   default_db_name       : constant wide_string := default_db_path &
-                                                   default_db_file_name;
-   default_tex_name      : constant wide_string := "/usr/bin/pdflatex";
-   default_pdf_name      : constant wide_string := "/usr/bin/xpdf";
-   default_R_name        : constant wide_string := "/usr/bin/R";
+   Already_Running : exception;
+   
+   default_log_file_name  : constant wide_string := "/var/log/cell_writer.log";
+   default_log_file_format: constant wide_string := "";
+   default_path_to_temp   : constant wide_string := "/tmp/";
+   default_db_path        : constant wide_string := "~/var/lib/cellwriter/";
+   default_db_file_name   : constant wide_string := "cell_writer.db";
+   default_db_name        : constant wide_string := default_db_path &
+                                                    default_db_file_name;
+   default_tex_name       : constant wide_string := "/usr/bin/pdflatex";
+   default_pdf_name       : constant wide_string := "/usr/bin/xpdf";
+   default_R_name         : constant wide_string := "/usr/bin/R";
+   lock_file_name         : constant string:= "/var/run/lock/cell_writer.lock";
 
    package Parameters is new Generic_Command_Parameters
       (Cell_Writer_Version.Version,
@@ -83,8 +87,10 @@ procedure Cell_Writer is
                  ", Path to GNU R graph generating tool;" &
        "l,log,string," & default_log_file_name & 
                  ",log file name with optional path;" &
+       "f,format,string," & default_log_file_format &
+                 ",log file format (e.g. '' or 'WCEM=8');" &
        "d,debug,integer,0,debug level (0=none + 9=max);" &
-       "x,xid,boolean,FALSE,starts  CellWriter in embedded mode. You can set "&
+       "x,xid,boolean,FALSE,starts CellWriter in embedded mode. You can set "&
                  "gnome-screensaver to call Cell_Writer with this option to "&
                  "embed Cell_Writer into the unlock password prompt;" &
        "i,interactive,boolean,FALSE, run in interactive (attended) mode;",
@@ -211,9 +217,11 @@ procedure Cell_Writer is
    procedure Terminate_Us is
    begin
       Error_Log.Debug_Data(at_level=>1, with_details=>"Terminate_Us: Start");
+      Main_Menu.Menu_File_Exit_Select_CB(null);
       Error_Log.Debug_Data(at_level=>1, with_details=>"Terminate_Us: Finish");
    end Terminate_Us;
 
+   lock_file : dStrings.IO.file_type;
    still_running : boolean := true;
    DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
    tex_path : text := Parameter(with_flag => flag_type'('t'));
@@ -227,7 +235,7 @@ begin  -- Cell_Writer
    if Parameter(with_flag => flag_type'('i')) then
       Put_Line("Cell Writer");
       Put_Line("Grid-entry handwriting input panel");
-      Put_Line("Copyright (C) 2022 Hyper Quantum Pty Ltd, Michael Levin");
+      Put_Line("Copyright (C) 2022-23 Hyper Quantum Pty Ltd, Michael Levin");
       Put_Line("Written by Ross Summerfield and Michael Levin");
       New_Line;
       -- Host_Functions.Check_Reservation;
@@ -239,6 +247,33 @@ begin  -- Cell_Writer
       return;
    end if;
    
+   -- Set up the lock file, ensuring we are a single instance running
+   declare
+      pid : text;
+   begin
+      if Ada.Directories.Exists(lock_file_name)
+      then  -- maybe the app crashed? Otherwise we aren't the only one running
+         dStrings.IO.Open(lock_file, in_file, lock_file_name);
+         dStrings.IO.Get_Line(lock_file, pid);   
+         if Host_Functions.Process_Exists(for_id=>Get_Integer_From_String(pid))
+         then  -- already running - we are not alone!
+            Close(lock_file);
+            raise Already_Running;
+         else  -- not running - must be a crashed event
+            dStrings.IO.Reset(lock_file, out_file);
+         end if;
+      else  -- lock file doesn't exist, so create it
+         dStrings.IO.Create(lock_file, out_file, lock_file_name);
+      end if;
+      -- Load the lock file with our PID and enable it to be read
+      Put_line(lock_file, Put_Into_String(Host_Functions.Process_ID));
+      Flush(lock_file);
+      Reset(lock_file, Append_File);
+      -- Apply_Exclusive_Lock(to_file => lock_file);
+      exception
+         when Status_Error => raise Already_Running;
+   end;
+   
    -- Initialise files if necessary
    Initialise(Value(Parameter(with_flag => flag_type'('b'))));
 
@@ -247,7 +282,8 @@ begin  -- Cell_Writer
                Value(Parameter(with_name=>Value("log"))) & "'.");
    end if;
    Error_Log.Set_Log_File_Name(
-      Value(Parameter(with_name=>Value("log"))));
+      Value(Parameter(with_name=>Value("log"))), 
+      Value(Parameter(with_name=>Value("format"))));
    Error_Log.Set_Debug_Level
          (to => Parameter(with_flag => flag_type'('d')) );
    Error_Log.Debug_Data(at_level => 1, 
@@ -316,19 +352,25 @@ begin  -- Cell_Writer
       delay 1.0;  -- wait a second
       still_running:= not Host_Functions.Told_To_Die;
    end loop;
+   dStrings.IO.Delete(lock_file);
    Terminate_Us;
    
    Error_Log.Debug_Data(at_level=>1, with_details=>"Cell_Writer: Finish");
                         
    exception  -- invalid parameter
+      when Already_Running =>
+         Put_Line("Application is already running"); 
       when Name_Error | Use_Error =>
          Usage("Error in configuration file name.");
-      -- when dStr_IO.Serial_Error =>
+      -- when dStrings.IO.Serial_Error =>
          -- Error_Log.Put(the_error => 1, error_intro => "I/O Device Error", 
             --  error_message => "Error with setting up or operating the device");
       when Host_Functions.Naming_Error =>
          Usage("Error in daemonising this application.");
       when Host_Functions.Terminate_Application =>
+         if Is_Open(lock_file) then
+            dStrings.IO.Delete(lock_file);
+         end if;
          Terminate_Us;
             -- requested to terminate: shut down tasks
 end Cell_Writer;

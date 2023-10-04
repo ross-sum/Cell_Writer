@@ -1,0 +1,6 @@
+-- Macro 1
+-- This macro is for simple combining characters.
+PROCEDURE () IS 
+INSERT S(2) WITH H;
+END;
+

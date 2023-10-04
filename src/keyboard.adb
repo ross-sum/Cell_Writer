@@ -40,6 +40,7 @@ with Error_Log, String_Conversions;
 with Cell_Writer_Version;
 with Help_About, Setup, Main_Menu, Cursor_Management, CSS_Management;
 with Keyboard_Emulation;
+with Grid_Training, Training_Samples;
 with Glib.Values, Gdk.RGBA;
 with Gtk.Widget, Gtk.Toggle_Tool_Button, Gtk.Toggle_Button;
 with Gtk.Radio_Button, Gtk.Button, Gtk.Label, Gtk.GEntry, Gtk.Combo_Box;
@@ -96,6 +97,19 @@ package body Keyboard is
                         Order_By=> Words.Word),
             On_Server => True,
             Use_Cache => True);
+   chars_list : constant GNATCOLL.SQL.Exec.Prepared_Statement :=
+      GNATCOLL.SQL.Exec.Prepare 
+           (SQL_Select (Fields  => Languages.ID &
+                                   Languages.Start &
+                                   Languages.EndChar,
+                        From    => Languages,
+                        Where   => (Languages.ID = Integer_Param(1)),
+                        Order_By=> Languages.Start),
+            On_Server => True,
+            Use_Cache => True);
+
+   bliss_space_start : wide_character := Wide_Character'Val(16#E100#);
+   bliss_space_end   : wide_character := Wide_Character'Val(16#E10F#);
    
    procedure Initialise_Keyboard(Builder : in out Gtkada_Builder;
                              DB_Descr: GNATCOLL.SQL.Exec.Database_Description) is
@@ -479,7 +493,14 @@ package body Keyboard is
       -- Any other configuration
       Set_Unprintable_Range(from => start_reserved_char, 
                             to   => end_reserved_char);
+      Set_Combining_to_Unprintable;
    end Initialise_Keyboard;
+
+   procedure Resize_Grid (to_rows, to_cols : natural) is
+      -- Store the new rows and columns to match the grid size
+   begin
+      Grid_Training.Set_Window_Size(with_rows=>to_rows, and_columns=>to_cols);
+   end Resize_Grid;
 
    function Key_As_String(key : in key_id_types) return string is
       the_key : string := key_id_types'Image(key);
@@ -506,15 +527,29 @@ package body Keyboard is
    begin
       return Encode(To_String(from => for_text), UTF_8);
    end  Text_To_UTF8;
+   
+   function UTF8_To_Text(for_word : Glib.UTF8_String) return Text is
+         -- Convert the UTF-8 string to a dStrings.text
+         -- (i.e. Ada.Strings.Wide_Unbounded) string.
+      use Ada.Strings.UTF_Encoding;
+      use Ada.Strings.UTF_Encoding.Wide_Strings;
+   begin
+      return To_Text(Decode(for_word, UTF_8));
+   end  UTF8_To_Text;
 
    procedure Show_Keyboard(Builder : in Gtkada_Builder) is
-      use Gtk.Toggle_Tool_Button;
+      use Gtk.Toggle_Tool_Button, Gtk.GEntry, Cursor_Management;
+      the_label   : Gtk.GEntry.gtk_entry;
    begin
       Error_Log.Debug_Data(at_level => 3, 
                            with_details => "Show_Keyboard: Start");
       -- Toggle the keyboard button to be depressed
       Set_Active(gtk_toggle_tool_button(Get_Object(Builder,"btn_kbd_keys")),
                  Is_Active => True);
+      -- Set up the display string with any characters or words already loaded.
+      -- These would have come from the grid cells, for instance.
+      the_label:= gtk_entry(Get_Object(Builder, "key_strokes_entered"));
+      Set_Text(the_label, Text_To_UTF8(Visible_Keystrokes));
       -- And show the keyaboard
       Gtk.Widget.Show_All(Gtk.Widget.Gtk_Widget 
                         (Gtkada.Builder.Get_Object(Builder,"form_keyboard")));
@@ -547,13 +582,13 @@ package body Keyboard is
                         (Gtkada.Builder.Get_Object(Object,"form_main")));
       -- Show/hide the combining character buttons (must be done after unhiding
       -- the main window).
-      declare
-         new_language : positive;
-      begin
-         Setup.Combo_Language_Changed(Object, to_language => new_language);
+         declare
+            new_language : positive;
+         begin
+            Setup.Combo_Language_Changed(Object, to_language => new_language);
          -- Display or hide the top row of combining accents based on language
-         Setup.Set_Up_Combining(Object, for_language => new_language);
-      end;
+            Setup.Set_Up_Combining(Object, for_language => new_language);
+         end;
       -- and then hide ourselves
          Gtk.Widget.Hide(Gtk.Widget.Gtk_Widget 
             (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"form_keyboard")));
@@ -575,15 +610,6 @@ package body Keyboard is
       use Gtk.Combo_Box, Gtk.Tree_Selection, Gtk.List_Store, Glib, Glib.Values;
       use Gtk.GEntry;
       use Cursor_Management;
-      function UTF8_To_Text(for_word : Glib.UTF8_String)
-      return Text is
-         -- Convert the UTF-8 string to a dStrings.text
-         -- (i.e. Ada.Strings.Wide_Unbounded) string.
-         use Ada.Strings.UTF_Encoding;
-         use Ada.Strings.UTF_Encoding.Wide_Strings;
-      begin
-         return To_Text(Decode(for_word, UTF_8));
-      end  UTF8_To_Text;
       the_combo : Gtk.Combo_Box.gtk_combo_box;
       iter      : Gtk.Tree_Model.gtk_tree_iter;
       store     : Gtk.List_Store.gtk_list_store;
@@ -1546,12 +1572,14 @@ package body Keyboard is
       R_keyboard : Forward_Cursor;
       lingo_parm : SQL_Parameters (1 .. 1);
       key_entry  : Gtk.GEntry.gtk_entry;
-      btn_colour : Gdk.RGBA.Gdk_RGBA := Button_Colour(at_object);
-      btn_txt_col: Gdk.RGBA.Gdk_RGBA := Button_Text_Colour(at_object);
-      txt_colour : Gdk.RGBA.Gdk_RGBA := Text_Colour(at_object);
+      btn_colour : Gdk.RGBA.Gdk_RGBA := Setup.Button_Colour;
+      btn_txt_col: Gdk.RGBA.Gdk_RGBA := Setup.Button_Text_Colour;
+      txt_colour : Gdk.RGBA.Gdk_RGBA := Setup.Text_Colour;
    begin  -- Load_Keyboard
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Load_Keyboard: Start Lingo.");
+      -- Reset the list of characters and words in Grid_Training
+      Grid_Training.Clear_Out_Training_Data;
       -- Reset the shift, control, alt, etc, state of the keyboard
       Set_Active(gtk_toggle_button(Get_Object(at_object,left_shift)),Is_Active=>false);
       Set_Active(gtk_toggle_button(Get_Object(at_object,right_shift)),Is_Active=>false);
@@ -1665,7 +1693,7 @@ package body Keyboard is
                         Wide_Element(char.unshifted_display,2) > 
                                                      Setup.Font_Start_Character
                      then  -- represented probably using Blissymbolics
-                        Modify_Font(key_button, From_String(The_Font(at_object)));
+                        Modify_Font(key_button, From_String(Setup.The_Font));
                      else  -- reset the font
                         Modify_Font(key_button, null);
                      end if;
@@ -1685,7 +1713,7 @@ package body Keyboard is
                         Wide_Element(char.unshifted_display,2) > 
                                                      Setup.Font_Start_Character
                      then  -- represented probably using Blissymbolics
-                        Modify_Font(key_disp, From_String(The_Font(at_object)));
+                        Modify_Font(key_disp, From_String(Setup.The_Font));
                      else  -- reset the font
                         Modify_Font(key_disp, null);
                      end if;
@@ -1712,7 +1740,7 @@ package body Keyboard is
                           Wide_Element(char.shifted_display,1) > 
                                                 Setup.Font_Start_Character))
                      then  -- represented probably using Blissymbolics
-                        Modify_Font(key_disp, From_String(The_Font(at_object)));
+                        Modify_Font(key_disp, From_String(Setup.The_Font));
                      else  -- reset the font
                         Modify_Font(key_disp, null);
                      end if;
@@ -1725,9 +1753,12 @@ package body Keyboard is
             end loop;
          end;
          key_entry:= gtk_entry(Get_Object(at_object, "key_strokes_entered"));
-         Modify_Font(key_entry, From_String(The_Font(at_object)));
-         Override_Background_Color(key_entry, 0, Used_Cell_Colour(at_object));
-         Override_Color(key_entry, 0, Text_Colour(at_object));
+         Modify_Font(key_entry, From_String(Setup.The_Font));
+         Override_Background_Color(key_entry, 0, Setup.Used_Cell_Colour);
+         Override_Color(key_entry, 0, Setup.Text_Colour);
+         -- While we are here, load the character into the training list
+         Load_Characters_List (for_language => for_language);
+         -- And load the words into the drop-down list (and the training list)
          Load_Words_List(for_language => for_language, at_object => at_object);
       end if;
    end Load_Keyboard;
@@ -1740,6 +1771,7 @@ package body Keyboard is
       use GNATCOLL.SQL.Exec;
       -- use String_Conversions;
       use Gtk.List_Store, GLib;
+      use Grid_Training, Training_Samples;
       combo_box  : Gtk.Combo_Box.gtk_combo_box;
       R_words    : Forward_Cursor;
       words_list : Gtk.List_Store.gtk_list_store;
@@ -1749,7 +1781,7 @@ package body Keyboard is
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Load_Words_List: Start");
       combo_box:= gtk_combo_box(Get_Object(at_object,"combo_select_word"));
-      Modify_Font(combo_box, From_String(Setup.The_Font(at_object)));
+      Modify_Font(combo_box, From_String(Setup.The_Font));
       -- Set up and load the list of words
       lingo_parm := (1 => +for_language);
       R_words.Fetch (Connection => kDB, Stmt => kb_words_list, 
@@ -1762,16 +1794,76 @@ package body Keyboard is
          while Has_Row(R_words) loop  -- while not end_of_table
             Append(words_list, words_iter);
             Gtk.List_Store.Set(words_list, words_iter, 0,
-                               Glib.UTF8_String(Value(R_words,0)));
+                               Glib.UTF8_String(Value(R_words,0)));  -- word
             Gtk.List_Store.Set(words_list, words_iter, 1,
-                               Glib.Gint(Integer_Value(R_words,1)));
+                               Glib.Gint(Integer_Value(R_words,1))); -- ID
             Gtk.List_Store.Set(words_list, words_iter, 2,
-                               Glib.UTF8_String(Value(R_words,2)));
+                               Glib.UTF8_String(Value(R_words,2)));  -- Descr.
+            -- and while we are here, load the word into the training
+            -- character and word list
+            Load(the_word => Glib.UTF8_String(Value(R_words,0)));
+            -- and then record whether training is done on it
+            if There_Is_A_Sample_With (the_key => UTF8_To_Text(for_word=>
+                                           Glib.UTF8_String(Value(R_words,0))))
+            then  -- training has been done on it
+               Record_Training_Is_Done(on_word => 
+                                           Glib.UTF8_String(Value(R_words,0)));
+            end if;
             Next(R_words);  -- next record(Configurations)
          end loop;
       end if;
       null;
    end Load_Words_List;
+   
+   procedure Load_Characters_List (for_language : in positive) is
+       -- Load the list of characters for this specified language into
+       -- the grid training data.  This is essentially done here as a
+       -- by-product of loading the keyboard, also done here because
+       -- the load process needs to be done at the same time as the
+       -- keyboard is loaded.
+       -- This procedure is called by Load_Keyboard.
+      use GNATCOLL.SQL.Exec;
+      use Grid_Training, Training_Samples;
+      R_chars    : Forward_Cursor;
+      lingo_parm : SQL_Parameters (1 .. 1);
+      starting   : natural := 0;
+      ending     : natural := 0;
+      the_char   : wide_character;
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details=> "Load_Characters_List: Start");
+      lingo_parm := (1 => +for_language);
+      R_chars.Fetch (Connection => kDB, Stmt => chars_list, 
+                     Params => lingo_parm);
+      if Success(kDB) and then Has_Row(R_chars) then
+         -- set up the training list of characters
+         starting := Integer_Value(R_chars,1);
+         ending   := Integer_Value(R_chars,2);
+         for char_id in starting .. ending loop
+            the_char := wide_character'Val(char_id);
+            Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: the character is '" & the_char & "'.");
+            if not (the_char in bliss_space_start .. bliss_space_end)
+            then  -- This is a trainable character
+            -- Load it
+               Load(the_character => the_char);
+               Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: Loaded it.");
+            -- and record whether training is done on it
+               if There_Is_A_Sample_With (the_key => To_Text(the_char))
+               then  -- training has been done on it
+                  Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: it's trained.");
+                  Record_Training_Is_Done(on_character => the_char);
+               else
+                  Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: it's NOT trained.");
+               end if;
+            end if;
+         end loop;
+      else  -- Bit of a problem here!
+         Error_Log.Put(the_error => 10,
+                       error_intro =>  "Load_Characters_List error", 
+                       error_message=> "Didn'd find language number"& 
+                                       Integer'Wide_Image(for_language) & ".");
+      end if;
+   end Load_Characters_List;
                              
 begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",

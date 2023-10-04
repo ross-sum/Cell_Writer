@@ -1,5 +1,6 @@
 with GNATCOLL.SQL; use GNATCOLL.SQL;
 with GNATCOLL.SQL_BLOB; use  GNATCOLL.SQL_BLOB;
+with GNATCOLL.SQL_Date_and_Time; use  GNATCOLL.SQL_Date_and_Time;
 pragma Warnings (Off, "no entities of * are referenced");
 pragma Warnings (Off, "use clause for package * has no effect");
 with GNATCOLL.SQL_Fields; use GNATCOLL.SQL_Fields;
@@ -26,6 +27,12 @@ package database is
 
       Tooltip : SQL_Field_Text (Ta_Combiningchrs, Instance, N_Tooltip, Index);
       --  Tool Tip for the button
+
+      Display : SQL_Field_Text (Ta_Combiningchrs, Instance, N_Display, Index);
+      --  Symbol displayed on button
+
+      Macro : SQL_Field_Integer (Ta_Combiningchrs, Instance, N_Macro, Index);
+      --  The macro that applies
 
    end record;
 
@@ -222,6 +229,28 @@ package database is
       is new T_Abstract_Learntdata (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
+   type T_Abstract_Macros
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Macros, Instance, Index) with
+   record
+      Id : SQL_Field_Integer (Ta_Macros, Instance, N_Id, Index);
+      --  Unique ID for this macro
+
+      Macro : SQL_Field_Text (Ta_Macros, Instance, N_Macro, Index);
+      --  The macro
+
+   end record;
+
+   type T_Macros (Instance : Cst_String_Access)
+      is new T_Abstract_Macros (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Macros (Index : Integer)
+      is new T_Abstract_Macros (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
    type T_Abstract_Queries
       (Instance : Cst_String_Access;
        Index    : Integer)
@@ -301,8 +330,14 @@ package database is
       Sampleno : SQL_Field_Integer (Ta_Trainingdata, Instance, N_Sampleno, Index);
       --  Sample number recorded
 
-      Sample : SQL_Field_Text (Ta_Trainingdata, Instance, N_Sample, Index);
+      Sample : SQL_Field_Blob (Ta_Trainingdata, Instance, N_Sample, Index);
       --  The sample
+
+      Trgdate : SQL_Field_tDate (Ta_Trainingdata, Instance, N_Trgdate, Index);
+      --  Date traning sample made
+
+      Trgtime : SQL_Field_tTime (Ta_Trainingdata, Instance, N_Trgtime, Index);
+      --  Training sample time made
 
    end record;
 
@@ -313,6 +348,46 @@ package database is
 
    type T_Numbered_Trainingdata (Index : Integer)
       is new T_Abstract_Trainingdata (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
+   type T_Abstract_Trainingdatawords
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Trainingdatawords, Instance, Index) with
+   record
+      Id : SQL_Field_Integer (Ta_Trainingdatawords, Instance, N_Id, Index);
+      --  Offset from Language Start
+
+      Wordid : SQL_Field_Integer (Ta_Trainingdatawords, Instance, N_Wordid, Index);
+      --  Word unique id for Language
+
+      Word : SQL_Field_Text (Ta_Trainingdatawords, Instance, N_Word, Index);
+      --  UTF-8 word
+
+      Sampleno : SQL_Field_Integer (Ta_Trainingdatawords, Instance, N_Sampleno, Index);
+      --  Sample number recorded
+
+      Sample : SQL_Field_Blob (Ta_Trainingdatawords, Instance, N_Sample, Index);
+      --  The sample
+
+      Trgdate : SQL_Field_tDate (Ta_Trainingdatawords, Instance, N_Trgdate, Index);
+      --  Date traning sample made
+
+      Trgtime : SQL_Field_tTime (Ta_Trainingdatawords, Instance, N_Trgtime, Index);
+      --  Training sample time made
+
+      User : SQL_Field_Text (Ta_Trainingdatawords, Instance, N_User, Index);
+      --  System identifier for user
+
+   end record;
+
+   type T_Trainingdatawords (Instance : Cst_String_Access)
+      is new T_Abstract_Trainingdatawords (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Trainingdatawords (Index : Integer)
+      is new T_Abstract_Trainingdatawords (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
    type T_Abstract_Userids
@@ -341,6 +416,31 @@ package database is
 
    type T_Numbered_Userids (Index : Integer)
       is new T_Abstract_Userids (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
+   type T_Abstract_Wordfrequency
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Wordfrequency, Instance, Index) with
+   record
+      Wfword : SQL_Field_Text (Ta_Wordfrequency, Instance, N_Wfword, Index);
+      --  the word or phrase
+
+      Wdcount : SQL_Field_Integer (Ta_Wordfrequency, Instance, N_Wdcount, Index);
+      --  Count of words
+
+      Description : SQL_Field_Text (Ta_Wordfrequency, Instance, N_Description, Index);
+      --  A name or similar
+
+   end record;
+
+   type T_Wordfrequency (Instance : Cst_String_Access)
+      is new T_Abstract_Wordfrequency (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Wordfrequency (Index : Integer)
+      is new T_Abstract_Wordfrequency (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
    type T_Abstract_Words
@@ -372,6 +472,7 @@ package database is
    --  To use aliases in the form name1, name2,...
 
    function FK (Self : T_Combiningchrs'Class; Foreign : T_Languages'Class) return SQL_Criteria;
+   function FK (Self : T_Combiningchrs'Class; Foreign : T_Macros'Class) return SQL_Criteria;
    function FK (Self : T_Keydefinitions'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Learntdata'Class; Foreign : T_Userids'Class) return SQL_Criteria;
    function FK (Self : T_Learntdata'Class; Foreign : T_Languages'Class) return SQL_Criteria;
@@ -383,9 +484,12 @@ package database is
    Keydefinitions : T_Keydefinitions (null);
    Languages : T_Languages (null);
    Learntdata : T_Learntdata (null);
+   Macros : T_Macros (null);
    Queries : T_Queries (null);
    Reports : T_Reports (null);
    Trainingdata : T_Trainingdata (null);
+   Trainingdatawords : T_Trainingdatawords (null);
    Userids : T_Userids (null);
+   Wordfrequency : T_Wordfrequency (null);
    Words : T_Words (null);
 end database;

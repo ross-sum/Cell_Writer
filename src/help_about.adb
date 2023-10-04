@@ -31,7 +31,8 @@
 --                                                                   --
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
-with Gtk.Widget, Gtk.Window;
+-- with Glib.Object, Gtk.Widget, Gdk.Event;
+with Gtk.Window;
 with Error_Log;
 with Cell_Writer_Version;
 with Gtk.Label;
@@ -48,9 +49,13 @@ package body Help_About is
                                        To_String(Cell_Writer_Version.Version);
       revision_list: gtk_label;
       usage_dets   : gtk_label;
+      help_about   : gtk_window;
    begin
       -- Initialise: hide the close button in the top right hand corner
-      Set_Deletable(Gtk_Window(Builder.Get_Object("dialogue_about")), false);
+      help_about := Gtk_Window(Builder.Get_Object("dialogue_about"));
+      -- Set_Deletable(help_about, false);
+      -- set close form operation to hide on delete
+      help_about.On_Delete_Event(On_Delete_Request'Access);
       -- Gtk.Window.
          -- On_Delete_Event(Gtk_Window(Builder.Get_Object("dialogue_about")),
          --                 Gtk.Window.Hide_On_Delete'access, 
@@ -113,6 +118,12 @@ package body Help_About is
       -- return Gtk.Widget.Hide_On_Delete(Gtk_Widget_Record( 
          --               (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"dialogue_about").all))'Access);
    end Help_Hide_On_Delete;
+   
+   function On_Delete_Request(Object : access Gtk_Widget_Record'Class;
+                                 Event  : Gdk_Event) return boolean is
+   begin
+      return Gtk.Widget.Hide_on_Delete(Object);
+   end On_Delete_Request;
   
 begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",

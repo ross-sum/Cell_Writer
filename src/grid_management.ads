@@ -32,7 +32,6 @@
 -----------------------------------------------------------------------
 with Gtkada.Builder;  use Gtkada.Builder;
 with Gdk.RGBA;
--- with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
 package Grid_Management is
 
@@ -47,7 +46,7 @@ package Grid_Management is
       -- Rows and columns passed in are one (1) based, but the grid is zero (0)
       -- based.
    procedure Set_Writing_Size(height, width : natural);
-      -- Set up the writing size and apply the font.
+      -- Set up the writing cell size to that specified.
    procedure Set_Writing_Colours(for_text, for_blank_background, 
                                  for_used_background : Gdk.RGBA.Gdk_RGBA);
       -- Set up the writing cell colours and make sure that the writing area is

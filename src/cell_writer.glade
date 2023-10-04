@@ -70,6 +70,70 @@ Author: Ross Summerfield, Michael Levin
     <property name="step-increment">10</property>
     <property name="page-increment">100</property>
   </object>
+  <object class="GtkDialog" id="dialogue_error_message">
+    <property name="can-focus">False</property>
+    <property name="modal">True</property>
+    <property name="window-position">center-on-parent</property>
+    <property name="default-width">400</property>
+    <property name="default-height">100</property>
+    <property name="type-hint">dialog</property>
+    <property name="gravity">center</property>
+    <signal name="delete-event" handler="dialogue_error_delete_event_cb" object="box_error_message" swapped="no"/>
+    <signal name="destroy" handler="dialogue_error_destroy_cb" swapped="no"/>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="box_error_message">
+        <property name="width-request">-1</property>
+        <property name="height-request">-1</property>
+        <property name="can-focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox">
+            <property name="can-focus">False</property>
+            <property name="layout-style">end</property>
+            <child>
+              <object class="GtkButton" id="btn_error_close">
+                <property name="label">gtk-close</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">True</property>
+                <property name="use-stock">True</property>
+                <signal name="clicked" handler="dialogue_error_message_close_cb" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label_error_log_display_message">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">
+
+
+
+</property>
+            <property name="wrap">True</property>
+            <property name="max-width-chars">51</property>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
   <object class="GtkListStore" id="liststore_window_docking">
     <columns>
       <!-- column-name State -->
@@ -84,7 +148,13 @@ Author: Ross Summerfield, Michael Levin
       </row>
     </data>
   </object>
+  <object class="GtkMenu" id="menu_alternatives">
+    <property name="name">menu_alternatives</property>
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+  </object>
   <object class="GtkMenu" id="menu_reports">
+    <property name="name">menu_reports</property>
     <property name="visible">True</property>
     <property name="can-focus">False</property>
   </object>
@@ -125,7 +195,7 @@ Author: Ross Summerfield, Michael Levin
           <object class="GtkBox" id="box_combining_accents">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="spacing">2</property>
+            <property name="spacing">1</property>
             <child>
               <object class="GtkButton" id="btn_combine_1">
                 <property name="name">BLISS_THING</property>
@@ -138,11 +208,11 @@ Author: Ross Summerfield, Michael Levin
                   <object class="GtkLabel" id="btn_combine_label_1">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes"> </property>
+                    <property name="label" translatable="yes"></property>
+                    <property name="track-visited-links">False</property>
                     <attributes>
                       <attribute name="font-desc" value="Blissymbolics 30"/>
                       <attribute name="weight" value="semibold"/>
-                      <attribute name="scale" value="0"/>
                     </attributes>
                   </object>
                 </child>
@@ -165,7 +235,8 @@ Author: Ross Summerfield, Michael Levin
                   <object class="GtkLabel" id="btn_combine_label_2">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="label" translatable="yes"> </property>
+                    <property name="label" translatable="yes"></property>
+                    <property name="track-visited-links">False</property>
                     <attributes>
                       <attribute name="font-desc" value="Blissymbolics 30"/>
                       <attribute name="weight" value="semibold"/>
@@ -403,45 +474,15 @@ Author: Ross Summerfield, Michael Levin
               <object class="GtkGrid" id="grid_cells">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="row-spacing">2</property>
-                <property name="column-spacing">2</property>
+                <property name="row-spacing">1</property>
+                <property name="column-spacing">1</property>
                 <child>
-                  <object class="GtkStack" id="stack_1_01">
+                  <object class="GtkDrawingArea" id="draw_1_01">
+                    <property name="name">draw_1_01</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="tooltip-text" translatable="yes">1:01</property>
-                        <property name="opacity">0</property>
-                        <signal name="button-press-event" handler="draw_1_01_button_press_event_cb" swapped="no"/>
-                        <signal name="draw" handler="draw_1_01_draw_cb" swapped="no"/>
-                        <signal name="motion-notify-event" handler="draw_1_01_motion_notify_event_cb" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -449,38 +490,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_02">
+                  <object class="GtkDrawingArea" id="draw_1_02">
+                    <property name="name">draw_1_02</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -488,38 +503,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_03">
+                  <object class="GtkDrawingArea" id="draw_1_03">
+                    <property name="name">draw_1_03</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -527,38 +516,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_04">
+                  <object class="GtkDrawingArea" id="draw_1_04">
+                    <property name="name">draw_1_04</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -566,38 +529,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_05">
+                  <object class="GtkDrawingArea" id="draw_1_05">
+                    <property name="name">draw_1_05</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">4</property>
@@ -605,38 +542,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_06">
+                  <object class="GtkDrawingArea" id="draw_1_06">
+                    <property name="name">draw_1_06</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">5</property>
@@ -644,38 +555,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_07">
+                  <object class="GtkDrawingArea" id="draw_1_07">
+                    <property name="name">draw_1_07</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">6</property>
@@ -683,38 +568,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_08">
+                  <object class="GtkDrawingArea" id="draw_1_08">
+                    <property name="name">draw_1_08</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">7</property>
@@ -722,38 +581,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_09">
+                  <object class="GtkDrawingArea" id="draw_1_09">
+                    <property name="name">draw_1_09</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">8</property>
@@ -761,38 +594,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_1_10">
+                  <object class="GtkDrawingArea" id="draw_1_10">
+                    <property name="name">draw_1_10</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_1_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_1_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">9</property>
@@ -800,38 +607,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_01">
+                  <object class="GtkDrawingArea" id="draw_2_01">
+                    <property name="name">draw_2_01</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -839,38 +620,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_02">
+                  <object class="GtkDrawingArea" id="draw_2_02">
+                    <property name="name">draw_2_02</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -878,38 +633,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_03">
+                  <object class="GtkDrawingArea" id="draw_2_03">
+                    <property name="name">draw_2_03</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -917,38 +646,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_04">
+                  <object class="GtkDrawingArea" id="draw_2_04">
+                    <property name="name">draw_2_04</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -956,38 +659,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_05">
+                  <object class="GtkDrawingArea" id="draw_2_05">
+                    <property name="name">draw_2_05</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">4</property>
@@ -995,38 +672,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_06">
+                  <object class="GtkDrawingArea" id="draw_2_06">
+                    <property name="name">draw_2_06</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">5</property>
@@ -1034,38 +685,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_07">
+                  <object class="GtkDrawingArea" id="draw_2_07">
+                    <property name="name">draw_2_07</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">6</property>
@@ -1073,38 +698,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_08">
+                  <object class="GtkDrawingArea" id="draw_2_08">
+                    <property name="name">draw_2_08</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">7</property>
@@ -1112,38 +711,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_09">
+                  <object class="GtkDrawingArea" id="draw_2_09">
+                    <property name="name">draw_2_09</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">8</property>
@@ -1151,38 +724,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_2_10">
+                  <object class="GtkDrawingArea" id="draw_2_10">
+                    <property name="name">draw_2_10</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_2_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_2_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">9</property>
@@ -1190,38 +737,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_01">
+                  <object class="GtkDrawingArea" id="draw_3_01">
+                    <property name="name">draw_3_01</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -1229,38 +750,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_02">
+                  <object class="GtkDrawingArea" id="draw_3_02">
+                    <property name="name">draw_3_02</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -1268,38 +763,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_03">
+                  <object class="GtkDrawingArea" id="draw_3_03">
+                    <property name="name">draw_3_03</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -1307,38 +776,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_04">
+                  <object class="GtkDrawingArea" id="draw_3_04">
+                    <property name="name">draw_3_04</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -1346,38 +789,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_05">
+                  <object class="GtkDrawingArea" id="draw_3_05">
+                    <property name="name">draw_3_05</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">4</property>
@@ -1385,38 +802,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_06">
+                  <object class="GtkDrawingArea" id="draw_3_06">
+                    <property name="name">draw_3_06</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">5</property>
@@ -1424,38 +815,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_07">
+                  <object class="GtkDrawingArea" id="draw_3_07">
+                    <property name="name">draw_3_07</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">6</property>
@@ -1463,38 +828,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_08">
+                  <object class="GtkDrawingArea" id="draw_3_08">
+                    <property name="name">draw_3_08</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">7</property>
@@ -1502,38 +841,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_09">
+                  <object class="GtkDrawingArea" id="draw_3_09">
+                    <property name="name">draw_3_09</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">8</property>
@@ -1541,38 +854,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_3_10">
+                  <object class="GtkDrawingArea" id="draw_3_10">
+                    <property name="name">draw_3_10</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_3_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_3_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">9</property>
@@ -1580,38 +867,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_01">
+                  <object class="GtkDrawingArea" id="draw_4_01">
+                    <property name="name">draw_4_01</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -1619,38 +880,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_02">
+                  <object class="GtkDrawingArea" id="draw_4_02">
+                    <property name="name">draw_4_02</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -1658,38 +893,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_03">
+                  <object class="GtkDrawingArea" id="draw_4_03">
+                    <property name="name">draw_4_03</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -1697,38 +906,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_04">
+                  <object class="GtkDrawingArea" id="draw_4_04">
+                    <property name="name">draw_4_04</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -1736,38 +919,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_05">
+                  <object class="GtkDrawingArea" id="draw_4_05">
+                    <property name="name">draw_4_05</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">4</property>
@@ -1775,38 +932,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_06">
+                  <object class="GtkDrawingArea" id="draw_4_06">
+                    <property name="name">draw_4_06</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">5</property>
@@ -1814,38 +945,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_07">
+                  <object class="GtkDrawingArea" id="draw_4_07">
+                    <property name="name">draw_4_07</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">6</property>
@@ -1853,38 +958,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_08">
+                  <object class="GtkDrawingArea" id="draw_4_08">
+                    <property name="name">draw_4_08</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">7</property>
@@ -1892,38 +971,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_09">
+                  <object class="GtkDrawingArea" id="draw_4_09">
+                    <property name="name">draw_4_09</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">8</property>
@@ -1931,38 +984,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_4_10">
+                  <object class="GtkDrawingArea" id="draw_4_10">
+                    <property name="name">draw_4_10</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_4_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_4_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">9</property>
@@ -1970,38 +997,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_01">
+                  <object class="GtkDrawingArea" id="draw_5_01">
+                    <property name="name">draw_5_01</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_01">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -2009,38 +1010,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_02">
+                  <object class="GtkDrawingArea" id="draw_5_02">
+                    <property name="name">draw_5_02</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_02">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -2048,38 +1023,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_03">
+                  <object class="GtkDrawingArea" id="draw_5_03">
+                    <property name="name">draw_5_03</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_03">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">2</property>
@@ -2087,38 +1036,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_04">
+                  <object class="GtkDrawingArea" id="draw_5_04">
+                    <property name="name">draw_5_04</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_04">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">3</property>
@@ -2126,38 +1049,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_05">
+                  <object class="GtkDrawingArea" id="draw_5_05">
+                    <property name="name">draw_5_05</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_05">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">4</property>
@@ -2165,38 +1062,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_06">
+                  <object class="GtkDrawingArea" id="draw_5_06">
+                    <property name="name">draw_5_06</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_06">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">5</property>
@@ -2204,38 +1075,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_07">
+                  <object class="GtkDrawingArea" id="draw_5_07">
+                    <property name="name">draw_5_07</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_07">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">6</property>
@@ -2243,38 +1088,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_08">
+                  <object class="GtkDrawingArea" id="draw_5_08">
+                    <property name="name">draw_5_08</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_08">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">7</property>
@@ -2282,38 +1101,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_09">
+                  <object class="GtkDrawingArea" id="draw_5_09">
+                    <property name="name">draw_5_09</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_09">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">8</property>
@@ -2321,38 +1114,12 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkStack" id="stack_5_10">
+                  <object class="GtkDrawingArea" id="draw_5_10">
+                    <property name="name">draw_5_10</property>
                     <property name="width-request">45</property>
                     <property name="height-request">70</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="hhomogeneous">False</property>
-                    <property name="vhomogeneous">False</property>
-                    <child>
-                      <object class="GtkDrawingArea" id="draw_5_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="opacity">0</property>
-                      </object>
-                      <packing>
-                        <property name="name">page0</property>
-                        <property name="title" translatable="yes">page0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="char_5_10">
-                        <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <attributes>
-                          <attribute name="font-desc" value="Blissymbolics 30"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="name">page1</property>
-                        <property name="title" translatable="yes">page1</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
                   </object>
                   <packing>
                     <property name="left-attach">9</property>
@@ -2509,6 +1276,20 @@ Author: Ross Summerfield, Michael Levin
                     <property name="homogeneous">True</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkToolButton" id="btn_sep">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Separator</property>
+                    <property name="label" translatable="yes">|¼|</property>
+                    <property name="use-underline">True</property>
+                    <signal name="clicked" handler="btn_sep_clicked_cb" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2574,12 +1355,28 @@ Author: Ross Summerfield, Michael Levin
                   <object class="GtkToolButton" id="btn_del">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Delete character/symbol under the cursor</property>
+                    <property name="tooltip-text" translatable="yes">Delete character/symbol under the cursor (or undo last training sample when in training)</property>
                     <property name="label" translatable="yes">Del</property>
                     <property name="use-underline">True</property>
                     <property name="stock-id">gtk-remove</property>
                     <signal name="clicked" handler="btn_del_clicked_cb" swapped="no"/>
                     <accelerator key="Delete" signal="clicked"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="btn_ins">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Insert an empty cell at the current cursor position</property>
+                    <property name="label" translatable="yes">Ins</property>
+                    <property name="use-underline">True</property>
+                    <property name="stock-id">gtk-add</property>
+                    <signal name="clicked" handler="btn_ins_clicked_cb" swapped="no"/>
+                    <accelerator key="Insert" signal="clicked"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -2688,6 +1485,7 @@ Author: Ross Summerfield, Michael Levin
                 </child>
                 <child>
                   <object class="GtkToolItem" id="btn_reports">
+                    <property name="name">btn_reports</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="tooltip-text" translatable="yes">Display a pop-up of reports</property>
@@ -2706,6 +1504,20 @@ Author: Ross Summerfield, Michael Levin
                         </child>
                       </object>
                     </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToggleToolButton" id="btn_grid_edit">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">When depressed, cursor movement keys, backspace and delete work on key strokes line.</property>
+                    <property name="label" translatable="yes">_Edit</property>
+                    <property name="use-underline">True</property>
+                    <property name="stock-id">gtk-edit</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -2745,7 +1557,7 @@ Author: Ross Summerfield, Michael Levin
               </object>
               <packing>
                 <property name="expand">True</property>
-                <property name="fill">False</property>
+                <property name="fill">True</property>
                 <property name="position">0</property>
               </packing>
             </child>
@@ -2766,7 +1578,7 @@ Author: Ross Summerfield, Michael Levin
                 </child>
               </object>
               <packing>
-                <property name="expand">False</property>
+                <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
@@ -3093,13 +1905,19 @@ The  other main change is to use Glade for the  graphical  user interface and to
                 <property name="min-content-width">100</property>
                 <property name="min-content-height">300</property>
                 <child>
-                  <object class="GtkTextView" id="the_manual">
+                  <object class="GtkViewport" id="viewport_manual">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="editable">False</property>
-                    <property name="wrap-mode">word</property>
-                    <property name="buffer">textbuffer_manual</property>
-                    <property name="accepts-tab">False</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkTextView" id="the_manual">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="editable">False</property>
+                        <property name="wrap-mode">word</property>
+                        <property name="buffer">textbuffer_manual</property>
+                        <property name="accepts-tab">False</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -3526,6 +2344,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="halign">start</property>
                     <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="draw-indicator">True</property>
@@ -3542,6 +2361,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="halign">start</property>
                     <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="draw-indicator">True</property>
@@ -3558,6 +2378,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="halign">start</property>
                     <property name="margin-left">10</property>
                     <property name="margin-start">10</property>
                     <property name="draw-indicator">True</property>
@@ -4228,6 +3049,23 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">7</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="checkbox_word_frequency_enabled">
+                    <property name="label" translatable="yes">Enable word frequency analysis</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="tooltip-text" translatable="yes">Enable matching the Word Frequency engine in character recognition.  Disabling this could marginally boost recognition speed, but enabling it should boost accuracy.</property>
+                    <property name="halign">start</property>
+                    <property name="margin-start">10</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">8</property>
                   </packing>
                 </child>
               </object>

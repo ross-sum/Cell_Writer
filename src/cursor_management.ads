@@ -37,6 +37,7 @@
 --                                                                   --
 -----------------------------------------------------------------------
 
+with Set_of;
 with dStrings;        use dStrings;
 package Cursor_Management is
 
@@ -50,6 +51,9 @@ package Cursor_Management is
    -- note that it is assumed that all characters less than ' ' (16#20@) are
    -- not printable.
    procedure Set_Unprintable_Range(from, to : wide_character);
+   procedure Set_Combining_to_Unprintable;
+   function Combining_Check_On(the_character:in wide_character) return boolean;
+      -- Returns true if the specified character is combining.
       
     -- Cursor control
    procedure Add(a_character : in wide_character);
@@ -73,13 +77,24 @@ package Cursor_Management is
      -- The total number of keystrokes, including for hidden keys such as
      -- cursor movement keys.
     
-      private
+private
+
+      -- There is a standard list of combining characters.  To handle all
+      -- combining characters, which are not 'printable' (i.e. they do not
+      -- consume a character space), this all needs to be set up as a set.
+   type character_list is array (natural range <>) of wide_character;
+   package Combining_Sets is new Set_Of(Element => wide_character,
+                                        Index   => natural,
+                                        List    => character_list);
+   use Combining_Sets;
+   subtype combining_character_set  is Combining_Sets.Set;
       
    type cursor_details is record
          visible_cursor : natural := 0;  -- the position of the visible cursor
          absolute_pos   : natural := 0;
          unprintable_start : wide_character;
          unprintable_end   : wide_character;
+         combining_characters : combining_character_set := Empty;
       end record;
       
    the_cursor : cursor_details;

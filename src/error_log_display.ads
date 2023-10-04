@@ -1,18 +1,18 @@
 -----------------------------------------------------------------------
 --                                                                   --
---                        H E L P   A B O U T                        --
+--                 E R R O R   L O G   D I S P L A Y                 --
 --                                                                   --
 --                     S p e c i f i c a t i o n                     --
 --                                                                   --
 --                           $Revision: 1.0 $                        --
 --                                                                   --
---  Copyright (C) 2020  Hyper Quantum Pty Ltd.                       --
+--  Copyright (C) 2023  Hyper Quantum Pty Ltd.                       --
 --  Written by Ross Summerfield.                                     --
 --                                                                   --
---  This  package  displays  the help  about  dialogue  box,  which  --
---  contains  details about the application,  specifically  general  --
---  details,  revision details and usage information (i.e.  how  to  --
---  launch cell_writer).                                           --
+--  This  package  displays  the  error  log  dialogue  box,  which  --
+--  contains details about an error that has been raised.            --
+--  It  is linked in with the Error_Log package and  just  displays  --
+--  errors.  It does not display debug messages.                     --
 --                                                                   --
 --  Version History:                                                 --
 --  $Log$
@@ -30,24 +30,29 @@
 --  Fifth Floor, Boston, MA 02110-1301, USA.                         --
 --                                                                   --
 -----------------------------------------------------------------------
-with Gtkada.Builder;  use Gtkada.Builder;
 with Glib.Object, Gtk.Widget, Gdk.Event;
-with dStrings;        use dStrings;
-package Help_About is
+with Gtkada.Builder;  use Gtkada.Builder;
+package Error_Log_Display is
 
-
-   procedure Initialise_Help_About(Builder : in out Gtkada_Builder;
-                                   usage : in text);
-   procedure Show_Help_About(Builder : in Gtkada_Builder);
+   procedure Initialise_Error_Log_Display(Builder : in out Gtkada_Builder);
+      -- Set up the error log dialogue box so that it behaves properly and
+      -- also set up the call-back with the Error_Log package to utilise
+      -- this dialogue box to display errors.
+   
+   procedure Display_Error (with_message : wide_string);
+      -- This is the call-back that the Error_Log package calls when an
+      -- error is recorded.
 
 private
    use Gtk.Widget, Gdk.Event;
 
-   procedure Help_About_Close_CB 
-                (Object : access Gtkada_Builder_Record'Class);
-   function Help_Hide_On_Delete
-      (Object : access Glib.Object.GObject_Record'Class) return Boolean;
+    -- Call-backs for closing or managing correctly the closing of the Error
+    -- Log Display dialogue box
+   procedure Error_Log_Display_Close_CB 
+                             (Object : access Gtkada_Builder_Record'Class);
+   function Error_Log_Hide_On_Delete
+             (Object : access Glib.Object.GObject_Record'Class) return Boolean;
    function On_Delete_Request(Object : access Gtk_Widget_Record'Class;
                               Event  : Gdk_Event) return boolean;
 
-end Help_About;
+end Error_Log_Display;

@@ -1,4 +1,36 @@
-
+ -----------------------------------------------------------------------
+--                                                                   --
+--                K E Y B O A R D _ E M U L A T I O N                --
+--                                                                   --
+--                              B o d y                              --
+--                                                                   --
+--                           $Revision: 1.0 $                        --
+--                                                                   --
+--  Copyright (C) 2022  Hyper Quantum Pty Ltd.                       --
+--  Written by Ross Summerfield.                                     --
+--                                                                   --
+--  This  package  emulates  the  keyboard  operation,  essentially  --
+--  acting  as  a  virtual  keyboard  for  the  currentlhy   active  --
+--  application, providing it with the keystrokes that the user has  --
+--  entered (eithe by the on-screen keyboard or by the hand-written  --
+--  keystrokes).                                                     --
+--                                                                   --
+--  Version History:                                                 --
+--  $Log$
+--                                                                   --
+--  Cell_Writer  is free software; you can redistribute  it  and/or  --
+--  modify  it under terms of the GNU  General  Public  Licence  as  --
+--  published by the Free Software Foundation; either version 2, or  --
+--  (at your option) any later version.  Cell_Writer is distributed  --
+--  in  hope  that  it will be useful, but  WITHOUT  ANY  WARRANTY;  --
+--  without even the implied warranty of MERCHANTABILITY or FITNESS  --
+--  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
+--  for  more details.  You should have received a copy of the  GNU  --
+--  General Public Licence distributed with  Urine_Records. If not,  --
+--  write  to  the Free Software Foundation,  51  Franklin  Street,  --
+--  Fifth Floor, Boston, MA 02110-1301, USA.                         --
+--                                                                   --
+-----------------------------------------------------------------------
 
 -- with dStrings;           use dStrings;
 with Error_Log;
@@ -129,8 +161,7 @@ package body Keyboard_Emulation is
    procedure Transmit_Sequence(of_characters : in Glib.UTF8_String) is
       -- Transmit the specified sequence of character to the active application.
       use Interfaces.C;
-      app_window : xdo_t_access := 
-                                  xdo_new(display=>New_String("" & ASCII.NUL));
+      app_window : xdo_t_access:= xdo_new(display=>New_String("" & ASCII.NUL));
       app_win_access : xdo_t_const_access := app_window.all'access;
       C_char     : chars_ptr := New_String(of_characters & ASCII.NUL);
    begin

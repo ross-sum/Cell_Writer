@@ -12,6 +12,7 @@
 # where <filename> is the name of this file (nominally database_schema.dbmodel).
 
 # Configuration details table for special information used by the application.
+# For DetFormat, 'S' = string, 'N' = numeric, 'L' = Logical ('0' or '1')
 | TABLE       | Configurations   | config      || Configuration details        |
 | ID          | INTEGER          | PK,NOT NULL || Index into config items      |
 | Name        | CHARACTER(100)   |             || Could be a file name, etc.   |
@@ -33,6 +34,14 @@
 | ButtonNum   | INTEGER          | PK,NOT NULL  | | Button number for this chr |
 | CChar       | CHARACTER(1)     | NOT NULL     | | The combining character    |
 | ToolTip     | CHARACTER(25)    |              | | Tool Tip for the button    |
+| Display     | CHARACTER(30)    |              | | Symbol displayed on button |
+| Macro       | FK Macros(ID)    |              | | The macro that applies     |
+
+# Combining character buttons macros table (to execute when the combining
+# character is clicked)
+| TABLE       | Macros           | Macro        | | Combining Chars macros     |
+| ID          | INTEGER          | PK, NOT NULL | | Unique ID for this macro   |
+| Macro       | TEXT             | NOT NULL     | | The macro                  |
 
 # Keyboard keys definition table (for each language or default = 1)
 | TABLE       | KeyDefinitions   | KeyDefinition || Keyboard key definitions   |
@@ -95,6 +104,9 @@
 | ID          | INTEGER          | PK,NOT NULL  || Offset from Language Start  |
 | SampleNo    | INTEGER          | PK,NOT NULL  || Sample number recorded      |
 | Sample      | TEXT             | NOT NULL     || The sample                  |
+| TrgDate     | DATE             |              || Date traning sample made    |
+| TrgTime     | TIME             |              || Training sample time made   |
+
 # | FK:       | LearntData       | User,Language,ID | User,Language,ID         |
 
 # Reports table for Cell Writer
@@ -112,3 +124,23 @@
 | Q_Number  | INTEGER         | PK,NOT NULL  |   | Query number in report      |
 | TargetTbl | CHARACTER(50)   |              |   | Target table name (if any)  |
 | SQL       | TEXT            | NOT NULL     |   | SQL to run                  |
+
+# Word and phrase frequency table, used for working out the likelihood that
+# a hand-written entry is as it appears to be.
+| TABLE       | WordFrequency | wordfrequency |  | Lists of words and phrases |
+| WFWord      | CHARACTER(100)| PK,NOT NULL   |  | the word or phrase         |
+| WdCount     | INTEGER       |               | 0| Count of words             |
+| Description | CHARACTER(100)|               |  | A name or similar          |
+
+# Training Data Words View, which loads data together such that it
+# avoids the need to perform mathematical addition in the Cell_Writer
+# program.
+| VIEW      | TrainingDataWords | TrainingWord |   | Training data words     |
+| ID        | INTEGER          |              || Offset from Language Start  |
+| WordID    | INTEGER          |              || Word unique id for Language |
+| word      | CHARACTER(100)   |              || UTF-8 word                  |
+| SampleNo  | INTEGER          |              || Sample number recorded      |
+| Sample    | TEXT             |              || The sample                  |
+| TrgDate   | DATE             |              || Date traning sample made    |
+| TrgTime   | TIME             |              || Training sample time made   |
+| User      | CHARACTER(100)   | NOT NULL     || System identifier for user  |
