@@ -78,6 +78,8 @@ project Cell_Writer is
       "generic_versions.ads", "generic_versions.adb", "cell_writer_version.ads",
       "report_processor.ads", "report_processor.adb",
       "error_log_display.ads", "error_log_display.adb",
+      "combining_characters.ads", "combining_characters.adb",
+      "macro_interpreter.ads", "macro_interpreter.adb",
       "help_about.ads", "help_about.adb", "setup.ads", "setup.adb",
       "main_menu.ads", "main_menu.adb",
       "keyboard.ads", "keyboard.adb",
