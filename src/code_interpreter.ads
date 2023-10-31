@@ -322,8 +322,6 @@ with GNATCOLL.SQL.Exec;
 with Gtkada.Builder;    use Gtkada.Builder;
 with Gtk.Drawing_Area;  use Gtk.Drawing_Area;
 with dStrings;          use dStrings;
--- with Generic_Binary_Trees_With_Data;
--- with Generic_Stack;
 package Code_Interpreter is
 
    procedure Initialise_Interpreter(with_builder : in out Gtkada_Builder;

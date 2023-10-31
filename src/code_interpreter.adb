@@ -22,38 +22,10 @@
 -- 1. Initialise registers                                           --
 --     1 Set H to passed in parameter (see above)                    --
 --     2 Set S to the current cell's contents as represented by the  --
---       cell's hint text                                            --
---     3 Set registers A to E to 0                                   --
---     4 Set F to ' ' (16#0020#)                                     --
---     5 Set G to ""                                                 --
---     6 Define an array of the current character block's space      --
---       characters, defining each character's width                 --
--- 2. Load and parse (clean out comments, simplify spaces)           --
---    instruction set blob into an array of text, breaking at ;      --
--- 3. Execute the instructions by recursively passing in the block   --
---    of code to execute (at the top level, this is the code between --
---    the PROCEDURE command and its matching END, noting that the    --
---    procedure name is for readability only and is ignored, except  --
---    to match against the END statement); for each instruction in   --
---    the instruction array passed in:                               --
---     • Extract the first literal from the command line:            --
---     • if a register followed by an assignment, parse each element --
---        of the operation to the right of the assignment (:=)       --
---        operator                                                   --
---     • If an operator command (INSERT, REPLACE, DELETE), execute   --
---       the specific command on the specified register              --
---     • If EXIT, then providing in a FOR loop, exit the recursion   --
---       level out to beyond that FOR loop level; if none is         --
---       encountered, then raise the exception.                      --
---     • If a block command (IF, FOR), determine the end of the      --
---       block, calculate the block control (i.e. of the IF or the   --
---       FOR), then recursion down, passing down an array containing --
---       the commands in the block and the block controls.           --
---     • For sub-commands (LIST, FIND, CHAR, ABS), perform the       --
---        operation and return its value, for mathematical           --
---       operators, perform the operation on the left (if not a      --
---       unary operator) and right components and return its value,  --
---       recursing where  brackets require.                          --
+--       cell's hint text.                                           --
+-- 2. Load and parse the instruction set blob using the              --
+--    Macro_Interpreter library package.                             --
+-- 3. Call the Macro_Interpreter's Execute to execute instructions.  --
 -- 4. Load the S register contents back into the currently selected  --
 --    cell's hint and initiate a redraw for that cell.               --
 --                                                                   --
@@ -77,15 +49,12 @@
 -- with Gtkada.Builder;    use Gtkada.Builder;
 -- with Gtk.Drawing_Area;  use Gtk.Drawing_Area;
 -- with dStrings;          use dStrings;
--- with Generic_Binary_Trees_With_Data;
 with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Characters.Wide_Latin_1, Ada.Wide_Characters.Handling;
-with GNATCOLL.SQL.Exec.Tasking;  --, GNATCOLL.SQL_BLOB;
+with GNATCOLL.SQL.Exec.Tasking;
 with Gtkada.Builder;    use Gtkada.Builder;
 with Gtk.Drawing_Area;  use Gtk.Drawing_Area;
 with dStrings;          use dStrings;
-with Strings_Functions;
-with String_Conversions;
 with Error_Log;
 with Database;          use Database;
 with Error_Log_Display; use Error_Log_Display;
@@ -93,7 +62,7 @@ with Macro_Interpreter; use Macro_Interpreter;
 with Cursor_Management;
 with Cell_Writer_Version;
 package body Code_Interpreter is
-   use GNATCOLL.SQL; --, GNATCOLL.SQL_BLOB;
+   use GNATCOLL.SQL;
 
    the_builder : Gtkada.Builder.Gtkada_Builder;
    
