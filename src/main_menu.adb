@@ -162,6 +162,9 @@ package body Main_Menu is
                        Handler_Name => "btn_sep_clicked_cb",
                        Handler      => Btn_Separator_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_period_clicked_cb",
+                       Handler      => Btn_Period_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
                        Handler_Name => "btn_up_clicked_cb",
                        Handler      => Btn_Up_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
@@ -494,6 +497,25 @@ package body Main_Menu is
          Transmit(key_press => Setup.The_Special_Button);
       end if;
    end Btn_Separator_Clicked_CB;
+   
+   procedure Btn_Period_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+      -- We assume here that if the Grid edit button is depressed, then the
+      -- user wants to put a period into the currently selected cell.  If it
+      -- isn't depressed, then the user wants to transmit the period to the
+      -- active application.
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation;
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Period_Clicked_CB: Start");
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Set_Current_Cell(to => '.');
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => '.');
+      end if;
+   end Btn_Period_Clicked_CB;
 
    procedure Btn_Up_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is

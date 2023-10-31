@@ -39,6 +39,8 @@ with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
 package Setup is
    use GLib;
+   
+   type sample_rating is digits 5 range 0.0 .. 1.0;  -- per cent value
 
    procedure Initialise_Setup(Builder : in out Gtkada_Builder;
                               DB_Descr: GNATCOLL.SQL.Exec.Database_Description;
@@ -101,6 +103,14 @@ package Setup is
       -- Return the user's preference of the maximum number of samples that
       -- should be recorded for training for each character or word that is
       -- trained up.
+      
+   function Recognition_Accuracy_Margin return sample_rating;
+      -- Return the user's preference for the accuracy margin (that is, the
+      -- allowed rating gap before a cell's recognised content is highlighted
+      -- after recognition.  Such a highlight indicates to the user that they
+      -- could right mouse click to show a pop-up list of alternative samples
+      -- that could be what the user really meant when they drew their
+      -- character or word.
      
    function The_Special_Button return wide_character;
       -- The special character that is emitted when the special button is

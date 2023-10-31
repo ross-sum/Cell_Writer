@@ -344,6 +344,7 @@ INSERT INTO Configurations VALUES(16,"enable_word_context",'L',"0");
 INSERT INTO Configurations VALUES(17,"ignore_stroke_direction",'L',"0");
 INSERT INTO Configurations VALUES(18,"match_diff_stroke_nos",'L',"0");
 INSERT INTO Configurations VALUES(30,"enable_word_frequency",'L',"1");
+INSERT INTO Configurations VALUES(32,"accuracy_margin",'N',"5");
 INSERT INTO Configurations VALUES(19,"used_cell_colour",'S',"rgb(255,255,255)");
 INSERT INTO Configurations VALUES(20,"blank_cell_colour",'S',"rgb(153,193,241)");
 INSERT INTO Configurations VALUES(21,"highlight_colour",'S',"rgb(205,0,0)");

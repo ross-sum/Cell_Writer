@@ -1201,6 +1201,20 @@ Author: Ross Summerfield, Michael Levin
                     <property name="homogeneous">True</property>
                   </packing>
                 </child>
+                <child>
+                  <object class="GtkToolButton" id="btn_period">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Period/Full stop character</property>
+                    <property name="label" translatable="yes">.</property>
+                    <property name="use-underline">True</property>
+                    <signal name="clicked" handler="btn_period_clicked_cb" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -2972,7 +2986,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="margin-top">10</property>
-                    <property name="label" translatable="yes">Word content</property>
+                    <property name="label" translatable="yes">Word context</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -3006,7 +3020,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="can-focus">False</property>
                     <property name="halign">start</property>
                     <property name="margin-top">10</property>
-                    <property name="label" translatable="yes">Word context</property>
+                    <property name="label" translatable="yes">Processing word content</property>
                     <attributes>
                       <attribute name="weight" value="bold"/>
                     </attributes>
@@ -3066,6 +3080,52 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">8</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="box_setup_training_samples_per_character1">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <child>
+                      <object class="GtkLabel" id="setup_label_recognition_accuracy_margin">
+                        <property name="visible">True</property>
+                        <property name="can-focus">False</property>
+                        <property name="margin-left">20</property>
+                        <property name="margin-start">20</property>
+                        <property name="label" translatable="yes">Accuracy margin (%): </property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkSpinButton" id="spin_setup_accuracy_margin">
+                        <property name="visible">True</property>
+                        <property name="can-focus">True</property>
+                        <property name="tooltip-text" translatable="yes">The accuracy margin (i.e. 100% - &lt;this value&gt;) to assume that the recognition engine(s) correctly recognised the character or word.  If the level of doubt is within this value, then the most likely character or word is displayed in red, to indicate there is a drop-down list available at right-mouse-click to select a different alternative.</property>
+                        <property name="max-length">2</property>
+                        <property name="max-width-chars">2</property>
+                        <property name="text" translatable="yes">5</property>
+                        <property name="caps-lock-warning">False</property>
+                        <property name="adjustment">adjustment__samples_per_char</property>
+                        <property name="climb-rate">1</property>
+                        <property name="snap-to-ticks">True</property>
+                        <property name="numeric">True</property>
+                        <property name="value">5</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">9</property>
                   </packing>
                 </child>
               </object>

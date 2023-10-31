@@ -48,6 +48,7 @@ with Gdk.Event, Cairo, Gtk.Widget, Gtk.Menu, Gtk.Menu_Item;
 with Gdk.RGBA;
 with dStrings;         use dStrings;
 with Recogniser;
+with Setup;
 package Grid_Event_Handlers is
     
    procedure Register_Handlers(with_builder : in out Gtkada_Builder;
@@ -251,7 +252,7 @@ private
        -- alternative management
       procedure Set(the_alternatives : in Recogniser.alternative_array);
       procedure Current(menu_item : in text);
-      procedure Set_Allowed_Rating_Gap(to : in Recogniser.sample_rating);
+      procedure Set_Allowed_Rating_Gap(to : in Setup.sample_rating);
       function The_Character return text;
       function The_Sample_Number return natural;
       function Character_Requires_Highlight return boolean;
@@ -280,8 +281,8 @@ private
           -- related training sample's 'used' field is updated.
       ch : text;
       sample_num : natural := 0;
-      allowed_gap: Recogniser.sample_rating := 0.05; -- %
-      current_gap: Recogniser.sample_rating := 1.00; -- %
+      allowed_gap: Setup.sample_rating := 0.05; -- % (starting value)
+      current_gap: Setup.sample_rating := 1.00; -- %
    end Alternative_Mgt;
 
 end Grid_Event_Handlers;

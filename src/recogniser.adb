@@ -43,6 +43,7 @@
 -- with Averages;          use Averages;
 -- with Word_Frequency;    use Word_Frequency;
 -- with Generic_Binary_Trees_With_Data;
+-- with Setup;
 with Ada.Wide_Characters.Handling, Ada.Characters.Conversions;
 with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Calendar;
@@ -52,11 +53,11 @@ with Error_Log;
 with Host_Functions;
 with Calendar_Extensions;  use Calendar_Extensions;
 with Database;             use Database;
-with Setup;
 with Grid_Training;
 with Cell_Writer_Version;
 package body Recogniser is
    use GNATCOLL.SQL, GNATCOLL.SQL_BLOB, GNATCOLL.SQL_Date_and_Time;
+   use Setup;
 
    cDB : GNATCOLL.SQL.Exec.Database_Connection;
    CW_select            : constant GNATCOLL.SQL.Exec.Prepared_Statement :=

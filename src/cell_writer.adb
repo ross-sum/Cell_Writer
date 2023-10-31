@@ -88,7 +88,9 @@ procedure Cell_Writer is
        "l,log,string," & default_log_file_name & 
                  ",log file name with optional path;" &
        "f,format,string," & default_log_file_format &
-                 ",log file format (e.g. '' or 'WCEM=8');" &
+                 ",log file format (e.g. '' or 'WCEM=8' for UTF-8 or " & 
+                 "'WECM=8,ctrl' to do UTF-8 and turn control characters into" &
+                 "a readable format);" &
        "d,debug,integer,0,debug level (0=none + 9=max);" &
        "x,xid,boolean,FALSE,starts CellWriter in embedded mode. You can set "&
                  "gnome-screensaver to call Cell_Writer with this option to "&
@@ -235,8 +237,9 @@ begin  -- Cell_Writer
    if Parameter(with_flag => flag_type'('i')) then
       Put_Line("Cell Writer");
       Put_Line("Grid-entry handwriting input panel");
-      Put_Line("Copyright (C) 2022-23 Hyper Quantum Pty Ltd, Michael Levin");
-      Put_Line("Written by Ross Summerfield and Michael Levin");
+      Put_Line("Copyright (C) 2022-23 Hyper Quantum Pty Ltd");
+      Put_Line("with the recognition algorithm by Michael Levin (cellwriter)");
+      Put_Line("Written by Ross Summerfield");
       New_Line;
       -- Host_Functions.Check_Reservation;
    end if;

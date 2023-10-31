@@ -81,6 +81,8 @@ private
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Separator_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Period_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Up_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Down_Clicked_CB

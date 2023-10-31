@@ -90,20 +90,18 @@
 --               (i.e. command) is separated by a semicolon (;) as noted above. 
 -- The ELSIF component together with its operation is optional.  There may be
 -- as many ELSIF components as is required.
--- The ELSE component together with its operation is optional.
+-- The ELSE and ELSIF components together with their operation is optional.
 -- 
 -- INSERT
--- Insert just before the specified 'space' character the specified string.  To
--- insert at the end, specify the last character plus 1.
--- If there is no 'space' character but there are other non-combining
--- characters, then they or it is used. For the vast majority of character
--- sets, and definitely for the Latin character set, just one character is used
--- within a cell, meaning that the instruction set operates on the (only)
--- character in the current cell (see note at the beginning about characters
--- and cells).
--- After the insertion, the character position is advanced to character just
--- past the inserted string and the character count (i.e. column count) is
--- updated to add in the inserted string's length. 
+-- Insert just before the specified position the specified string.  To insert
+-- at the end, specify the last character plus 1.  In determining the insert
+-- point, combining characters, which take up no apparent 'space', must be
+-- taken into account. For the vast majority of character sets, and definitely
+-- for the Latin character set, just one character is used within a cell,
+-- meaning that the instruction set operates on the (only) character in the
+-- current cell (see note at the beginning about characters and cells).
+-- After the insertion, the string's length is obviously adjusted (incremented)
+-- by one. 
 -- Format is:
 --   INSERT S({position}) WITH "{string}"
 --   INSERT S({position}) WITH {register}
@@ -118,10 +116,8 @@
 -- REPLACE
 -- Replace the specified 'space' character with the specified string. 
 -- 
--- After the replacement, the character position is advanced to character just
--- past the inserted string and the character count (i.e. column count) is
--- updated to add in the inserted string's length less 1 for the replaced
--- character.
+-- After the replacement, the string length is potentially modified,
+-- particularly if the replacement string is longer than one character.
 -- Format is:
 --   REPLACE S({position}) WITH "{string}"
 --   REPLACE S({position}) WITH {register}
@@ -134,16 +130,17 @@
 --   {register} is one of either F or G to replace.
 -- 
 -- DELETE
--- Delete the specified character in the cell.  This operation does not visibly
--- affect position counters that might be in operation,  for instance in a For
--- loop that is working through a string of characters in a cell.  That is
--- achieved by leaving the character position where it is and adjusting the
--- string length. 
+-- Delete the specified character in the string.  This operation does affect
+-- position counters that might be in operation,  for instance in a For loop
+-- that is working through a string of characters in a cell, where whilst the
+-- loop counter is not modified, the position in the string that it may
+-- reference relates to a string that is now one character shorter.  The
+-- default register is, of course, the S register.
 -- Format is:
 --   DELETE ({position})
 --   DELETE ({register})
---   DELETE {register} ({position})
---   DELETE {register} ({register})
+--   DELETE ({register} {position})
+--   DELETE ({register} {register})
 -- Where:
 --   {position} is the 1 based position from the start of the character
 --              sequence in the cell of the desired character to be deleted;
@@ -156,22 +153,36 @@
 -- Format is:
 --   FOR {register} IN {value} .. {value} LOOP {commands} END LOOP
 --   FOR {register} IN REVERSE {value} .. {value} LOOP {commands} END LOOP
---   FOR {register} IN {register} LOOP {commands} END LOOP
---   FOR {register} IN REVERSE {register} LOOP {commands} END LOOP
 -- Where:
---   {register} is a numeric register,  A - E, and the initial value in this
---              register is lost for the counter register (i.e. the first
---              instance specified in the command) if counting up (i.e. REVERSE
---              is not specified) or if the range is specified rather than an
---              end value register. Otherwise,  the register specifies the
---              starting value.  The second register specifies the end number.
---              These numbers must be integers;
---   {value}    specifies the start and end count ranges and must be integers;
+--   {register} is a numeric register,  A - E, or the character register, F,
+--              and the initial value in this register is lost for the counter
+--              register (i.e. the first instance specified in the command) if
+--              counting up (i.e. REVERSE is not specified) or if the range is
+--              specified rather than an end value register; it tracks the loop
+--              count from start to finish;
+--   {value}    specifies the start and end count ranges and must be integers
+--              or characters.  The value may be provided as either a register
+--              or as a constant or as some kind of formula, and each value is
+--              separated by the elipses (..);
 --   {commands} is a set of instructions using the command set. Each operation
 --              (i.e. command) is separated by a semicolon (;) as noted above.
+--              The block of commands that the FOR loop operates on is
+--              terminated by an 'END LOOP;' statement.
+-- 
+-- LOOP - END LOOP
+-- Perform a specified series of operations in between the LOOP and END LOOP
+-- commands, exiting when the EXIT command is encountered.
+-- Format is:
+--   LOOP {commands} END LOOP
+-- Where:
+--   {commands} is a set of instructions using the command set. Each operation
+--              (i.e. command) is separated by a semicolon (;) as noted above.
+--              The block of commands that the FOR loop operates on is
+--              terminated by an 'END LOOP;' statement.
 -- 
 -- EXIT
---   Exit a For loop. 
+--   Exit a For loop or a standard (i.e. infinite until the Exit command is
+--   encountered) loop. 
 -- Format is:
 --   EXIT
 -- 
@@ -190,15 +201,18 @@
 -- character position, returning the position number.  If there are multiple
 -- instances of the specified character, then it returns the position of the
 -- first instance.   If none are found then it returns 0.
--- It, of course, operates on the S register.
+-- It, of course, operates on the S register by default.
 -- Format is:
 --   FIND ('{c}')
 --   FIND ({register})
+--   FIND ({register}, {register})
 -- Where:
 --   {c}        is a character to search on;
 --   {register} is any register other than the G register, but if any of
 --               registers A - E, then the number must be an integer and is
---               translated into its Unicode character value.
+--               translated into its Unicode character value.  Where specified,
+--               the second optional register specifies the register to search
+--               on, by default the S register
 -- 
 -- WIDTH
 -- Provide the width of the specified character, usually a 'space' character. 
@@ -224,6 +238,13 @@
 --   {size}  is the character size (see WIDTH above) and may either be a
 --           (floating point) constant or a register. 
 -- 
+-- ABS
+-- Provide the absolute value of the supplied number as a return value.
+-- Format is:
+--   ABS ({number})
+-- Where:
+--   {number} is number to return the absolute value of.
+-- 
 -- ERROR LOG
 -- Provide a method of logging a message or a register.  The log is sent to the
 -- application’s standard logging channel with a log level of 1.
@@ -231,7 +252,8 @@
 --   ERROR_LOG ("{string}") or
 --   ERROR_LOG ({register})
 -- Where:
---   {string}   is text string and is surrounded by double quotes (");
+--   {string}   is text string and is surrounded by double quotes ("), with a
+--              special case of 'registers' which means log all registers;
 --   {register} is a register (e.g. F). If it is a numeric register (i.e.
 --              between A and E), then the number will be logged in human
 --              readable (i.e. textual) format.
@@ -342,8 +364,8 @@ private
     
    type reserved_words_and_attributes is
            (cNull, cEQUATION, cPROCEDURE, cEND, cIF, cINSERT, cREPLACE, 
-            cDELETE, cFOR, cEXIT, cELSE, cELSIF, cERROR_LOG, 
-            cIS, cLOOP, cTHEN, cREVERSE, cWITH, cCHAR, cFIND, cWIDTH, cIN, 
+            cDELETE, cFOR, cLOOP, cEXIT, cELSE, cELSIF, cERROR_LOG, 
+            cIS, cTHEN, cREVERSE, cWITH, cCHAR, cABS, cFIND, cWIDTH,cIN,
             cLength, cSize, cFirst, cLast);
    subtype reserved_words is reserved_words_and_attributes range cNull..cIN;
    subtype command_set is reserved_words range cNull .. cERROR_LOG;
@@ -352,10 +374,11 @@ private
    all_reserved_words : constant reserved_word_list := 
       (Value("NULL"), Value(""), Value("PROCEDURE"), Value("END"), Value("IF"),
        Value("INSERT"), Value("REPLACE"), Value("DELETE"), Value("FOR"), 
-       Value("EXIT"), Value("ELSE"), Value("ELSIF"), Value("ERROR_LOG"), 
-       Value("IS"), Value("LOOP"), Value("THEN"), Value("REVERSE"), 
+       Value("LOOP"), Value("EXIT"), Value("ELSE"), Value("ELSIF"), 
+       Value("ERROR_LOG"), 
+       Value("IS"), Value("THEN"), Value("REVERSE"), 
        Value("WITH"), 
-       Value("CHAR"), Value("FIND"), Value("WIDTH"), Value("IN"));
+       Value("CHAR"), Value("ABS"), Value("FIND"), Value("WIDTH"),Value("IN"));
    subtype register_attributes is 
                             reserved_words_and_attributes range cLength..cLast;
    type attributes_list is array (register_attributes) of text;
@@ -377,10 +400,12 @@ private
                                               logical_and .. logical_not;
    subtype comparison_operator is mathematical_operator range 
                                               greater_equal .. range_condition;
-   type all_register_names is (const, H, S, A, B, C, D, E, F, G, Y);
+   subtype string_operator     is mathematical_operator range concat .. concat;
+   type all_register_names is (const, A, B, C, D, E, F, G, H, S, Y);
    register_ids : constant array (all_register_names'Range) of wide_character:=
-        (' ', 'H', 'S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'Y');
-   subtype register_name is all_register_names range H .. G;
+        (' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'S', 'Y');
+   subtype register_name   is all_register_names range A .. S;
+   subtype string_register is register_name      range G .. S;
    type for_loop_directions is (forward, in_reverse);
    
    type cmd_block(cmd : command_set := cNull);
@@ -392,8 +417,8 @@ private
    type equation_type(eq : equation_format := mathematical);
    type equation_access is access all equation_type;
    register_types:constant array (all_register_names'Range) of equation_format:=
-        (none, textual, textual, mathematical, mathematical, mathematical,
-         mathematical, mathematical, textual, textual, logical);
+        (none, mathematical, mathematical, mathematical,
+         mathematical, mathematical, textual, textual, textual, textual, logical);
    type equation_type(eq : equation_format := mathematical) is record
          register : all_register_names := const;
          reg_parm : equation_access := null;  -- sub-component of reg., if any
@@ -414,11 +439,13 @@ private
                t_result : text;
             when bracketed    =>
                b_equation : equation_access := null;
+               b_result : long_float := 0.0;
             when funct        =>
                f_type   : function_set;
                f_param1 : equation_access;
                f_param2 : equation_access;
                f_result : long_float := 0.0;
+               ft_result: text;
             when comparison   =>  
                c_const  : boolean    := false;
                c_result : boolean    := false;
@@ -431,7 +458,7 @@ private
     
    type link_to_positions is (proc_body, then_part, else_part, else_parent, 
                               else_block, ethen_part, parent_if, eelse_part,
-                              for_block, exit_point, next_command);
+                              for_block, loop_block, exit_point, next_command);
    type cmd_block(cmd : command_set := cNull) is record
          next_command : code_block;
          last_command : code_block;
@@ -447,11 +474,11 @@ private
             when cEND =>
                end_type    : command_set;  -- IF/FOR/PROCEDURE
                parent_block: code_block;
-               exit_is_set : boolean := false;
             when cIF =>
                condition   : equation_access;  -- : expression(boolean);
                then_part   : code_block;  -- The THEN Block of code
                else_part   : code_block;  -- points to next ELSIF/ELSE block
+               if_executed : boolean := false;  -- stop ELSE executing on THEN
                -- next_command points to END (IF)
             when cELSE =>  -- this pops back to the cIF block's end
                else_parent : code_block;  -- prior ELSIF/IF command (path back)
@@ -462,6 +489,7 @@ private
                ethen_part  : code_block;  -- The ELSIF Block of code
                parent_if   : code_block;  -- prior ELSIF/IF command (path back)
                eelse_part  : code_block;  -- next elsif or else or end block
+               eif_executed: boolean := false;  -- for return trip
                -- next_command points to END (IF)
             when cINSERT =>
                i_reg : register_name := S;
@@ -482,11 +510,12 @@ private
                f_end       : equation_access;
                direction   : for_loop_directions := forward;
                for_block   : code_block;
-               exit_for    : boolean := false;  -- Set by the cEXIT command
-               -- f_pointer   : integer;  -- current point in FOR loop
+            when cLOOP =>
+               loop_block  : code_block;
             when cEXIT =>
-               exit_point  : code_block;  -- FOR statement that this applies to
-               exit_parent : code_block;  -- prior IF/ELSIF/ELSE/FOR command
+               exit_conditn: equation_access := null;
+               exit_point  : code_block; -- FOR/LOOP statement that this applies to
+               exit_parent : code_block; -- prior IF/ELSIF/ELSE/FOR/LOOP command
             when cERROR_LOG =>
                e_reg : all_register_names := const;
                e_val : text;
@@ -507,7 +536,7 @@ private
          case reg is
             when A .. E =>
                reg_f : long_float := 0.0;
-            when G | H | S =>
+            when G .. S =>
                reg_t : text := Clear;
             when F => 
                reg_c : wide_character := null_ch;
@@ -571,8 +600,9 @@ private
                           (wide_character'Val(16#E18C#),0.0),
                           (wide_character'Val(16#E18D#),1.0));
 
-   procedure Execute (the_macro : in out code_block;
-                      on_registers : in out register_array);
+   procedure Execute (the_macro_code : in code_block;
+                      on_registers : in out register_array;
+                      loop_exit_triggered : in out boolean);
       -- This main macro execution procedure the following parameters:
       --     1 The pointer to the currently selected cell;
       --     2 A pointer to the blob containing the instructions, as pointed to

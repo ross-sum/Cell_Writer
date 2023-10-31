@@ -132,8 +132,8 @@ package body Grid_Training is
      -- order.
       trg : constant training := (the_word, which_is);
    begin
-      Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "Load(the_word): Start");
+      -- Error_Log.Debug_Data(at_level => 9, 
+         --                   with_details => "Load(the_word): Start");
       training_data.word_list.Append(trg);
       training_data.num_words := training_data.num_words + 1; 
    end Load;
@@ -155,9 +155,9 @@ package body Grid_Training is
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       char_or_word : text renames on_char_or_word;
    begin
-      Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "Record_Training_Status (" &
-                                           To_String(char_or_word)&"): Start");
+      -- Error_Log.Debug_Data(at_level => 9, 
+         --                   with_details => "Record_Training_Status (" &
+         --                                   To_String(char_or_word)&"): Start");
       -- First, find the character or word in the list then set the status.
       for char_pos in training_data.word_list.First_Index .. 
                       training_data.word_list.Last_Index loop
@@ -241,8 +241,8 @@ package body Grid_Training is
        -- first character pointing to the first one in the window.
       use Ada.Containers;
    begin
-      Error_Log.Debug_Data(at_level => 8, 
-                           with_details => "Point_At_Grid_End: Start");
+      -- Error_Log.Debug_Data(at_level => 8, 
+         --                   with_details => "Point_At_Grid_End: Start");
       if training_data.word_list.Length > 0
       then  -- We have data
          if natural(training_data.word_list.Length) > 
@@ -274,8 +274,8 @@ package body Grid_Training is
        -- Move the window up one page if there is a window's worth of space
        -- prior, if not then just go to the start.
    begin
-      Error_Log.Debug_Data(at_level => 8, 
-                           with_details => "Grid_Page_Up: Start");
+      -- Error_Log.Debug_Data(at_level => 8, 
+         --                   with_details => "Grid_Page_Up: Start");
       if training_data.window_start >= 
                training_data.col_count * training_data.row_count
       then  -- at least one window width's position prior
@@ -294,8 +294,8 @@ package body Grid_Training is
        -- Move the window down one page if there is a window's worth of space
        -- left, if not then just go to the end.
    begin
-      Error_Log.Debug_Data(at_level => 8, 
-                           with_details => "Grid_Page_Down: Start");
+      -- Error_Log.Debug_Data(at_level => 8, 
+         --                   with_details => "Grid_Page_Down: Start");
       if training_data.window_start + 
                training_data.col_count * training_data.row_count < 
                                     natural(training_data.word_list.Last_Index)
@@ -373,8 +373,8 @@ package body Grid_Training is
       pos_in_window : constant natural := 
                   training_data.word_position - training_data.window_start + 1;
    begin
-      Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "Is_End_Of_Grid_Row: Start");
+      -- Error_Log.Debug_Data(at_level => 9, 
+         --                   with_details => "Is_End_Of_Grid_Row: Start");
       return pos_in_window rem training_data.col_count = 0;
    end Is_End_Of_Grid_Row;
 
@@ -394,15 +394,15 @@ package body Grid_Training is
        -- position and advance the character pointer.  If there are no
        -- more characters or words left, then return an empty string.
    begin
-      Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "The_Char_or_Word: Start");
+      -- Error_Log.Debug_Data(at_level => 9, 
+         --                   with_details => "The_Char_or_Word: Start");
       if training_data.word_position > no_words and 
          training_data.word_position <= 
                                     natural(training_data.word_list.Last_Index)
       then  -- advance word pointer and return the result
          training_data.word_position :=training_data. word_position + 1;
-         Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "The_Char_or_Word: ("&integer'Wide_Image(training_data.word_position - 1)&")="&Value(training_data.word_list(training_data.word_position - 1).data));
+         -- Error_Log.Debug_Data(at_level => 9, 
+            --                with_details => "The_Char_or_Word: ("&integer'Wide_Image(training_data.word_position - 1)&")="&Value(training_data.word_list(training_data.word_position - 1).data));
          return training_data.word_list(training_data.word_position - 1).data;
       else
          return Clear;

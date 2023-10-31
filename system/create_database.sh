@@ -1,6 +1,9 @@
 #!/bin/sh
 # This script creates the Sqlite database, executing the DDL script
 #
+# Delete the old database:
+rm cell_writer.db
+#
 # Create the database:
 # we could run this from a data definition list file viz:
 #   sqlite3 cell_writer.db < database_schema.ddl

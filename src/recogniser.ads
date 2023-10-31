@@ -33,6 +33,7 @@ with GNATCOLL.SQL.Exec;
 with Ada.Containers.Vectors;
 with dStrings;          use dStrings;
 with Vectors;           use Vectors;
+with Setup;
 with Stroke_Management; use Stroke_Management;
 with Samples;           use Samples;
 with Sample_Comparison; use Sample_Comparison;
@@ -52,7 +53,7 @@ package Recogniser is
    
    -- Alternative possible characters or words for a particular
    -- sample being recognised
-   type sample_rating is digits 5 range 0.0 .. 1.0;  -- per cent value
+   subtype sample_rating is Setup.sample_rating;  -- per cent value
    type alternative_details is record
          ch             : text;
          rating         : sample_rating := 0.0;

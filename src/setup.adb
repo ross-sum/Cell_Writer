@@ -389,6 +389,12 @@ package body Setup is
                Set_Value(spin_entry, 
                         Glib.GDouble(Float(Integer'Value(Value(R_config,3)))));
                Samples.Set_Maximum_Samples(to=> Integer'Value(Value(R_config,3)));
+            elsif Value(R_config,1) = "accuracy_margin" then
+               spin_entry := gtk_spin_button(Get_Object(Builder, 
+                                               "spin_setup_accuracy_margin"));
+               Set_Value(spin_entry, 
+                        Glib.GDouble(Float(Integer'Value(Value(R_config,3)))));
+               Samples.Set_Maximum_Samples(to=> Integer'Value(Value(R_config,3)));
             elsif Value(R_config,1) = "enable_word_context" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                            "checkbox_setup_enable_english_context"));
@@ -666,6 +672,12 @@ package body Setup is
                Samples.Set_Maximum_Samples
                                    (to=>Integer(Get_Value_As_Int(spin_entry)));
                execute_it := true;
+            elsif Value(R_config,1) = "accuracy_margin" then
+               spin_entry := gtk_spin_button(Get_Object(Builder, 
+                                               "spin_setup_accuracy_margin"));
+               c_cw_update:= (1 => +Integer_Value(R_config,0),
+                              2 => +Get_Value_As_Int(spin_entry)'Image);
+               execute_it := true;   
             elsif Value(R_config,1) = "enable_word_context" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                      "checkbox_setup_enable_english_context"));
@@ -1246,6 +1258,21 @@ package body Setup is
                                     "spin_setup_samples_per_char"));
       return Integer(Get_Value_As_Int(spin_entry));
    end Max_Samples_Per_Character;
+
+   function Recognition_Accuracy_Margin return sample_rating is
+      -- Return the user's preference for the accuracy margin (that is, the
+      -- allowed rating gap before a cell's recognised content is highlighted
+      -- after recognition.  Such a highlight indicates to the user that they
+      -- could right mouse click to show a pop-up list of alternative samples
+      -- that could be what the user really meant when they drew their
+      -- character or word.
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                    "spin_setup_accuracy_margin"));
+      return sample_rating(Get_Value(spin_entry)/100.0);
+   end Recognition_Accuracy_Margin;
    
    function The_Special_Button return wide_character is
       -- The special character that is emitted when the special button is

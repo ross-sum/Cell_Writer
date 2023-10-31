@@ -54,7 +54,7 @@ with Glib;                use Glib;
 with Vectors;             use vectors;
 with String_Conversions;
 with Cell_Writer_Version;
-with Setup;
+-- with Setup;
 with Samples;             use Samples;
 with Stroke_Management;   use Stroke_Management;
 with Grid_Training;       use Grid_Training;
@@ -1504,9 +1504,9 @@ package body Grid_Event_Handlers is
    protected body Alternative_Mgt is
        -- alternative management
       procedure Set(the_alternatives : in Recogniser.alternative_array) is
-         use Recogniser, Recogniser.Alternatives_Arrays;
+         use Recogniser, Recogniser.Alternatives_Arrays, Setup;
          alt_num : natural := 0;
-         first_rating : sample_rating;
+         first_rating : Setup.sample_rating;
       begin
          alternatives_list := the_alternatives;
          -- work out the current actual gap
@@ -1526,14 +1526,14 @@ package body Grid_Event_Handlers is
             exit when alt_num >= 2;
          end loop;
       end Set;
-      procedure Set_Allowed_Rating_Gap(to : in Recogniser.sample_rating) is
+      procedure Set_Allowed_Rating_Gap(to : in Setup.sample_rating) is
       begin
          allowed_gap := to;
       end Set_Allowed_Rating_Gap;
       procedure Current(menu_item : in text) is
-         use Recogniser, Recogniser.Alternatives_Arrays;
+         use Recogniser, Recogniser.Alternatives_Arrays, Setup;
          rating_text : text;
-         rating      : sample_rating;
+         rating      : Setup.sample_rating;
          alternative : Recogniser.alternative_details;
       begin
          selected_popup_entry := menu_item;
@@ -1549,7 +1549,7 @@ package body Grid_Event_Handlers is
          then  -- delete it
             Delete(rating_text, Length(rating_text), 1);
          end if;
-         rating := sample_rating(float(
+         rating := Setup.sample_rating(float(
                        Get_Integer_From_String(rating_text)) / 100.0);
          -- locate the appropriate entry in the list
          First(in_the_list => alternatives_list);
@@ -1574,11 +1574,11 @@ package body Grid_Event_Handlers is
       function Character_Requires_Highlight return boolean is
           -- Indicate whether there is more than one character for this cell
           -- and the gap is insignificant (default is < 5%)
-         use Recogniser, Recogniser.Alternatives_Arrays;
+         use Recogniser, Recogniser.Alternatives_Arrays, Setup;
       begin
          return Length(selected_popup_entry) > 0 and then 
                 Count(of_items_in_the_list => alternatives_list) > 1 and then
-                current_gap >= allowed_gap;
+                current_gap >= Setup.Recognition_Accuracy_Margin;
       end Character_Requires_Highlight;
       function Multiple_Choices_of_Character return boolean is
          -- Indicate whether there is more than one character for this cell
@@ -1597,6 +1597,7 @@ package body Grid_Event_Handlers is
          Clear(the_list => alternatives_list);
          sample_num := 0;
          current_gap := 1.00; -- %
+         allowed_gap := Setup.Recognition_Accuracy_Margin;
       end Clean_Up;
     -- private
       -- selected_popup_entry : text;
