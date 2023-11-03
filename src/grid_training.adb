@@ -100,7 +100,7 @@ package body Grid_Training is
       loaded : boolean := false;
    begin
       Error_Log.Debug_Data(at_level => 9, 
-                           with_details => "Load(the_character): Start" & "charcter='"&the_character&"'.");
+                           with_details => "Load(the_character): Start" & " charcter='"&the_character&"'.");
       if training_data.word_list.Length = 0
       then  -- at the start of the list
          training_data.word_list.Append(trg);

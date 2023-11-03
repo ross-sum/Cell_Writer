@@ -1841,19 +1841,14 @@ package body Keyboard is
          ending   := Integer_Value(R_chars,2);
          for char_id in starting .. ending loop
             the_char := wide_character'Val(char_id);
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: the character is '" & the_char & "'.");
             if not (the_char in bliss_space_start .. bliss_space_end)
             then  -- This is a trainable character
             -- Load it
                Load(the_character => the_char);
-               Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: Loaded it.");
             -- and record whether training is done on it
                if There_Is_A_Sample_With (the_key => To_Text(the_char))
                then  -- training has been done on it
-                  Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: it's trained.");
                   Record_Training_Is_Done(on_character => the_char);
-               else
-                  Error_Log.Debug_Data(at_level => 9, with_details=> "Load_Characters_List: it's NOT trained.");
                end if;
             end if;
          end loop;

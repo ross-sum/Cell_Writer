@@ -358,5 +358,7 @@ INSERT INTO Configurations VALUES(28,"enable_right_to_left",'L',"0");
 INSERT INTO Configurations VALUES(29,"cell_writer.css",'T',"");
 UPDATE Configurations SET Details=readfile('cell_writer.css') WHERE ID=29;
 INSERT INTO Configurations VALUES(31,"engine_ranges",'S',"100 100 100 100");
+INSERT INTO Configurations VALUES(33,"error_terminator",'S',"Please see your system administrator or email the log to the developer along with an explanation of what you were doing just before the error");
+INSERT INTO Configurations VALUES(34,"macro_err_no",'N',"2");
 
 INSERT INTO UserIDs VALUES (0, "", "", 1);

@@ -51,7 +51,7 @@
 -- with dStrings;          use dStrings;
 with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Characters.Wide_Latin_1, Ada.Wide_Characters.Handling;
-with GNATCOLL.SQL.Exec.Tasking;
+with GNATCOLL.SQL.Exec.Tasking, GNATCOLL.SQL_BLOB;
 with Gtkada.Builder;    use Gtkada.Builder;
 with Gtk.Drawing_Area;  use Gtk.Drawing_Area;
 with dStrings;          use dStrings;
@@ -73,6 +73,15 @@ package body Code_Interpreter is
                         Order_By=> Macros.ID),
             On_Server => True,
             Use_Cache => True);
+   error_dets_select    : constant GNATCOLL.SQL.Exec.Prepared_Statement :=
+      GNATCOLL.SQL.Exec.Prepare 
+           (SQL_Select (Fields  => Configurations.ID & Configurations.Details,
+                        From    => Configurations,
+                        Where   => (Configurations.Name = Text_Param(1)), --AND
+                                   -- (Configurations.DetFormat = "N"),
+                        Order_By=> Configurations.ID),
+            On_Server => True,
+            Use_Cache => True);
 
    procedure Initialise_Interpreter(with_builder : in out Gtkada_Builder;
                         with_DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
@@ -84,9 +93,11 @@ package body Code_Interpreter is
       -- that raises the BAD_MACRO_CODE exception.  If reraise_exception is set
       -- to true, then the exception will be reraised after the pop-up is
       -- displayed.
-      use GNATCOLL.SQL.Exec;  
+      use GNATCOLL.SQL.Exec, GNATCOLL.SQL_BLOB;  
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       rDB         : GNATCOLL.SQL.Exec.Database_Connection;
+      R_err_dets  : Forward_Cursor;
+      error_param : SQL_Parameters (1 .. 1);
       R_macros    : Forward_Cursor;
       this_macro  : text;
    begin
@@ -102,7 +113,22 @@ package body Code_Interpreter is
       --   next, stash away the main database pointer
       rDB := GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection
                                                   (Description=>with_DB_descr);
-      --   and run the query to load the data
+      --   set up the error message terminator (for in case of a macro error)
+      error_param := (1 => +(Value(To_Text("error_terminator"))));
+      R_err_dets.Fetch(Connection => rDB, Stmt => error_dets_select,
+                       Params => error_param);
+      if Success(rDB) and then Has_Row(R_err_dets) then
+         Initialise_Error_Terminator(to => 
+                                Decode(UTF_8_String(Value(R_err_dets,1)),UTF_8));
+      end if;
+      --   and the logging level number for macro error causes
+      error_param := (1 => +(Value(To_Text("macro_err_no"))));
+      R_err_dets.Fetch(Connection => rDB, Stmt => error_dets_select,
+                       Params => error_param);
+      if Success(rDB) and then Has_Row(R_err_dets) then
+         Set_Log_Level(to => Integer_Value(R_err_dets,1));
+      end if;
+      --   and then run the query to load the data
       R_macros.Fetch (Connection => rDB, Stmt => macros_select);
       if Success(rDB) and then Has_Row(R_macros) then
          while Has_Row(R_macros) loop  -- while not end_of_table

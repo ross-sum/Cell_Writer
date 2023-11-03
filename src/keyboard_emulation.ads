@@ -91,23 +91,5 @@ private
    for key_statuses use (0, 1, 2, 3, 4);
    subtype ascii_keys is wide_character range 
                               wide_character'first .. wide_character'Val(255);
-   -- usable : array(ascii_keys) of key_statuses;
-   -- pressed: array(ascii_keys) of boolean;
-   -- key_min, key_max, key_offset, key_codes : natural;
---    
-   -- type KeySym is new integer;  -- defined in <X11/X.h> and used in <X11/keysym.h>
-   -- keysyms : KeySym := 0;
-   -- function Usable(the_char : in wide_character) return key_statuses;
---       
-   -- procedure Allocate(the_key_event : in out key_event_type; 
-   --                    with_key_sim  : natural);
-   -- procedure New_Event(for_key_event : in out key_event_type; 
-   --                     with_keysym   : natural);
-   -- procedure Free(the_key_event : key_event_type);
-   -- procedure Press(the_key_event : key_event_type);
-   -- procedure Press_Force(the_key_event : key_event_type);
-   -- procedure Release(the_key_event : key_event_type);
-   -- procedure Release_Force(the_key_event : key_event_type);
-   -- procedure Send(the_character : wide_character);
 
 end Keyboard_Emulation;

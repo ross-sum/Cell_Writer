@@ -39,6 +39,10 @@ package Error_Log_Display is
       -- also set up the call-back with the Error_Log package to utilise
       -- this dialogue box to display errors.
    
+   procedure Initialise_Error_Terminator(to : in wide_string);
+      -- Set the terminator message to that specified.  This message is a
+      -- general message that tells the user what to do about the error.
+   
    procedure Display_Error (with_message : wide_string);
       -- This is the call-back that the Error_Log package calls when an
       -- error is recorded.

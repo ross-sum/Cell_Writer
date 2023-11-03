@@ -73,6 +73,13 @@ package body Error_Log_Display is
                        Handler_Name => "dialogue_error_destroy_cb",
                        Handler      => Error_Log_Display_Close_CB'Access);
    end Initialise_Error_Log_Display;
+   
+   procedure Initialise_Error_Terminator(to : in wide_string) is
+      -- Set the terminator message to that specified.  This message is a
+      -- general message that tells the user what to do about the error.
+   begin
+      Error_Log.Set_Error_Message_Terminator(to);
+   end Initialise_Error_Terminator;
 
    procedure Display_Error (with_message : wide_string) is
       -- This is the call-back that the Error_Log package calls when an

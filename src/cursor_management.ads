@@ -39,6 +39,7 @@
 
 with Set_of;
 with dStrings;        use dStrings;
+with Combining_Characters;
 package Cursor_Management is
 
    -- The Display string buffer, containing the typed text
@@ -78,16 +79,11 @@ package Cursor_Management is
      -- cursor movement keys.
     
 private
-
+   use Combining_Characters, Combining_Characters.Combining_Sets;
       -- There is a standard list of combining characters.  To handle all
       -- combining characters, which are not 'printable' (i.e. they do not
       -- consume a character space), this all needs to be set up as a set.
-   type character_list is array (natural range <>) of wide_character;
-   package Combining_Sets is new Set_Of(Element => wide_character,
-                                        Index   => natural,
-                                        List    => character_list);
-   use Combining_Sets;
-   subtype combining_character_set  is Combining_Sets.Set;
+      -- The Combining_Characters package does this.
       
    type cursor_details is record
          visible_cursor : natural := 0;  -- the position of the visible cursor
