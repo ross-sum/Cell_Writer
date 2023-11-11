@@ -162,6 +162,7 @@ package body Code_Interpreter is
       Set(the_register => S, 
           to => Value_From_Wide(Decode(Get_Tooltip_Text(the_cell))));
       -- Now execute the macro
+      Error_Log.Debug_Data(at_level => 9, with_details => "Execute: Executing Macro number = " & Put_Into_String(the_macro_Number) & " with Register S = '" & As_Text(The_Value(of_the_register=>S)) & "' and REgister H = '" & As_Text(The_Value(of_the_register=>H)) & "'.");
       Execute (the_macro_Number);
       -- Finally, load the S register back
       Set_Tooltip_Text(the_cell, 

@@ -68,7 +68,7 @@ procedure Cell_Writer is
    default_db_file_name   : constant wide_string := "cell_writer.db";
    default_db_name        : constant wide_string := default_db_path &
                                                     default_db_file_name;
-   default_tex_name       : constant wide_string := "/usr/bin/pdflatex";
+   default_tex_name       : constant wide_string := "/usr/bin/xelatex";
    default_pdf_name       : constant wide_string := "/usr/bin/xpdf";
    default_R_name         : constant wide_string := "/usr/bin/R";
    lock_file_name         : constant string:= "/var/run/lock/cell_writer.lock";

@@ -20,7 +20,7 @@ s#m0src
 s#p0doc
 s#q0test
 s#r0obj_amd64
-!1500;g
+!1508;g
 %\011src%smain_menu.ads
 %\011src%sdatabase.adb
 %\011src%straining_samples.ads
@@ -38,12 +38,12 @@ s#r0obj_amd64
 %\011src%sword_frequency.adb
 %\011src%sgrid_management.ads
 %\011src%srecogniser.adb
-%\011src%sreport_processor.adb
+%\011%utools%sreport_processor.adb
 %\011src%skeyboard_emulation.adb
 %\011src%scss_management.adb
 %\011src%ssample_comparison.adb
-%\011src%sreport_processor.ads
 %\011src%sdatabase.ads
+%\011%utools%sreport_processor.ads
 %\011src%sgrid_management.adb
 %\011src%sword_frequency.ads
 %\011src%ssetup.ads
@@ -74,7 +74,7 @@ s#r0obj_amd64
 %\011src%scursor_management.ads
 %\011src%skeyboard.ads
 %\011src%skey_sym_def.ads
-!1500;f
+!1508;f
 %\011src%smain_menu.ads
 %\011src%sdatabase.adb
 %\011src%straining_samples.ads
@@ -92,12 +92,12 @@ s#r0obj_amd64
 %\011src%sword_frequency.adb
 %\011src%sgrid_management.ads
 %\011src%srecogniser.adb
-%\011src%sreport_processor.adb
+%\011%utools%sreport_processor.adb
 %\011src%skeyboard_emulation.adb
 %\011src%scss_management.adb
 %\011src%ssample_comparison.adb
-%\011src%sreport_processor.ads
 %\011src%sdatabase.ads
+%\011%utools%sreport_processor.ads
 %\011src%sgrid_management.adb
 %\011src%sword_frequency.ads
 %\011src%ssetup.ads

@@ -34,6 +34,7 @@ with Gtkada.Builder;  use Gtkada.Builder;
 with Gtk.Button, Gtk.Menu_Item, Gtk.Widget;
 with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
+with Glib;
 package Main_Menu is
 
 
@@ -108,7 +109,7 @@ private
     
     -- Print the specified report (given the report name from the menu item or
     -- button).
-   procedure Cell_Writer_Report_Clicked_CB(label : string);
+   procedure Cell_Writer_Report_Clicked_CB(label : Glib.UTF8_string);
       -- Print the specified report (for the defined report Name).
    procedure Cell_Writer_Report_Clicked_CB
                 (Object : access Gtk.Menu_Item.Gtk_Menu_Item_Record'Class);

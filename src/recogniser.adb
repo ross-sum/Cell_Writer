@@ -1128,11 +1128,9 @@ package body Recogniser is
                        7 => +tTime(train_time));
       if as_update
       then  -- update query
-         Error_Log.Debug_Data(at_level => 9, with_details=> "Write_Out(the_sample): updating sample for '"&the_sample.ch & "' at sample_no="&Put_Into_String(the_sample.sample_number)&".");
          Execute (Connection => to_database, Stmt => Trg_Update, 
                   Params     => train_parm);
       else  -- insert query
-         Error_Log.Debug_Data(at_level => 9, with_details=> "Write_Out(the_sample): inserting sample for '"&the_sample.ch&"' at sample_no="&Put_Into_String(the_sample.sample_number)&".");
          Execute (Connection => to_database, Stmt => Trg_Insert, 
                   Params     => train_parm);
       end if;

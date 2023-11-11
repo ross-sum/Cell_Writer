@@ -1,10 +1,10 @@
-INSERT INTO Reports VALUES (1, "Catheter Recordings", "catherrecs", 0, "", "");
-INSERT INTO Reports VALUES (2, "Urine Recordings", "urinerecs", 0, "", "");
-INSERT INTO Reports VALUES (3, "Pad Volumes", "padvolumes", 0 , "", "");
+INSERT INTO Reports VALUES (1, "Enrolled Words", "wordsstats", 0, "", "");
+INSERT INTO Reports VALUES (2, "Usage Statistics", "usestats", 0, "", "");
+INSERT INTO Reports VALUES (3, "Performance Statistics", "perfstats", 0 , "", "");
 INSERT INTO Reports VALUES (4, "Daily Volume", "dailyvol", 1, "", "");
 INSERT INTO Queries VALUES (1, 1, "", "DROP TABLE Temp1;");
-INSERT INTO Queries VALUES (1, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, UTime TIME, Volume INTEGER, Colour VARCHAR(10), Floaties VARCHAR(12), Leakage VARCHAR(15));");
-INSERT INTO Queries VALUES (1, 3, "Temp1", "SELECT PD.Patient, UR.UDate, UR.UTime, UR.Volume, C.Colour, F.Floatie AS Floaties, L.Leakage FROM CatheterUrineRecord UR LEFT JOIN ColourChart C ON ( UR.Colour = C.Value ) LEFT JOIN Floaties F ON (UR.Floaties = F.Value), CatheterLeakage L, PatientDetails PD WHERE L.Value = UR.Leakage AND PD.Identifier = UR.Patient;");
+INSERT INTO Queries VALUES (1, 2, "", "CREATE TABLE Temp1 (User VARCHAR(100), Word VARCHAR(100), SampleCount INTEGER);");
+INSERT INTO Queries VALUES (1, 3, "Temp1", "SELECT T.User, T.Word, COUNT(T.SampleNo) AS SampleCount FROM TrainingDataWords T GROUP BY T.User, T.ID, T.WordID;");
 INSERT INTO Queries VALUES (2, 1, "", "DROP TABLE Temp1;");
 INSERT INTO Queries VALUES (2, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, UTime TIME, Volume INTEGER, PadVol INTEGER, Pad VARCHAR(20), Hold VARCHAR(20), Leakage VARCHAR(15), No2 BOOLEAN, Spasm VARCHAR(20), SpasmCount INTEGER, Urges INTEGER, Notes TEXT);");
 INSERT INTO Queries VALUES (2, 3, "Temp1", "SELECT PD.Patient, UR.UDate, UR.UTime, UR.Volume, ( UR.PadVolume - ( CASE WHEN UR.Leakage < 2 THEN 0 ELSE ( SELECT P.Size FROM PadSizes P WHERE P.ID = UR.PadType ) - ( CASE WHEN UR.Leakage > 2 THEN ( SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1 ) ELSE 0 END ) END ) ) AS PadVol, PS.Brand AS Pad, H.Description AS Hold, L.Leakage, UR.No2, ( CASE WHEN UR.Spasm IS NULL THEN '-' ELSE ( SELECT S.Description FROM Spasms S WHERE UR.Spasm = S.Spasm ) END ) AS Spasm, UR.SpasmCount, UR.Urges, UR.Notes FROM UrineRecord UR LEFT JOIN PadSizes PS ON ( UR.PadType = PS.ID ), Leakage L, HoldStates H, PatientDetails PD WHERE UR.Hold = H.ID AND L.Value = UR.Leakage AND PD.Identifier = UR.Patient;");
@@ -16,70 +16,56 @@ INSERT INTO Queries VALUES (4, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), 
 INSERT INTO Queries VALUES (4, 3, "Temp1", "SELECT PD.Patient, UR.UDate, SUM(UR.Volume) AS Volume, SUM(UR.PadVolume - (CASE WHEN UR.Leakage < 2 THEN 0 ELSE (SELECT P.Size FROM PadSizes P WHERE P.ID = UR.PadType) - (CASE WHEN UR.Leakage > 2 THEN (SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1) ELSE 0 END) END)) AS PadVol, COUNT(UR.PadType) AS Pads FROM UrineRecord UR, PatientDetails PD WHERE PD.Identifier = UR.Patient AND UR.UDate < date('now') GROUP BY PD.Patient, UR.UDate;");
 INSERT INTO Queries VALUES (4, 4, "", "DROP TABLE Temp2;");
 INSERT INTO Queries VALUES (4, 5, "", "CREATE TABLE Temp2 AS SELECT Patient, UDate, Volume * 100.00 / (Volume + PadVol) AS PercentVol, PadVol * 100.00 / (Volume + PadVol ) AS PercentPadVol, Pads AS PadCount FROM Temp1;");
-UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
+UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-\batchmode
-\makeatletter
-\def\input@path{{/tmp/}}
-\makeatother
-\documentclass[australian]{article}
-\usepackage[T1]{fontenc}
-\usepackage[latin9]{inputenc}
-\usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=2cm,rmargin=2cm,headheight=0.5cm,headsep=0.5cm,footskip=0.7cm}
-\usepackage{array}
+% !TEX program = XeLaTeX
+\documentclass[20pt,a4paper,australian]{extarticle}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Blissymbolics}
+\setsansfont[Mapping=tex-text]{Blissymbolics}
+\setmonofont{Blissymbolics}
 \usepackage{longtable}
 
 \makeatletter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\pdfpageheight\paperheight
+\pdfpagewidth\paperwidth
+
 %% Because html converters don't know tabularnewline
 \providecommand{\tabularnewline}{\\}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
-\newcommand{\lyxaddress}[1]{
-	\par {\raggedright #1
-	\vspace{1.4em}
-	\noindent\par}
-}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \lhead{} \chead{}  \rhead{}
-\lfoot{Printed: \today}  \cfoot{Page \thepage}  \rfoot{Catheter Bag Urine Recordings Report}
+\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{  }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{babel}
+\usepackage{polyglossia}
+\setdefaultlanguage[variant=australian]{english}
 \begin{document}
-«QUERY 1:SELECT DISTINCT Patient, SUM(Volume) AS Vol FROM Temp1; »
-\chead{Patient : «FIELD:1»}
-
-\lyxaddress{\begin{center}
-\textbf{\huge{}Catheter Urine Leg and Bed Bag Records for «FIELD:1»}
-\par\end{center}}
-
-\begin{longtable}[c]{>{\raggedright}p{1.3cm}>{\raggedleft}p{1.5cm}>{\raggedright}p{2cm}>{\raggedright}p{2cm}>{\raggedright}p{3cm}}
-\textbf{\large{}Time} &
-\textbf{\large{}Volume} &
-\textbf{\large{}Colour} &
-\textbf{\large{}Floaties} &
-\textbf{\large{}Leakage}\tabularnewline
+{\huge{}}%
+\begin{longtable}[l]{|c|c|c|}
+\hline 
+\textbf{\huge{} } & \textbf{\huge{} } & \textbf{\huge{}1  }\tabularnewline
+\hline 
+\endfirsthead
+\hline 
+\textbf{\huge{} } & \textbf{\huge{} } & \textbf{\huge{}1  }\tabularnewline
 \hline 
 \endhead
-«QUERY 2:SELECT DISTINCT Patient, date(UDate), strftime('%d/%m/%Y',date(UDate)) AS UDate2, SUM(Volume) AS Volume FROM Temp1 WHERE Patient=?1  GROUP BY Patient, UDate; »
-«FIELD:3» & & & & \tabularnewline
-«QUERY 3:SELECT DISTINCT Patient, date(UDate), UTime, Volume, Colour, Floaties, Leakage FROM Temp1 WHERE Patient=?1 AND UDate=?2; »
-«FIELD:3» & «FIELD:4» & «FIELD:5» & «FIELD:6» & «FIELD:7» \tabularnewline
-«END QUERY 3»
-\cline{2-3} \cline{3-3} 
- & «FIELD:4» & & & \tabularnewline
+\hline 
+«QUERY 1:SELECT DISTINCT User FROM Temp1 ORDER BY User; »
+«FIELD:1» & & \tabularnewline
+«QUERY 2:SELECT DISTINCT User, Word, SampleCount FROM Temp1 WHERE User=?1 ORDER BY User; »
+ & «FIELD:2» & «FIELD:3» \tabularnewline
 «END QUERY 2»
-\end{longtable}
-
+\hline 
+\end{longtable}{\huge\par}
 «END QUERY 1»
-
 \end{document}
 "
 WHERE ID = 1;

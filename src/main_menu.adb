@@ -43,6 +43,7 @@ with Glib, Glib.Error;
 with Gtk.Menu;
 with Error_Log;
 with String_Conversions;
+with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Characters.Conversions;
 with Cell_Writer_Version;
 with Help_About, Setup, CSS_Management, Keyboard, Grid_Management,
@@ -56,6 +57,7 @@ with Code_Interpreter;
 package body Main_Menu is
 
    procedure Set_Up_Reports_Menu_and_Buttons (Builder : Gtkada_Builder) is
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       use Gtk.Button, Gtk.Menu, Gtk.Menu_Item;
       use Report_Processor;
       use String_Conversions;
@@ -65,8 +67,8 @@ package body Main_Menu is
       parent_menu := gtk_menu(Get_Object(Builder, "menu_reports"));
       for report_num in 1 .. Number_of_Reports loop
          -- Create the report menu item
-         report_menu := Gtk_Menu_Item_New_With_Label
-                                (Report_Name(for_report_number => report_num));
+         report_menu := Gtk_Menu_Item_New_With_Label(Encode
+                               (Report_Name(for_report_number => report_num)));
          -- Set_Action_Name(report_menu, "on_report_click");
          Set_Sensitive(report_menu, true);
          Set_Visible(report_menu, true);
@@ -691,15 +693,16 @@ package body Main_Menu is
       null; -- On_Window_Destroy(the_window, null);
    end On_Window_Close_Request;
 
-   procedure Cell_Writer_Report_Clicked_CB(label : string) is
+   procedure Cell_Writer_Report_Clicked_CB(label : Glib.UTF8_string) is
      -- Print the specified report (for the defined report Name).
       use Report_Processor;
       use String_Conversions;
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Cell_Writer_Report_Clicked_CB: "&
                                            To_Wide_String(label) & ".");
-      Run_The_Report(with_id => Report_ID(for_report_name => label));
+      Run_The_Report(with_id => Report_ID(for_report_name => Decode(label)));
    end Cell_Writer_Report_Clicked_CB;
 
    procedure Cell_Writer_Report_Clicked_CB
