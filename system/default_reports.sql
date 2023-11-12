@@ -19,7 +19,7 @@ INSERT INTO Queries VALUES (4, 5, "", "CREATE TABLE Temp2 AS SELECT Patient, UDa
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
 % !TEX program = XeLaTeX
-\documentclass[20pt,a4paper,australian]{extarticle}
+\documentclass[32pt,a4paper,australian]{bliss_article}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -50,11 +50,11 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 {\huge{}}%
 \begin{longtable}[l]{|c|c|c|}
 \hline 
-\textbf{\huge{} } & \textbf{\huge{} } & \textbf{\huge{}1  }\tabularnewline
+\textbf{\large{} } & \textbf{\large{} } & \textbf{\large{}1  }\tabularnewline
 \hline 
 \endfirsthead
 \hline 
-\textbf{\huge{} } & \textbf{\huge{} } & \textbf{\huge{}1  }\tabularnewline
+\textbf{\large{} } & \textbf{\large{} } & \textbf{\large{}1  }\tabularnewline
 \hline 
 \endhead
 \hline 

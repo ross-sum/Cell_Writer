@@ -31,6 +31,11 @@ package body database is
       return Self.Id = Foreign.Id;
    end FK;
 
+   function FK (Self : T_Recogniserstats'Class; Foreign : T_Userids'Class) return SQL_Criteria is
+   begin
+      return Self.User = Foreign.Uid;
+   end FK;
+
    function FK (Self : T_Userids'Class; Foreign : T_Languages'Class) return SQL_Criteria is
    begin
       return Self.Language = Foreign.Id;

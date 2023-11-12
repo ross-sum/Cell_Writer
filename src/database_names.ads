@@ -15,6 +15,8 @@ package database_Names is
    Ta_Macros : constant Cst_String_Access := TC_Macros'Access;
    TC_Queries : aliased constant String := """Queries""";
    Ta_Queries : constant Cst_String_Access := TC_Queries'Access;
+   TC_Recogniserstats : aliased constant String := """RecogniserStats""";
+   Ta_Recogniserstats : constant Cst_String_Access := TC_Recogniserstats'Access;
    TC_Reports : aliased constant String := """Reports""";
    Ta_Reports : constant Cst_String_Access := TC_Reports'Access;
    TC_Trainingdata : aliased constant String := """TrainingData""";
@@ -28,6 +30,8 @@ package database_Names is
    TC_Words : aliased constant String := """Words""";
    Ta_Words : constant Cst_String_Access := TC_Words'Access;
 
+   NC_Alternatives : aliased constant String := """Alternatives""";
+   N_Alternatives : constant Cst_String_Access := NC_Alternatives'Access;
    NC_Buttonnum : aliased constant String := """ButtonNum""";
    N_Buttonnum : constant Cst_String_Access := NC_ButtonNum'Access;
    NC_Cchar : aliased constant String := """CChar""";
@@ -40,8 +44,12 @@ package database_Names is
    N_Details : constant Cst_String_Access := NC_Details'Access;
    NC_Display : aliased constant String := """Display""";
    N_Display : constant Cst_String_Access := NC_Display'Access;
+   NC_Disqual : aliased constant String := """Disqual""";
+   N_Disqual : constant Cst_String_Access := NC_Disqual'Access;
    NC_Endchar : aliased constant String := """EndChar""";
    N_Endchar : constant Cst_String_Access := NC_EndChar'Access;
+   NC_Examined : aliased constant String := """Examined""";
+   N_Examined : constant Cst_String_Access := NC_Examined'Access;
    NC_Filename : aliased constant String := """Filename""";
    N_Filename : constant Cst_String_Access := NC_Filename'Access;
    NC_Hasgraph : aliased constant String := """HasGraph""";
@@ -64,6 +72,12 @@ package database_Names is
    N_Q_Number : constant Cst_String_Access := NC_Q_Number'Access;
    NC_R : aliased constant String := """R""";
    N_R : constant Cst_String_Access := NC_R'Access;
+   NC_Recdate : aliased constant String := """RecDate""";
+   N_Recdate : constant Cst_String_Access := NC_RecDate'Access;
+   NC_Recduration : aliased constant String := """RecDuration""";
+   N_Recduration : constant Cst_String_Access := NC_RecDuration'Access;
+   NC_Rectime : aliased constant String := """RecTime""";
+   N_Rectime : constant Cst_String_Access := NC_RecTime'Access;
    NC_Schrasky : aliased constant String := """SChrASky""";
    N_Schrasky : constant Cst_String_Access := NC_SChrASky'Access;
    NC_Schrbgnd : aliased constant String := """SChrBGnd""";
@@ -98,10 +112,14 @@ package database_Names is
    N_Shiftdisp : constant Cst_String_Access := NC_ShiftDisp'Access;
    NC_Start : aliased constant String := """Start""";
    N_Start : constant Cst_String_Access := NC_Start'Access;
+   NC_Strength : aliased constant String := """Strength""";
+   N_Strength : constant Cst_String_Access := NC_Strength'Access;
    NC_Targettbl : aliased constant String := """TargetTbl""";
    N_Targettbl : constant Cst_String_Access := NC_TargetTbl'Access;
    NC_Tooltip : aliased constant String := """ToolTip""";
    N_Tooltip : constant Cst_String_Access := NC_ToolTip'Access;
+   NC_Topone : aliased constant String := """TopOne""";
+   N_Topone : constant Cst_String_Access := NC_TopOne'Access;
    NC_Trgdate : aliased constant String := """TrgDate""";
    N_Trgdate : constant Cst_String_Access := NC_TrgDate'Access;
    NC_Trgtime : aliased constant String := """TrgTime""";
@@ -122,6 +140,8 @@ package database_Names is
    N_Uschrjbgnd : constant Cst_String_Access := NC_USChrJBGnd'Access;
    NC_Uschrlower : aliased constant String := """USChrLower""";
    N_Uschrlower : constant Cst_String_Access := NC_USChrLower'Access;
+NC_Image : aliased constant String := """Image""";
+N_Image : constant Cst_String_Access := NC_Image'Access;
    NC_Uschrmiddle : aliased constant String := """USChrMiddle""";
    N_Uschrmiddle : constant Cst_String_Access := NC_USChrMiddle'Access;
    NC_Uschrsky : aliased constant String := """USChrSky""";
@@ -132,6 +152,8 @@ package database_Names is
    N_Uschrupper : constant Cst_String_Access := NC_USChrUpper'Access;
    NC_Unshiftdisp : aliased constant String := """UnShiftDisp""";
    N_Unshiftdisp : constant Cst_String_Access := NC_UnShiftDisp'Access;
+   NC_Used : aliased constant String := """Used""";
+   N_Used : constant Cst_String_Access := NC_Used'Access;
    NC_User : aliased constant String := """User""";
    N_User : constant Cst_String_Access := NC_User'Access;
    NC_Wfword : aliased constant String := """WFWord""";
@@ -140,8 +162,6 @@ package database_Names is
    N_Wdcount : constant Cst_String_Access := NC_WdCount'Access;
    NC_Wordid : aliased constant String := """WordID""";
    N_Wordid : constant Cst_String_Access := NC_WordID'Access;
-NC_Image : aliased constant String := """Image""";
-N_Image : constant Cst_String_Access := NC_Image'Access;
    NC_Word : aliased constant String := "word";
    N_Word : constant Cst_String_Access := NC_word'Access;
 end database_Names;

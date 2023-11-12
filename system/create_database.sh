@@ -17,9 +17,13 @@ tobase64 -i cellwriter.svg -o cell_writer.b64
 
 # Load up the default data:
 sqlite3 cell_writer.db < default_data.sql
+echo "loaded default_data.sql"
 sqlite3 cell_writer.db < word_data.sql
+echo "loaded word_data.sql"
 sqlite3 cell_writer.db < word_frequency_data.sql
+echo "loaded word_frequency_data.sql"
 sqlite3 cell_writer.db < default_reports.sql
+echo "loaded default_reports.sql"
 
 # Clean up the base 64 fields after them being used
 rm *.b64

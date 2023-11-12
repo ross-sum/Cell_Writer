@@ -162,7 +162,8 @@ package body Recogniser is
            (SQL_Select (Fields  => TrainingData.ID & 
                                    Languages.Start & 
                                    TrainingData.SampleNo & TrainingData.Sample&
-                                   TrainingData.TrgDate & TrainingData.TrgTime,
+                                   TrainingData.TrgDate & TrainingData.TrgTime&
+                                   TrainingData.Used,
                         From    => TrainingData & Languages & UserIDs,
                         Where   => ((UserIDs.Logon = Text_Param(1)) OR
                                     (UserIDs.Logon = "")) AND
@@ -180,7 +181,8 @@ package body Recogniser is
                                    TrainingDataWords.SampleNo & 
                                    TrainingDataWords.Sample &
                                    TrainingDataWords.TrgDate & 
-                                   TrainingDataWords.TrgTime,
+                                   TrainingDataWords.TrgTime &
+                                   TrainingDataWords.Used,
                         From    => TrainingDataWords,
                         Where   => (TrainingDataWords.User = Text_Param(1)) OR
                                    (TrainingDataWords.User = ""),
@@ -232,6 +234,30 @@ package body Recogniser is
                                  (TrainingData.SampleNo = Integer_Param(4))),
             On_Server => True,
             Use_Cache => True);
+   Trg_Usage          : constant GNATCOLL.SQL.Exec.Prepared_Statement :=
+      GNATCOLL.SQL.Exec.Prepare 
+           (SQL_Update (Table => TrainingData,
+                        Set   => (TrainingData.Used = Integer_Param(5)),
+                        Where => (TrainingData.User = Integer_Param(1)) AND
+                                 (TrainingData.Language = Integer_Param(2)) AND
+                                 (TrainingData.ID = Integer_Param(3)) AND
+                                 (TrainingData.SampleNo = Integer_Param(4))),
+            On_Server => True,
+            Use_Cache => True);
+   Recog_Insert         : constant GNATCOLL.SQL.Exec.Prepared_Statement :=
+      GNATCOLL.SQL.Exec.Prepare 
+           (SQL_Insert (-- Table  => RecogniserStats,
+                        Values => (RecogniserStats.User = Integer_Param(1)) &
+                                  (RecogniserStats.RecDate = tDate_Param(2)) & 
+                                  (RecogniserStats.RecTime = tTime_Param(3)) & 
+                                  (RecogniserStats.Examined = Integer_Param(4)) &
+                                  (RecogniserStats.Disqual = Integer_Param(5)) &
+                                  (RecogniserStats.Strength = Integer_Param(6)) & 
+                                  (RecogniserStats.RecDuration = Float_Param(7)) & 
+                                  (RecogniserStats.Alternatives = Integer_Param(8)) & 
+                                  (RecogniserStats.TopOne = Text_Param(9))),
+            On_Server => True,
+            Use_Cache => True);
 
    function LessThan(a, b : in sample_rating) return boolean is
       -- For the list of alternatives dynamic list for the recognise procedure
@@ -245,7 +271,6 @@ package body Recogniser is
       R_user      : Forward_Cursor;
       user_parm   : SQL_Parameters (1 .. 1);
       userdb_parm : SQL_Parameters (1 .. 2);
-      user_id     : natural := 0;  -- Note that 0 is default for all users
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Initialise_Recogniser: Start");
@@ -437,6 +462,7 @@ package body Recogniser is
       -- use Ada.Containers; 
       use Comparisons_Arrays, Engines_Arrays;
       use Alternatives_Arrays;  use Ada.Containers;
+      use GNATCOLL.SQL.Exec;
       function To_Wide(value : in float) return wide_string is
       begin
          return To_String(Put_Into_String(float'rounding(value*1000.0)*0.001,3));
@@ -455,9 +481,11 @@ package body Recogniser is
       alternative_num     : natural := 0;
       highest_rating      : sample_rating;
       next_highest_rating : sample_rating;
+      recog_time          : Calendar_Extensions.Time;
+      recog_parm          : SQL_Parameters (1 .. 9);
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                           with_details=> "Recognise_Sample: Start");
+                           with_details=> "Recognise_Sample: Start" & " with User ID = " & Put_Into_String(user_id));
       -- Set up the array of data for each training sample to be used in
       -- comparison.  Clear ratings against the training samples and otherwise
       -- get ready to find the matching sample.
@@ -598,6 +626,16 @@ package body Recogniser is
       end if;
       
       -- Debugging: print some statistics to the log
+      recog_time := Time_Of(Year_Number'First,Month_Number'First,
+                            Day_Number'First, Seconds(UTC_Clock));
+      recog_parm(1) := +user_id;
+      recog_parm(2) := +tDate(UTC_Clock);
+      recog_parm(3) := +tTime(recog_time);
+      recog_parm(4) := +prep_examined;
+      recog_parm(5) := +num_disqualified;
+      recog_parm(6) := +strength;
+      recog_parm(7) := +float(Clock - the_time);
+      recog_parm(8) := +Count(of_items_in_the_list => alternatives);
       if prep_examined - num_disqualified /= 0
       then
          Error_Log.Debug_Data(at_level => 4, 
@@ -684,9 +722,16 @@ package body Recogniser is
       then  -- some kind of match was found
          First(in_the_list => alternatives);
          best_result := Deliver_Data(from_the_list => alternatives).ch;
+         recog_parm(9):= +To_UTF8_String(item => best_result);  -- stats
       else  -- no match was found
          best_result := null_char;
+         recog_parm(9):= +"";
       end if;
+      
+      -- Finally, load the statistics database now we have all the detail
+      Execute (Connection=>cDB, Stmt=>Recog_Insert, Params=>recog_parm);
+      Commit_Or_Rollback (cDB);
+      
    end Recognise_Sample;
 
    procedure Insert(new_sample : in out training_sample;
@@ -840,7 +885,15 @@ package body Recogniser is
       -- only unique to a particular character/word). The 'the_character' is
       -- the relevant character and is used as a cross check that the index
       -- 'at_sample_number' is pointing to the right sample.
+      use GNATCOLL.SQL.Exec;
       the_sample : training_sample;
+      lang_parm  : SQL_Parameters (1 .. 1);
+      train_parm : SQL_Parameters (1 .. 5);
+      R_lang     : Forward_Cursor;
+      language_id: natural := 1;  -- the training data table language
+      char_id    : natural := 0;  -- the training data table id
+      block_start: natural;
+      block_end  : natural;
    begin
       -- Find (the_item => the_character);
       the_sample := Deliver_The_Sample(at_index => at_sample_number);
@@ -851,8 +904,44 @@ package body Recogniser is
          the_sample.used := the_sample.used + 1;
          -- Update the database with this updated sample
          Write_Out(the_sample => the_sample, to_database => cDB,
-                   as_update => true);
-         -- And update the training sample in memory
+                   as_update => true);  -- for now
+      -- First, work out the block for the character set based on first character
+         lang_parm := (1 => +Wide_Character'Pos(Wide_Element(the_sample.ch, 1)));
+         R_lang.Fetch (Connection => cDB, Stmt => lingo_sel_enabled,
+                          Params => lang_parm);
+         if Success(cDB) and then Has_Row(R_lang) then
+            language_id := Integer_Value(R_lang, 0);
+            block_start := Integer_Value(R_Lang, 1);
+            block_end   := Integer_Value(R_Lang, 2);
+         end if;
+      -- Is this a word sample or a character for the sample
+         if Length(the_sample.ch) = 1
+         then  -- a character sample
+         -- the offset is for the single character
+            char_id := Wide_Character'Pos(Wide_Element(the_sample.ch, 1)) - 
+                    block_start;
+         else  -- a word sample -- first character is the block offset
+         -- the word gives the offset from the block. Note that the
+         -- database stores text in UTF8 format, so need to convert.
+            lang_parm := (1 => +To_UTF8_String(item => the_sample.ch));
+            R_lang.Fetch (Connection => cDB, Stmt => word_id,
+                          Params => lang_parm);
+            if Success(cDB) and then Has_Row(R_lang) then
+               char_id := block_end + Integer_Value(R_lang, 1);
+            else  -- we have a problem!
+               char_id := block_end + 100;  -- for now
+            end if;
+         end if;
+         -- Now load it
+         train_parm  := ( 1 => +user_id,
+                          2 => +language_id,
+                          3 => +char_id,
+                          4 => +the_sample.sample_number,
+                          5 => +the_sample.used );
+         Execute (Connection => cDB, Stmt => Trg_Usage, 
+                  Params     => train_parm);
+         Commit_Or_Rollback (cDB);   
+         -- And update the training sample in memory (for now)
          Replace (the_data => the_sample);
       elsif the_sample.ch /= the_character
       then  -- this is an error condition
@@ -973,6 +1062,10 @@ package body Recogniser is
             the_sample.training_date := Time(tDate_Value(R_train,4));
             the_sample.training_time := Seconds(Time(tTime_Value(R_train,5)));
             the_sample.sample_number := Integer_Value(R_train,2);
+            -- And the count of recognition usage (if set)
+            if Integer_Value(R_train,6) > 0 then
+               the_sample.used := Integer_Value(R_train,6);
+            end if;
             -- Check that we got the right sample
             if Length(the_sample.ch) = 1 and then the_sample.ch = the_ch
             then  -- got the right sample
@@ -1009,6 +1102,10 @@ package body Recogniser is
             the_sample.training_date := Time(tDate_Value(R_train,5));
             the_sample.training_time := Seconds(Time(tTime_Value(R_train,6)));
             the_sample.sample_number := Integer_Value(R_train,3);
+            -- And the count of recognition usage (if set)
+            if Integer_Value(R_train,7) > 0 then
+               the_sample.used := Integer_Value(R_train,7);
+            end if;
             -- Check that we got the right sample
             if the_sample.ch = the_ch
             then  -- got the right sample
@@ -1043,13 +1140,12 @@ package body Recogniser is
        -- Write out samples to the database from the list of training samples.
       use GNATCOLL.SQL.Exec, GNATCOLL.SQL_BLOB;
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
-      user_parm  : SQL_Parameters (1 .. 1);
+      -- user_parm  : SQL_Parameters (1 .. 1);
       lang_parm  : SQL_Parameters (1 .. 1);
       learnt_parm: SQL_Parameters (1 .. 3);
       train_parm : SQL_Parameters (1 .. 7);
       R_user     : Forward_Cursor;
       R_lang     : Forward_Cursor;
-      user_id    : natural := 0;  -- Note that 0 is default for all users
       language_id: natural := 1;  -- the training data table language
       char_id    : natural := 0;  -- the training data table id
       block_start: natural;
@@ -1059,14 +1155,6 @@ package body Recogniser is
    begin
       Error_Log.Debug_Data(at_level => 6, 
                            with_details=> "Write_Out(the_sample): Start");
-      -- Get the logged on user's numerical identifer as the database
-      -- understands it
-      user_parm := (1 => +(Value(user_logon)));
-      R_user.Fetch (Connection => to_database, Stmt => User_ID_Num,
-                    Params => user_parm);
-      if Success(to_database) and then Has_Row(R_user) then
-         user_id := Integer_Value(R_user,0);
-      end if;
       -- Work out the block for the character set based on first character
       lang_parm := (1 => +Wide_Character'Pos(Wide_Element(the_sample.ch, 1)));
       R_lang.Fetch (Connection => to_database, Stmt => lingo_sel_enabled,
@@ -1144,12 +1232,11 @@ package body Recogniser is
       use GNATCOLL.SQL.Exec, GNATCOLL.SQL_BLOB;
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       -- the_ch     : text;
-      user_parm  : SQL_Parameters (1 .. 1);
+      -- user_parm  : SQL_Parameters (1 .. 1);
       lang_parm  : SQL_Parameters (1 .. 1);
       train_parm : SQL_Parameters (1 .. 4);
       R_user     : Forward_Cursor;
       R_lang     : Forward_Cursor;
-      user_id    : natural := 0;  -- Note that 0 is default for all users
       language_id: natural := 1;  -- the training data table language
       char_id    : natural := 0;  -- the training data table id
       block_start: natural;
@@ -1157,15 +1244,6 @@ package body Recogniser is
    begin
       Error_Log.Debug_Data(at_level => 6, 
                            with_details=> "Delete(the_sample): Start");
-      -- Get the logged on user's numerical identifer as the database
-      -- understands it
-      user_parm := (1 => +(Value(user_logon)));
-      R_user.Fetch (Connection => from_database, Stmt => User_ID_Num,
-                    Params => user_parm);
-      if Success(from_database) and then Has_Row(R_user) then
-         user_id := Integer_Value(R_user,0);
-      end if;
-      -- the_ch := the_sample.ch;
       -- Work out the block for the character set based on first character
       lang_parm := (1 => +Wide_Character'Pos(Wide_Element(the_sample.ch, 1)));
       R_lang.Fetch (Connection => from_database, Stmt => lingo_sel_enabled,
@@ -1174,7 +1252,6 @@ package body Recogniser is
          language_id := Integer_Value(R_lang, 0);
          block_start := Integer_Value(R_Lang, 1);
          block_end   := Integer_Value(R_Lang, 2);
-         Error_Log.Debug_Data(at_level => 9, with_details=> "Delete(the_sample): on sample '"&the_sample.ch&"', got the language (id="&Put_Into_String(language_id)&", block start="&Put_Into_String(block_start)&", block end="&Put_Into_String(block_end)&").");
       else  -- We have a problem!
          Error_Log.Put(the_error => 40,
                        error_intro   => "Delete(the_sample) error", 
@@ -1203,13 +1280,11 @@ package body Recogniser is
             char_id := block_end + 100;  -- for now
          end if;
       end if;
-      Error_Log.Debug_Data(at_level => 9, with_details=> "Delete(the_sample): user id="&integer'Wide_Image(user_id)&", language id="&integer'Wide_Image(language_id)&", char id="&integer'Wide_Image(char_id)&").");
       -- Now delete the sample
       train_parm := ( 1 => +user_id,
                       2 => +language_id,
                       3 => +char_id,
                       4 => +the_sample.sample_number);
-      Error_Log.Debug_Data(at_level => 9, with_details=> "Delete(the_sample): updating sample for '"&the_sample.ch&"' at sample_no="&Put_Into_String(the_sample.sample_number)&".");
       Execute (Connection=>from_database,Stmt=>Trg_Delete, Params=>train_parm);
       Commit_Or_Rollback (from_database);
    end Delete;

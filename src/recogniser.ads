@@ -104,7 +104,8 @@ package Recogniser is
 private
 
    -- User Identifier (from the system)
-   user_logon : text := Clear & "root";
+   user_logon : text    := Clear & "root";
+   user_id    : natural := 0;  -- Note that 0 is default for all users
    
    subtype gluable_entries is Stroke_Management.gluable_entries;
 

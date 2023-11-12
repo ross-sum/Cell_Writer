@@ -279,6 +279,49 @@ package database is
       is new T_Abstract_Queries (null, Index) with null record;
    --  To use aliases in the form name1, name2,...
 
+   type T_Abstract_Recogniserstats
+      (Instance : Cst_String_Access;
+       Index    : Integer)
+   is abstract new SQL_Table (Ta_Recogniserstats, Instance, Index) with
+   record
+      User : SQL_Field_Integer (Ta_Recogniserstats, Instance, N_User, Index);
+      --  ID of the user
+
+      Recdate : SQL_Field_tDate (Ta_Recogniserstats, Instance, N_Recdate, Index);
+      --  Recognition date
+
+      Rectime : SQL_Field_tTime (Ta_Recogniserstats, Instance, N_Rectime, Index);
+      --  Recognition time
+
+      Examined : SQL_Field_Integer (Ta_Recogniserstats, Instance, N_Examined, Index);
+      --  Number samples examined
+
+      Disqual : SQL_Field_Integer (Ta_Recogniserstats, Instance, N_Disqual, Index);
+      --  Number samples disqualified
+
+      Strength : SQL_Field_Integer (Ta_Recogniserstats, Instance, N_Strength, Index);
+      --  Recognition strength (0-100)
+
+      Recduration : SQL_Field_Float (Ta_Recogniserstats, Instance, N_Recduration, Index);
+      --  Processing time (seconds)
+
+      Alternatives : SQL_Field_Integer (Ta_Recogniserstats, Instance, N_Alternatives, Index);
+      --  Number of alternatives
+
+      Topone : SQL_Field_Text (Ta_Recogniserstats, Instance, N_Topone, Index);
+      --  Most likely sample
+
+   end record;
+
+   type T_Recogniserstats (Instance : Cst_String_Access)
+      is new T_Abstract_Recogniserstats (Instance, -1) with null record;
+   --  To use named aliases of the table in a query
+   --  Use Instance=>null to use the default name.
+
+   type T_Numbered_Recogniserstats (Index : Integer)
+      is new T_Abstract_Recogniserstats (null, Index) with null record;
+   --  To use aliases in the form name1, name2,...
+
    type T_Abstract_Reports
       (Instance : Cst_String_Access;
        Index    : Integer)
@@ -339,6 +382,9 @@ package database is
       Trgtime : SQL_Field_tTime (Ta_Trainingdata, Instance, N_Trgtime, Index);
       --  Training sample time made
 
+      Used : SQL_Field_Integer (Ta_Trainingdata, Instance, N_Used, Index);
+      --  Count of times sample used
+
    end record;
 
    type T_Trainingdata (Instance : Cst_String_Access)
@@ -375,6 +421,9 @@ package database is
 
       Trgtime : SQL_Field_tTime (Ta_Trainingdatawords, Instance, N_Trgtime, Index);
       --  Training sample time made
+
+      Used : SQL_Field_Integer (Ta_Trainingdatawords, Instance, N_Used, Index);
+      --  Count of times sample used
 
       User : SQL_Field_Text (Ta_Trainingdatawords, Instance, N_User, Index);
       --  System identifier for user
@@ -477,6 +526,7 @@ package database is
    function FK (Self : T_Learntdata'Class; Foreign : T_Userids'Class) return SQL_Criteria;
    function FK (Self : T_Learntdata'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Queries'Class; Foreign : T_Reports'Class) return SQL_Criteria;
+   function FK (Self : T_Recogniserstats'Class; Foreign : T_Userids'Class) return SQL_Criteria;
    function FK (Self : T_Userids'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Words'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    Combiningchrs : T_Combiningchrs (null);
@@ -486,6 +536,7 @@ package database is
    Learntdata : T_Learntdata (null);
    Macros : T_Macros (null);
    Queries : T_Queries (null);
+   Recogniserstats : T_Recogniserstats (null);
    Reports : T_Reports (null);
    Trainingdata : T_Trainingdata (null);
    Trainingdatawords : T_Trainingdatawords (null);

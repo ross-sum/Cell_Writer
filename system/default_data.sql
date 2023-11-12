@@ -8,11 +8,12 @@ CREATE TABLE TrainingData (
   Sample TEXT NOT NULL,
   TrgDate DATE,
   TrgTime TIME,
+  Used Integer DEFAULT 0,
   PRIMARY KEY (User,Language,ID,SampleNo),
   FOREIGN KEY (User,Language,ID) REFERENCES LearntData (User,Language,ID));
 PRAGMA foreign_keys = ON;
-CREATE VIEW TrainingDataWords (ID, WordID, Word, SampleNo, Sample, TrgDate, TrgTime, User) AS
-SELECT TrainingData.ID, (TrainingData.ID - Languages.EndChar) AS WordID, Words.word AS Word, TrainingData.SampleNo, TrainingData.Sample, TrainingData.TrgDate, TrainingData.TrgTime, UserIDs.Logon AS User
+CREATE VIEW TrainingDataWords (ID, WordID, Word, SampleNo, Sample, TrgDate, TrgTime, Used, User) AS
+SELECT TrainingData.ID, (TrainingData.ID - Languages.EndChar) AS WordID, Words.word AS Word, TrainingData.SampleNo, TrainingData.Sample, TrainingData.TrgDate, TrainingData.TrgTime, TrainingData.Used, UserIDs.Logon AS User
 FROM TrainingData, Languages, UserIDs, Words
 WHERE (TrainingData.User = UserIDs.UID)
   AND (Words.Language = TrainingData.Language)

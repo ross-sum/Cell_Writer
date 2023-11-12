@@ -103,11 +103,24 @@
 | Language    | INTEGER          | PK,NOT NULL  || Language identifier         |
 | ID          | INTEGER          | PK,NOT NULL  || Offset from Language Start  |
 | SampleNo    | INTEGER          | PK,NOT NULL  || Sample number recorded      |
-| Sample      | TEXT             | NOT NULL     || The sample                  |
-| TrgDate     | DATE             |              || Date traning sample made    |
-| TrgTime     | TIME             |              || Training sample time made   |
+| Sample      | TEXT             | NOT NULL   |  | The sample                  |
+| TrgDate     | DATE             |            |  | Date traning sample made    |
+| TrgTime     | TIME             |            |  | Training sample time made   |
+| Used        | INTEGER          |            | 0| Count of times sample used  |
 
 # | FK:       | LearntData       | User,Language,ID | User,Language,ID         |
+
+# Recogniser statistics table, for each recognition
+| TABLE       | RecogniserStats  | statistics   || Recogniser statistics-Levin |
+| User        | FK UserIDs(UID)  | PK,NOT NULL  || ID of the user              |
+| RecDate     | DATE             | PK,NOT NULL  || Recognition date            |
+| RecTime     | TIME             | PK,NOT NULL  || Recognition time            |
+| Examined    | INTEGER          |              || Number samples examined     |
+| Disqual     | INTEGER          |              || Number samples disqualified |
+| Strength    | INTEGER          |              || Recognition strength (0-100)|
+| RecDuration | FLOAT            |              || Processing time (seconds)   |
+| Alternatives| INTEGER          |              || Number of alternatives      |
+| TopOne      | CHARACTER(100)   |              || Most likely sample          |
 
 # Reports table for Cell Writer
 | TABLE     | Reports         | report       |   | List of all the reports     |
@@ -143,4 +156,5 @@
 | Sample    | TEXT             |              || The sample                  |
 | TrgDate   | DATE             |              || Date traning sample made    |
 | TrgTime   | TIME             |              || Training sample time made   |
+| Used      | INTEGER          |              || Count of times sample used  |
 | User      | CHARACTER(100)   | NOT NULL     || System identifier for user  |
