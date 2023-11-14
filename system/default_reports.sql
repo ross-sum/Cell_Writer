@@ -9,8 +9,8 @@ INSERT INTO Queries VALUES (2, 1, "", "DROP TABLE Temp1;");
 INSERT INTO Queries VALUES (2, 2, "", "CREATE TABLE Temp1 (User INTEGER, Name VARCHAR(100), Logon VARCHAR(100), Language INTEGER, ID INTEGER, SampleNo INTEGER, TheChar VARCHAR(1), Word VARCHAR(100), Used INTEGER);");
 INSERT INTO Queries VALUES (2, 3, "Temp1", "SELECT T.User, U.Name, U.Logon, T.Language, T.ID, T.SampleNo, IIF(T.ID<=L.EndChar,char(T.ID+L.Start),NULL) AS TheChar, W.word, T.Used FROM UserIDs U, Languages L, TrainingData T LEFT JOIN Words W ON (T.Language = W.Language AND W.ID = (T.ID - L.EndChar)) WHERE (T.Used > 0) AND (U.UID = T.User) AND (L.ID = T.Language) ORDER BY U.Logon ASC, T.Used DESC;");
 INSERT INTO Queries VALUES (3, 1, "", "DROP TABLE Temp1;");
-INSERT INTO Queries VALUES (3, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, UTime TIME, PadVol INTEGER);");
-INSERT INTO Queries VALUES (3, 3, "Temp1", "SELECT PD.Patient, UR.UDate, UR.UTime, ( UR.PadVolume - P.Size - ( CASE WHEN UR.Leakage > 2 THEN ( SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1 ) ELSE 0 END ) ) AS PadVol FROM UrineRecord UR, PadSizes P, PatientDetails PD WHERE P.ID = UR.PadType AND PD.Identifier = UR.Patient AND UR.PadType IS NOT NULL AND UR.Leakage > 1 AND UR.UDate > '2020-06-15';");
+INSERT INTO Queries VALUES (3, 2, "", "CREATE TABLE Temp1 (CharWord VARCHAR(100), Avg_Durn NUMERIC, Avg_Disqual NUMERIC, Avg_Alts NUMERIC);");
+INSERT INTO Queries VALUES (3, 3, "Temp1", "SELECT S.TopOne AS CharWord, avg(S.RecDuration) AS Avg_Durn, avg(S.Disqual * 100 / S.Examined) AS Avg_Disqual, avg(S.Alternatives) AS Avg_Alts FROM RecogniserStats S WHERE S.Strength > 0 GROUP BY S.TopOne ORDER BY CharWord;");
 INSERT INTO Queries VALUES (4, 1, "", "DROP TABLE Temp1;");
 INSERT INTO Queries VALUES (4, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, Volume INTEGER, PadVol INTEGER, Pads INTEGER);");
 INSERT INTO Queries VALUES (4, 3, "Temp1", "SELECT PD.Patient, UR.UDate, SUM(UR.Volume) AS Volume, SUM(UR.PadVolume - (CASE WHEN UR.Leakage < 2 THEN 0 ELSE (SELECT P.Size FROM PadSizes P WHERE P.ID = UR.PadType) - (CASE WHEN UR.Leakage > 2 THEN (SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1) ELSE 0 END) END)) AS PadVol, COUNT(UR.PadType) AS Pads FROM UrineRecord UR, PatientDetails PD WHERE PD.Identifier = UR.Patient AND UR.UDate < date('now') GROUP BY PD.Patient, UR.UDate;");
@@ -90,7 +90,7 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 %\usepackage{datetime2-bliss-utf8}
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \lhead{} \chead{ }  \rhead{}
-\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{  }
+\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{ }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
@@ -115,72 +115,48 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \end{longtable}
 \end{document}"
 WHERE ID = 2;
-UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-\batchmode
-\makeatletter
-\def\input@path{{/tmp/}}
-\makeatother
-\documentclass[australian]{article}
-\usepackage[T1]{fontenc}
-\usepackage[latin9]{inputenc}
-\usepackage[a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=2cm,rmargin=2cm,headheight=0.5cm,headsep=0.5cm,footskip=0.7cm}
-\setcounter{secnumdepth}{1}
-\setcounter{tocdepth}{1}
-\usepackage{array}
+UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[32pt,a4paper,australian]{bliss_article}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Blissymbolics}
+\setsansfont[Mapping=tex-text]{Blissymbolics}
+\setmonofont{Blissymbolics}
 \usepackage{longtable}
 
 \makeatletter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\pdfpageheight\paperheight
+\pdfpagewidth\paperwidth
+
 %% Because html converters don't know tabularnewline
 \providecommand{\tabularnewline}{\\}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
-\newcommand{\lyxaddress}[1]{
-	\par {\raggedright #1
-	\vspace{1.4em}
-	\noindent\par}
-}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
-\usepackage{babel}
-
 \usepackage{fancyhdr}  \pagestyle{fancy}
-\lhead{} \chead{}  \rhead{}
-\lfoot{Printed: \today}  \cfoot{Page \thepage}  \rfoot{Pad Volume Report}
+\lhead{} \chead{  }  \rhead{}
+\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{   }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{babel}
+\usepackage{polyglossia}
+\setdefaultlanguage[variant=australian]{english}
 \begin{document}
-«QUERY 1:SELECT DISTINCT Patient, SUM(PadVol) AS Vol, strftime('%d/%m/%Y',date('now')) as TodaysDate FROM Temp1; »
-\chead{Patient : «FIELD:1»}
-\lyxaddress{\textbf{\huge{}Pad Volume Report for «FIELD:1»}}
-
-\begin{longtable}[c]{>{\raggedright}p{4cm}>{\raggedright}p{4cm}>{\raggedleft}p{4cm}}
-\textbf{\large{}Date} &
-\textbf{\large{}Time} &
-\textbf{\large{}Volume}\tabularnewline
+\begin{longtable}[c]{|c|c|c|c|}
+\hline 
+\textbf{\large{} } & \textbf{\large{} } & \textbf{\large{}  } & \textbf{\large{}  }\tabularnewline
+\hline 
 \endhead
 \hline 
-«QUERY 2:SELECT DISTINCT Patient, date(UDate), strftime('%d/%m/%Y',date(UDate)) AS UDate2, SUM(PadVol) AS Vol FROM Temp1 WHERE Patient=?1  GROUP BY Patient, UDate; »
-«FIELD:3» & & \tabularnewline
-«QUERY 3:SELECT DISTINCT Patient, date(UDate), UTime, PadVol FROM Temp1 WHERE Patient=?1 AND UDate=?2 ORDER BY Patient, date(UDate), UTime; »
- & «FIELD:3» & «FIELD:4»\tabularnewline
-«END QUERY 3»
-\cline{3-3} 
- &  & «FIELD:4»\tabularnewline
-«END QUERY 2»
-\end{longtable}
-
+«QUERY 1:SELECT DISTINCT CharWord, round(Avg_Durn,3), round(Avg_Disqual,1), cast(round(Avg_Alts) as INTEGER) FROM Temp1 ORDER BY CharWord;»
+«FIELD:1» & «FIELD:2» & «FIELD:3» & «FIELD:4» \tabularnewline
 «END QUERY 1»
-
-\end{document}
-"
+\hline 
+\end{longtable}
+\end{document}"
 WHERE ID=3;
 UPDATE Reports SET R="## Constants ##
 ## --------- ##
