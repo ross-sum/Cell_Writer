@@ -472,6 +472,9 @@ package database is
        Index    : Integer)
    is abstract new SQL_Table (Ta_Wordfrequency, Instance, Index) with
    record
+      Language : SQL_Field_Integer (Ta_Wordfrequency, Instance, N_Language, Index);
+      --  Language of word/phrase
+
       Wfword : SQL_Field_Text (Ta_Wordfrequency, Instance, N_Wfword, Index);
       --  the word or phrase
 
@@ -528,6 +531,7 @@ package database is
    function FK (Self : T_Queries'Class; Foreign : T_Reports'Class) return SQL_Criteria;
    function FK (Self : T_Recogniserstats'Class; Foreign : T_Userids'Class) return SQL_Criteria;
    function FK (Self : T_Userids'Class; Foreign : T_Languages'Class) return SQL_Criteria;
+   function FK (Self : T_Wordfrequency'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    function FK (Self : T_Words'Class; Foreign : T_Languages'Class) return SQL_Criteria;
    Combiningchrs : T_Combiningchrs (null);
    Configurations : T_Configurations (null);

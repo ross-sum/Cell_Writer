@@ -51,6 +51,7 @@ with Help_About, Setup, CSS_Management, Keyboard, Grid_Management,
 with Key_Sym_Def;
 with Report_Processor;
 with Recogniser, Samples;
+with Word_Frequency;
 with Grid_Event_Handlers; use Grid_Event_Handlers;
 with Grid_Training;
 with Code_Interpreter;
@@ -247,6 +248,11 @@ package body Main_Menu is
          Setup.Combo_Language_Changed(Builder, to_language => new_language);
          -- Display or hide the top row of combining accents based on language
          Setup.Set_Up_Combining(Builder, for_language => new_language);
+         -- And set up the word frequency
+         if Word_Frequency.Word_Frequency_Is_Enabled then
+            Word_Frequency.Load_Word_Frequency(DB_Descr, 
+                                               for_language => new_language);
+         end if;
       end;
       --form_main's kill is a kill all:
       -- c code: window.signal_connect("destroy") { Gtk.main_quit }
@@ -674,6 +680,10 @@ package body Main_Menu is
       Setup.Combo_Language_Changed(Object, to_language => new_language);
       -- Display or hide the top row of combining accents based on language
       Setup.Set_Up_Combining(Object, for_language => new_language);
+      -- And set up the word frequency
+      if Word_Frequency.Word_Frequency_Is_Enabled then
+         Word_Frequency.Load_Word_Frequency(for_language => new_language);
+      end if;
       -- Activate relevant training samples
       Recogniser.Update_Enabled_Samples;
       -- And set up the keyboard to the selected language

@@ -44,8 +44,11 @@ package Word_Frequency is
    procedure Set_Word_Frequency_Enablement(to : in boolean);
        
    procedure Load_Word_Frequency
-                   (DB_Descr : GNATCOLL.SQL.Exec.Database_Description);
-      -- Read in the word frequency file from the database. The file format 
+                   (DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
+                    for_language : in natural);
+   procedure Load_Word_Frequency(for_language : in natural);
+      -- Clear out the old word frequency file that is loaded.  Then read
+      -- in the word frequency file from the database. The file format 
       -- is: word (called WFWord in the database), count (called WdCount in
       -- the database).
 
@@ -64,7 +67,9 @@ private
 
    engine_word_freq : natural;  -- our engine identifier (set by Register)
    
-   wordfreq_enable : boolean := true;
+   wordfreq_enable    : boolean := true;
+   language_number    : natural := 0;
+   the_DB_description : GNATCOLL.SQL.Exec.Database_Description;
 
    type word_frequency_info is record
          word  : text;

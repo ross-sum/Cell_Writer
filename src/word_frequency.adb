@@ -55,8 +55,10 @@ package body Word_Frequency is
    -- package Word_Freq_Arrays is new Generic_Binary_Trees_With_Data
    --       (T   => text,
    --        D   => word_frequency_info,
-   --        "<" => dStrings."<");
+   --        "<" => dStrings."<",
+   --        storage_size => (524288 * 4));
    -- subtype word_frequency_array is Word_Freq_Arrays.list;
+   -- word_frequencies : word_frequency_array;
 
    package Search_Pre_Words is new Word_Freq_Arrays.Locate(PreComparison);
    package Search_Post_Words is new Word_Freq_Arrays.Locate(PostComparison);
@@ -78,6 +80,7 @@ package body Word_Frequency is
            (SQL_Select (Fields  => WordFrequency.WFWord & 
                                    WordFrequency.WdCount,
                         From    => WordFrequency,
+                        Where   => (WordFrequency.Language = Integer_Param(1)),
                         Order_By=> WordFrequency.WFWord),
             On_Server => True,
             Use_Cache => True);
@@ -86,6 +89,7 @@ package body Word_Frequency is
            ("SELECT WordFrequency.WFWord,WordFrequency.WdCount " &
             "FROM WordFrequency " &
             "WHERE WordFrequency.WFWord LIKE '?'" &
+            "  AND WordFrequency.Language = ? " &
             "ORDER BY WordFrequency.WFWord",
             On_Server => True,
             Use_Cache => True);
@@ -103,32 +107,48 @@ package body Word_Frequency is
    end Set_Word_Frequency_Enablement;
 
    procedure Load_Word_Frequency
-                   (DB_Descr : GNATCOLL.SQL.Exec.Database_Description) is
-      -- Read in the word frequency file from the database. The file format 
+                   (DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
+                    for_language : in natural) is
+      -- Clear out the old word frequency file that is loaded.  Then read
+      -- in the word frequency file from the database. The file format 
       -- is: word (called WFWord in the database), count (called WdCount in
       -- the database).
       use GNATCOLL.SQL.Exec;
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       R_wd_freq    : Forward_Cursor;
       wd_freq_data : word_frequency_info;
+      lingo_parm   : SQL_Parameters (1 .. 1);
    begin
       Error_Log.Debug_Data(at_level => 6, 
                            with_details=> "Load_Word_Frequency: Start");
       -- Set up: Open the relevant tables from the database
+      the_DB_description := DB_Descr;
       cDB:=GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>DB_Descr);
-      -- Clear out the list ready to load
-      Clear(the_list => word_frequencies);
-      R_wd_freq.Fetch (Connection => cDB, Stmt => word_freq_select);
-      if Success(cDB) and then Has_Row(R_wd_freq) then
-         while Has_Row(R_wd_freq) loop  -- while not end_of_table
-            wd_freq_data.word  := 
-               Value_From_Wide(Decode(UTF_8_String(Value(R_wd_freq,0)),UTF_8));
-            wd_freq_data.count := Integer_Value(R_wd_freq, 1);
-            Insert(into => word_frequencies, 
-                   the_index => wd_freq_data.word, the_data => wd_freq_data);
-            Next(R_wd_freq);
-         end loop;
+      if language_number /= for_language
+      then  -- Only do this if there has been a change in language
+         language_number := for_language;
+         -- Clear out the list ready to load
+         Clear(the_list => word_frequencies);
+         -- Fetch the data and load it
+         lingo_parm:= (1=> +language_number);
+         R_wd_freq.Fetch (Connection => cDB, Stmt => word_freq_select, 
+                          Params => lingo_parm);
+         if Success(cDB) and then Has_Row(R_wd_freq) then
+            while Has_Row(R_wd_freq) loop  -- while not end_of_table
+               wd_freq_data.word  := Value_From_Wide(
+                               Decode(UTF_8_String(Value(R_wd_freq,0)),UTF_8));
+               wd_freq_data.count := Integer_Value(R_wd_freq, 1);
+               Insert(into => word_frequencies, 
+                      the_index=> wd_freq_data.word, the_data => wd_freq_data);
+               Next(R_wd_freq);
+            end loop;
+         end if;
       end if;
+   end Load_Word_Frequency;
+
+   procedure Load_Word_Frequency(for_language : in natural) is
+   begin
+      Load_Word_Frequency(the_DB_description, for_language);
    end Load_Word_Frequency;
    
    procedure Engine_Word_Frequency(input_sample: in Samples.input_sample_type;

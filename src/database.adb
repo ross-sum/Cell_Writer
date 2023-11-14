@@ -41,6 +41,11 @@ package body database is
       return Self.Language = Foreign.Id;
    end FK;
 
+   function FK (Self : T_Wordfrequency'Class; Foreign : T_Languages'Class) return SQL_Criteria is
+   begin
+      return Self.Language = Foreign.Id;
+   end FK;
+
    function FK (Self : T_Words'Class; Foreign : T_Languages'Class) return SQL_Criteria is
    begin
       return Self.Language = Foreign.Id;

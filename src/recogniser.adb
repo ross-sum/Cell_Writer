@@ -276,10 +276,6 @@ package body Recogniser is
                            with_details=> "Initialise_Recogniser: Start");
       -- Set up: Open the relevant tables from the database
       cDB:=GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>DB_Descr);
-      -- And set up the word frequency
-      if Word_Frequency_Is_Enabled then
-         Load_Word_Frequency(DB_Descr);
-      end if;
       -- And get the user identifier for the current logged-on user from
       -- the system.
       if Host_Functions.Current_User'Length > 0 then

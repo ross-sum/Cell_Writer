@@ -141,6 +141,7 @@
 # Word and phrase frequency table, used for working out the likelihood that
 # a hand-written entry is as it appears to be.
 | TABLE       | WordFrequency | wordfrequency |  | Lists of words and phrases |
+| Language    | FK Languages(ID)| PK,NOT NULL |  | Language of word/phrase    |
 | WFWord      | CHARACTER(100)| PK,NOT NULL   |  | the word or phrase         |
 | WdCount     | INTEGER       |               | 0| Count of words             |
 | Description | CHARACTER(100)|               |  | A name or similar          |
