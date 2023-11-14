@@ -6,8 +6,8 @@ INSERT INTO Queries VALUES (1, 1, "", "DROP TABLE Temp1;");
 INSERT INTO Queries VALUES (1, 2, "", "CREATE TABLE Temp1 (User VARCHAR(100), Word VARCHAR(100), SampleCount INTEGER);");
 INSERT INTO Queries VALUES (1, 3, "Temp1", "SELECT T.User, T.Word, COUNT(T.SampleNo) AS SampleCount FROM TrainingDataWords T GROUP BY T.User, T.ID, T.WordID;");
 INSERT INTO Queries VALUES (2, 1, "", "DROP TABLE Temp1;");
-INSERT INTO Queries VALUES (2, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, UTime TIME, Volume INTEGER, PadVol INTEGER, Pad VARCHAR(20), Hold VARCHAR(20), Leakage VARCHAR(15), No2 BOOLEAN, Spasm VARCHAR(20), SpasmCount INTEGER, Urges INTEGER, Notes TEXT);");
-INSERT INTO Queries VALUES (2, 3, "Temp1", "SELECT PD.Patient, UR.UDate, UR.UTime, UR.Volume, ( UR.PadVolume - ( CASE WHEN UR.Leakage < 2 THEN 0 ELSE ( SELECT P.Size FROM PadSizes P WHERE P.ID = UR.PadType ) - ( CASE WHEN UR.Leakage > 2 THEN ( SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1 ) ELSE 0 END ) END ) ) AS PadVol, PS.Brand AS Pad, H.Description AS Hold, L.Leakage, UR.No2, ( CASE WHEN UR.Spasm IS NULL THEN '-' ELSE ( SELECT S.Description FROM Spasms S WHERE UR.Spasm = S.Spasm ) END ) AS Spasm, UR.SpasmCount, UR.Urges, UR.Notes FROM UrineRecord UR LEFT JOIN PadSizes PS ON ( UR.PadType = PS.ID ), Leakage L, HoldStates H, PatientDetails PD WHERE UR.Hold = H.ID AND L.Value = UR.Leakage AND PD.Identifier = UR.Patient;");
+INSERT INTO Queries VALUES (2, 2, "", "CREATE TABLE Temp1 (User INTEGER, Name VARCHAR(100), Logon VARCHAR(100), Language INTEGER, ID INTEGER, SampleNo INTEGER, TheChar VARCHAR(1), Word VARCHAR(100), Used INTEGER);");
+INSERT INTO Queries VALUES (2, 3, "Temp1", "SELECT T.User, U.Name, U.Logon, T.Language, T.ID, T.SampleNo, IIF(T.ID<=L.EndChar,char(T.ID+L.Start),NULL) AS TheChar, W.word, T.Used FROM UserIDs U, Languages L, TrainingData T LEFT JOIN Words W ON (T.Language = W.Language AND W.ID = (T.ID - L.EndChar)) WHERE (T.Used > 0) AND (U.UID = T.User) AND (L.ID = T.Language) ORDER BY U.Logon ASC, T.Used DESC;");
 INSERT INTO Queries VALUES (3, 1, "", "DROP TABLE Temp1;");
 INSERT INTO Queries VALUES (3, 2, "", "CREATE TABLE Temp1 (Patient VARCHAR(80), UDate DATE, UTime TIME, PadVol INTEGER);");
 INSERT INTO Queries VALUES (3, 3, "Temp1", "SELECT PD.Patient, UR.UDate, UR.UTime, ( UR.PadVolume - P.Size - ( CASE WHEN UR.Leakage > 2 THEN ( SELECT DISTINCT PP.Size FROM PadSizes PP WHERE PP.ID = 1 ) ELSE 0 END ) ) AS PadVol FROM UrineRecord UR, PadSizes P, PatientDetails PD WHERE P.ID = UR.PadType AND PD.Identifier = UR.Patient AND UR.PadType IS NOT NULL AND UR.Leakage > 1 AND UR.UDate > '2020-06-15';");
@@ -18,7 +18,6 @@ INSERT INTO Queries VALUES (4, 4, "", "DROP TABLE Temp2;");
 INSERT INTO Queries VALUES (4, 5, "", "CREATE TABLE Temp2 AS SELECT Patient, UDate, Volume * 100.00 / (Volume + PadVol) AS PercentVol, PadVol * 100.00 / (Volume + PadVol ) AS PercentPadVol, Pads AS PadCount FROM Temp1;");
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-% !TEX program = XeLaTeX
 \documentclass[32pt,a4paper,australian]{bliss_article}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
@@ -69,78 +68,52 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \end{document}
 "
 WHERE ID = 1;
-UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
-%% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-\batchmode
-\makeatletter
-\def\input@path{{/tmp/}}
-\makeatother
-\documentclass[australian]{article}
-\usepackage[T1]{fontenc}
-\usepackage[latin9]{inputenc}
-\usepackage[landscape,a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.5cm,lmargin=1.5cm,rmargin=1.5cm,headheight=0.5cm,headsep=0.5cm,footskip=0.7cm}
-\usepackage{array}
+UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[32pt,a4paper,australian]{bliss_article}
+\usepackage{fontspec}
+\setmainfont[Mapping=tex-text]{Blissymbolics}
+\setsansfont[Mapping=tex-text]{Blissymbolics}
+\setmonofont{Blissymbolics}
 \usepackage{longtable}
 
 \makeatletter
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\pdfpageheight\paperheight
+\pdfpagewidth\paperwidth
+
 %% Because html converters don't know tabularnewline
 \providecommand{\tabularnewline}{\\}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
-\newcommand{\lyxaddress}[1]{
-	\par {\raggedright #1
-	\vspace{1.4em}
-	\noindent\par}
-}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+%\usepackage{datetime2-bliss-utf8}
 \usepackage{fancyhdr}  \pagestyle{fancy}
-\lhead{} \chead{}  \rhead{}
-\lfoot{Printed: \today}  \cfoot{Page \thepage}  \rfoot{Urine Recordings Report}
+\lhead{} \chead{ }  \rhead{}
+\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{  }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{babel}
+\usepackage{polyglossia}
+\setdefaultlanguage[variant=australian]{english}
 \begin{document}
-«QUERY 1:SELECT DISTINCT Patient, SUM(PadVol) AS Vol FROM Temp1; »
-\chead{Patient : «FIELD:1»}
-
-\lyxaddress{\begin{center}
-\textbf{\huge{}Urine Records for «FIELD:1»}
-\par\end{center}}
-
-\begin{longtable}[c]{>{\raggedright}p{1.3cm}>{\raggedleft}p{1.4cm}>{\raggedleft}p{1.4cm}>{\raggedright}p{2.5cm}>{\raggedright}p{1.4cm}>{\raggedright}p{2.3cm}>{\centering}p{1cm}>{\raggedright}p{2.0cm}>{\raggedleft}p{1.0cm}>{\raggedleft}p{1.0cm}>{\raggedright}m{8.2cm}}
-\textbf{\large{}Time} &
-\textbf{\large{}Volume} &
-\textbf{\large{}Pad Vol} &
-\textbf{\large{}Pad} &
-\textbf{\large{}Hold} &
-\textbf{\large{}Leakage} &
-\textbf{\large{}No 2} &
-\textbf{\large{}Spasm +} &
-\textbf{\large{}Amt} &
-\textbf{\large{}Urge} &
-\textbf{\large{}Notes}\tabularnewline
+\begin{longtable}[c]{|l|l|l|}
+\hline 
+\textbf{\large{} } & \textbf{\large{} } & \textbf{\large{}  }\tabularnewline
 \hline 
 \endhead
-«QUERY 2:SELECT DISTINCT Patient, date(UDate), strftime('%d/%m/%Y',date(UDate)) AS UDate2, SUM(Volume) AS Volume, SUM(PadVol) AS Vol FROM Temp1 WHERE Patient=?1  GROUP BY Patient, UDate; »
-«FIELD:3» & & & & & & & & & \tabularnewline
-«QUERY 3:SELECT DISTINCT Patient, date(UDate), UTime, Volume, PadVol, Pad, Hold, Leakage, (CASE WHEN No2=1 THEN 'Y' ELSE '' END) AS No2, Spasm, SpasmCount, Urges, Notes FROM Temp1 WHERE Patient=?1 AND UDate=?2; »
-«FIELD:3» & «FIELD:4» & «FIELD:5» & «FIELD:6» & «FIELD:7» & «FIELD:8» & «FIELD:9» & «FIELD:10» & «FIELD:11» & «FIELD:12» & {\scriptsize{}«FIELD:13»}\tabularnewline
-«END QUERY 3»
-\cline{2-3} \cline{3-3} 
- & «FIELD:4» & «FIELD:5» & & & & & & & \tabularnewline
+\hline 
+«QUERY 1:SELECT DISTINCT Logon FROM Temp1 ORDER BY Logon; »
+«FIELD:1» & & \tabularnewline
+«QUERY 2:SELECT DISTINCT Logon, IFNULL(Word, TheChar) Word, Used FROM Temp1 WHERE Logon=?1 ORDER BY Logon ASC, Used DESC; »
+ & «FIELD:2» & «FIELD:3» \tabularnewline
 «END QUERY 2»
-\end{longtable}
-
+\hline 
 «END QUERY 1»
-
-\end{document}
-"
+\end{longtable}
+\end{document}"
 WHERE ID = 2;
 UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
