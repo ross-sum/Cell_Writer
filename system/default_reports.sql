@@ -63,6 +63,10 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
  & «FIELD:2» & «FIELD:3» \tabularnewline
 «END QUERY 2»
 \hline 
+«QUERY 2:SELECT DISTINCT User, count(Word), sum(SampleCount) FROM Temp1 WHERE User=?1 ORDER BY User; »
+\textbf{\large{} } & \textbf{\large{}«FIELD:2»} & \textbf{\large{}«FIELD:3»}\tabularnewline
+\hline 
+«END QUERY 2»
 \end{longtable}{\huge\par}
 «END QUERY 1»
 \end{document}
