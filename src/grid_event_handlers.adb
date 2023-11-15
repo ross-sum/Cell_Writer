@@ -148,7 +148,6 @@ package body Grid_Event_Handlers is
       end loop;
       -- Finally, initialise the the cursor to be the first cell
       Set_Cursor_Position(to => (1,1));
-      Error_Log.Debug_Data(at_level => 9, with_details => "Register_Handlers: rows =" & Integer'Wide_Image(grid_size.row) & ", cols =" & Integer'Wide_Image(grid_size.col));
    end Register_Handlers;
    
     -- Draw event Callbacks
@@ -368,14 +367,12 @@ package body Grid_Event_Handlers is
       drawing_area := Gtk_Drawing_Area(writing_area);
       Error_Log.Debug_Data(at_level => 7, 
                            with_details => "Draw_Release_CB: Start for '" & 
-                                           our_cell & "'." & " Event.state = '" & event.state'Wide_Image & "'." & " Event position=(" & Put_Into_String(float(event.X),1) & "," & Put_Into_String(float(event.Y),1) & ").");
+                                           our_cell & "'.");
       -- Save this point for the stroke as its last point
       new_point := Make_Point(at_x=> (x_pos-x_offset)*scale_factor,
                               at_y=> (y_offset-y_pos)*scale_factor);
-      Error_Log.Debug_Data(at_level => 9, with_details => "Draw_Release_CB: point is at (" & Put_Into_String(X(new_point),1) & "," & Put_Into_String(Y(new_point),1) & "), built from X=" & Put_Into_String(x_pos,2) & " and Y=" & Put_Into_String(y_pos,2) & ".");
       if (Button3_Mask and event.state) = Button3_Mask
       then  -- Execute the popup call-back, which may display a pop-up menu
-         Error_Log.Debug_Data(at_level => 9, with_details => "Draw_Release_CB: Button3_Mask event state.");
          return Show_Cell_Popup (writing_area, event);
       elsif (Button1_Mask and event.state) = Button1_Mask and then
          not Strokes_Arrays.Is_Empty(current_sample.strokes) and then
@@ -384,7 +381,6 @@ package body Grid_Event_Handlers is
                     points(current_sample.strokes(current_sample.strokes.
                                     Last_Index).points.Last_Index) /= new_point
       then  -- this is actually a new point and not the same as last time
-         Error_Log.Debug_Data(at_level => 9, with_details => "Draw_Release_CB: Button1_Mask event state and a new point.");
          -- Load the current_sample up with the current pen location
          Add(a_point => new_point,
              to_the_stroke =>
@@ -825,7 +821,6 @@ package body Grid_Event_Handlers is
                not Points_Arrays.Is_Empty(current_sample.strokes(0).points)
       then  -- process the sample
             -- Try to recognise the sample
-         Error_Log.Debug_Data(at_level => 9, with_details => "Close_Out_Sample: recognising '" & for_cell & "'.");
          Recognise_Sample (input_sample => current_sample,
                            best_result => the_char,
                            alternatives => identities,
@@ -854,7 +849,6 @@ package body Grid_Event_Handlers is
       -- then queue a redraw to display the recognised character (if any)
       Gtk.Widget.Queue_Draw(Gtk_Widget_Record(the_cell.all)'Access);
       -- Clear out (reset) current_sample ready for reuse
-      Error_Log.Debug_Data(at_level => 9, with_details => "Close_Out_Sample: clearing data '" & for_cell & "'.");
       Clear (the_sample => current_sample);
       -- If there is a cell change, then we want to make sure that the next
       -- operation is a cell change type operation even if the user comes back
@@ -1187,9 +1181,6 @@ package body Grid_Event_Handlers is
             return Clear;
          end if;
       else  -- didn't find the label (this is actually a fault condition)
-         -- Error_Log.Put(the_error => 18,
-            --            error_intro =>  "The_Cell_Contents error", 
-            --            error_message=> "Didn'd find '" & txt_cell& "'.");
          return Clear;
       end if;    
    end The_Cell_Contents;
@@ -1288,7 +1279,6 @@ package body Grid_Event_Handlers is
                txt_cell(8..9) := Integer'Wide_Image(col)(2..3);
             end if;
             Set_Name(writing_area, Encode(txt_cell));
-            Error_Log.Debug_Data(at_level => 9, with_details => "Insert_Cell - Add_A_Row: adding cell '" & txt_cell & "' as cell name '"& To_Wide_String(Get_Name(writing_area)) & "'.");
             -- Set the size and colour
             Set_Size_Request(writing_area,Gint(cell_width), Gint(cell_height));
             Override_Background_Color(writing_area,0, blank_background_colour);
@@ -1313,7 +1303,6 @@ package body Grid_Event_Handlers is
          Add_A_Row;
          current_position := grid_size;  -- reaffirm after adding the row.
       end if;
-      Error_Log.Debug_Data(at_level => 9, with_details => "Insert_Cell: start row="&Put_Into_String(current_position.row)&", last row="&Put_Into_String(grid_size.row)&", start col="&Put_Into_String(current_position.col)&", last col="&Put_Into_String(grid_size.col)&".");
       -- We start from the end and work to the current position, shifting all
       -- cell contents forward (to the right in left-to-right or to the left in
       -- right-to-left writing).
@@ -1533,7 +1522,7 @@ package body Grid_Event_Handlers is
       procedure Current(menu_item : in text) is
          use Recogniser, Recogniser.Alternatives_Arrays, Setup;
          rating_text : text;
-         rating      : Setup.sample_rating;
+         rating      : integer; -- Setup.sample_rating;
          alternative : Recogniser.alternative_details;
       begin
          selected_popup_entry := menu_item;
@@ -1549,13 +1538,13 @@ package body Grid_Event_Handlers is
          then  -- delete it
             Delete(rating_text, Length(rating_text), 1);
          end if;
-         rating := Setup.sample_rating(float(
-                       Get_Integer_From_String(rating_text)) / 100.0);
+         rating := Get_Integer_From_String(rating_text);
          -- locate the appropriate entry in the list
          First(in_the_list => alternatives_list);
          while not Is_End(of_the_list => alternatives_list) loop
             alternative := Deliver_Data(from_the_list => alternatives_list);
-            if alternative.ch = ch and alternative.rating = rating
+            if alternative.ch = ch and 
+               integer(alternative.rating * 100.0) = rating
             then  -- assume this is the one
                sample_num := alternative.sample_number;
                exit;

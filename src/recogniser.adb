@@ -276,6 +276,7 @@ package body Recogniser is
                            with_details=> "Initialise_Recogniser: Start");
       -- Set up: Open the relevant tables from the database
       cDB:=GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>DB_Descr);
+      Performance_Write_Back.Set_Database(to => DB_Descr);
       -- And get the user identifier for the current logged-on user from
       -- the system.
       if Host_Functions.Current_User'Length > 0 then
@@ -344,6 +345,7 @@ package body Recogniser is
             Next(R_config);  -- next record(Configurations)
          end loop;
       end if;
+      Performance_Write_Back.Stop;
    end Finalise_Recogniser;
           
    procedure Set_Engine_Ranges(to : in text) is
@@ -564,11 +566,9 @@ package body Recogniser is
                -- number that links the comparison and the training data (which
                -- is different to the sample number for the specific character)
                alternative.sample_number := the_sample.sample_number;
-               Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: adding alternative '" & alternative.ch & "' at number " & Put_Into_String(Count(of_items_in_the_list => alternatives)+1) & " with rating " & Put_Into_String(integer(alternative.rating * 100.0)) & "%.");
                Insert(into => alternatives, 
                    the_index => alternative.rating,
                    the_data =>  alternative);
-               Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: added alternative '" & alternative.ch & "'.");
             end;
          end if;
       end loop;
@@ -580,10 +580,7 @@ package body Recogniser is
             -- Delete out excess alternatives beyond num_alternatives
          if alternative_num > num_alternatives
          then  -- delete from the end (it doesn't matter where to delete from)
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: deleting alternative '" & Deliver_Data(alternatives).ch & "' at number " & Put_Into_String(alternative_num) & " with rating " & Put_Into_String(integer(Deliver_Data(alternatives).rating * 100.0)) & "%.");
             Delete(from_the_list => alternatives);
-         else
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: keeping alternative '" & Deliver_Data(alternatives).ch & "' at number " & Put_Into_String(alternative_num) & " with rating " & Put_Into_String(integer(Deliver_Data(alternatives).rating * 100.0)) & "%.");
          end if;
          Next(in_the_list => alternatives);
       end loop;
@@ -592,10 +589,8 @@ package body Recogniser is
       if Count(of_items_in_the_list => alternatives) > 0 then
          if Count(of_items_in_the_list => alternatives) > 1
          then  -- more than one item, find the strength of the first item
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: number of alternatives is " & Put_Into_String(Count(of_items_in_the_list => alternatives)) & ".");
             First(in_the_list => alternatives);
             highest_rating := Deliver_Data(from_the_list=>alternatives).rating;
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: highest_rating = " & Put_Into_String(integer(highest_rating * 100.0)) & "%.");
             -- The following code to get next_highest_rating is to get around a
             -- strange error that randomly and very infrequently popped up
             for alternate in 2..Count(of_items_in_the_list=>alternatives) loop
@@ -609,11 +604,11 @@ package body Recogniser is
             end loop;
             if not Is_End  (of_the_list=>alternatives)
             then  -- all's well
-               next_highest_rating := Deliver_Data(from_the_list=>alternatives).rating;
+               next_highest_rating := 
+                            Deliver_Data(from_the_list => alternatives).rating;
             else  -- error condition - assign 0!
                next_highest_rating := 0.0;
             end if;
-            Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: next_highest_rating = " & Put_Into_String(integer(next_highest_rating * 100.0)) & "%.");
             strength := integer((highest_rating-next_highest_rating)*100.0);
          else  -- just one item, so it is 100% strong
             strength := 100;
@@ -725,8 +720,7 @@ package body Recogniser is
       end if;
       
       -- Finally, load the statistics database now we have all the detail
-      Execute (Connection=>cDB, Stmt=>Recog_Insert, Params=>recog_parm);
-      Commit_Or_Rollback (cDB);
+      Performance_Write_Back.Record_Statistics(for_recognition => recog_parm);
       
    end Recognise_Sample;
 
@@ -770,14 +764,12 @@ package body Recogniser is
          end loop;
       else  -- create a new entry in the list of samples and the database
          Insert(the_index => new_sample.ch, the_data => new_sample);
-         Error_Log.Debug_Data(at_level=>9,with_details=>"Insert(sample): inserting.");
          -- And insert into the database
          Write_Out(the_sample => new_sample, to_database => cDB);
       end if;
-      Error_Log.Debug_Data(at_level=>9,with_details=>"Insert(sample): end.");
    end Insert;
 
-   procedure Train_Sample (cell : in sample_type) is  --; trusted : boolean) is
+   procedure Train_Sample (cell : in sample_type) is
       -- Add the sample into the list of training samples, overwriting an old
       -- one if there are already enough samples.
       use Ada.Containers;
@@ -793,7 +785,6 @@ package body Recogniser is
                                         "sample for '"& cell.ch & "'.");
          return;
       end if;
-      Error_Log.Debug_Data(at_level=>9, with_details=>"Train_Sample: about to copy.");
       copy(from => cell, to => new_sample);
       -- Record when we made the sample
       new_sample.training_date := UTC_Clock;
@@ -815,11 +806,9 @@ package body Recogniser is
             exit when Deliver_The_Key /= cell.ch;
          end loop;
          -- assign that sample's number
-         Error_Log.Debug_Data(at_level=>9, with_details=>"Train_Sample: overwriting old with new sample.");
          Insert(new_sample, overwrite => true);
       else  -- inserting a new sample
       -- new_sample.enabled := true;
-         Error_Log.Debug_Data(at_level=>9, with_details=>"Train_Sample: inserting new sample.");
          Insert(new_sample, overwrite => false);
       end if;
    end Train_Sample;
@@ -883,13 +872,6 @@ package body Recogniser is
       -- 'at_sample_number' is pointing to the right sample.
       use GNATCOLL.SQL.Exec;
       the_sample : training_sample;
-      lang_parm  : SQL_Parameters (1 .. 1);
-      train_parm : SQL_Parameters (1 .. 5);
-      R_lang     : Forward_Cursor;
-      language_id: natural := 1;  -- the training data table language
-      char_id    : natural := 0;  -- the training data table id
-      block_start: natural;
-      block_end  : natural;
    begin
       -- Find (the_item => the_character);
       the_sample := Deliver_The_Sample(at_index => at_sample_number);
@@ -901,42 +883,10 @@ package body Recogniser is
          -- Update the database with this updated sample
          Write_Out(the_sample => the_sample, to_database => cDB,
                    as_update => true);  -- for now
-      -- First, work out the block for the character set based on first character
-         lang_parm := (1 => +Wide_Character'Pos(Wide_Element(the_sample.ch, 1)));
-         R_lang.Fetch (Connection => cDB, Stmt => lingo_sel_enabled,
-                          Params => lang_parm);
-         if Success(cDB) and then Has_Row(R_lang) then
-            language_id := Integer_Value(R_lang, 0);
-            block_start := Integer_Value(R_Lang, 1);
-            block_end   := Integer_Value(R_Lang, 2);
-         end if;
-      -- Is this a word sample or a character for the sample
-         if Length(the_sample.ch) = 1
-         then  -- a character sample
-         -- the offset is for the single character
-            char_id := Wide_Character'Pos(Wide_Element(the_sample.ch, 1)) - 
-                    block_start;
-         else  -- a word sample -- first character is the block offset
-         -- the word gives the offset from the block. Note that the
-         -- database stores text in UTF8 format, so need to convert.
-            lang_parm := (1 => +To_UTF8_String(item => the_sample.ch));
-            R_lang.Fetch (Connection => cDB, Stmt => word_id,
-                          Params => lang_parm);
-            if Success(cDB) and then Has_Row(R_lang) then
-               char_id := block_end + Integer_Value(R_lang, 1);
-            else  -- we have a problem!
-               char_id := block_end + 100;  -- for now
-            end if;
-         end if;
-         -- Now load it
-         train_parm  := ( 1 => +user_id,
-                          2 => +language_id,
-                          3 => +char_id,
-                          4 => +the_sample.sample_number,
-                          5 => +the_sample.used );
-         Execute (Connection => cDB, Stmt => Trg_Usage, 
-                  Params     => train_parm);
-         Commit_Or_Rollback (cDB);   
+         Performance_Write_Back.
+               Update_Usage(for_character => the_character, 
+                            at_sample_number => the_sample.sample_number,
+                            to => the_sample.used);
          -- And update the training sample in memory (for now)
          Replace (the_data => the_sample);
       elsif the_sample.ch /= the_character
@@ -946,7 +896,9 @@ package body Recogniser is
                        error_message => "Attempted to promote a non-existent "&
                                         "sample, '"& the_character & 
                                         "' at sample number " & 
-                                        Put_Into_String(at_sample_number) & ".");
+                                        Put_Into_String(at_sample_number) & 
+                                        ".  Search got wrong character '" &
+                                        the_sample.ch & "'.");
       end if;
    end Promote;
 
@@ -1284,6 +1236,87 @@ package body Recogniser is
       Execute (Connection=>from_database,Stmt=>Trg_Delete, Params=>train_parm);
       Commit_Or_Rollback (from_database);
    end Delete;
+   
+   -- To maintain throughput speeds, write-back to the database of statistical
+   -- information is via a separate task.
+   task body Performance_Write_Back is
+      use GNATCOLL.SQL.Exec;
+      tDB : GNATCOLL.SQL.Exec.Database_Connection;
+      time_to_exit : boolean := true;
+   begin
+      accept Set_Database(to : in GNATCOLL.SQL.Exec.Database_Description) do
+         tDB := GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>to);
+         time_to_exit := false;
+      end;
+      while not time_to_exit loop
+         select
+            accept Record_Statistics
+                     (for_recognition : in GNATCOLL.SQL.Exec.SQL_Parameters) do
+               Execute (Connection => tDB, Stmt => Recog_Insert, 
+                        Params => for_recognition);
+               Commit_Or_Rollback (tDB);
+            end;
+         or
+            accept Update_Usage(for_character : in text; 
+                                at_sample_number : in natural;
+                                to : in natural) do
+               declare
+                  lang_parm  : SQL_Parameters (1 .. 1);
+                  train_parm : SQL_Parameters (1 .. 5);
+                  R_lang     : Forward_Cursor;
+                  language_id: natural:= 1; -- the training data table language
+                  char_id    : natural:= 0; -- the training data table id
+                  block_start: natural;
+                  block_end  : natural;
+               begin
+                   -- First, work out the block for the character set based on
+                   -- first character
+                  lang_parm := 
+                     (1 => +Wide_Character'Pos(Wide_Element(for_character,1)));
+                  R_lang.Fetch (Connection => tDB, Stmt => lingo_sel_enabled,
+                                Params => lang_parm);
+                  if Success(tDB) and then Has_Row(R_lang) then
+                     language_id := Integer_Value(R_lang, 0);
+                     block_start := Integer_Value(R_Lang, 1);
+                     block_end   := Integer_Value(R_Lang, 2);
+                  end if;
+               -- Is this a word sample or a character for the sample
+                  if Length(for_character) = 1
+                  then  -- a character sample
+                  -- the offset is for the single character
+                     char_id:=Wide_Character'Pos(Wide_Element(for_character,1))-
+                              block_start;
+                  else  -- a word sample -- first character is the block offset
+                  -- the word gives the offset from the block. Note that the
+                  -- database stores text in UTF8 format, so need to convert.
+                     lang_parm:= (1 => +To_UTF8_String(item => for_character));
+                     R_lang.Fetch (Connection => tDB, Stmt => word_id,
+                          Params => lang_parm);
+                     if Success(tDB) and then Has_Row(R_lang) then
+                        char_id := block_end + Integer_Value(R_lang, 1);
+                     else  -- we have a problem!
+                        char_id := block_end + 100;  -- for now
+                     end if;
+                  end if;
+               -- Now load it
+                  train_parm  := ( 1 => +user_id,
+                          2 => +language_id,
+                          3 => +char_id,
+                          4 => +at_sample_number,
+                          5 => +to );
+                  Execute (Connection => tDB, Stmt => Trg_Usage, 
+                           Params     => train_parm);
+                  Commit_Or_Rollback (tDB);   
+                  null;
+               end;
+            end;
+         or
+            accept Stop do
+               time_to_exit := true;
+            end;
+         end select;
+      end loop;
+   end Performance_Write_Back;
 
 begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",

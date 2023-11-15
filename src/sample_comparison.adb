@@ -82,9 +82,7 @@ package body Sample_Comparison is
          end loop;
          k := k + 1;
       end loop;
-      Error_Log.Debug_Data(at_level=>9, with_details=>"Transform_stroke: procesing new_stroke.");
       Stroke_Management.Process(the_stroke => new_stroke);
-      Error_Log.Debug_Data(at_level=>9, with_details=>"Transform_stroke: end.");
       return new_stroke;
       exception
          when Stroke_Management.NO_POINTS_ERROR =>
@@ -104,13 +102,13 @@ package body Sample_Comparison is
 
    procedure Clear(the_comparison_information : out comparison_information) is
    begin
-      Error_Log.Debug_Data(at_level=>8, with_details=>"Clear(the_comparison_information): start.");
+      Error_Log.Debug_Data(at_level=>8, 
+                    with_details=>"Clear(the_comparison_information): start.");
       Clear(the_comparison_information.ch);
       the_comparison_information.rating := 0;
       Set_Length(the_comparison_information.ratings, engines.Length);
       for engine_no in the_comparison_information.ratings.First_Index .. 
                        the_comparison_information.ratings.Last_Index loop
-         Error_Log.Debug_Data(at_level=>9, with_details=>"Clear: setting ratings for engine_no " & Put_Into_String(engine_no) & ".");
          the_comparison_information.ratings(engine_no) := 0; 
       end loop;
       the_comparison_information.disqualified := true;  -- default state
@@ -131,25 +129,15 @@ package body Sample_Comparison is
       last_character  : text := Clear;
       index           : natural := 0;
    begin
-      Error_Log.Debug_Data(at_level=>8, with_details=>"Setup_The_Comparison_Array: start." & " There are NO training samples to work with: " & There_Are_No_Samples'Wide_Image & ".");
       Comparisons_Arrays.Clear(training_comparisons);
       First_Sample;
       while not Past_Last_Sample loop
          the_sample := Deliver_The_Sample;
-         Error_Log.Debug_Data(at_level=>9, with_details=>"Setup_The_Comparison_Array: got entry '" & the_sample.ch & "'.");
          if the_sample.enabled
          then  -- we don't do recognition for disabled samples
-            Error_Log.Debug_Data(at_level=>9, with_details=>"Setup_The_Comparison_Array: initialising entry for enabled sample '" & the_sample.ch & "'.");
             Clear(comparison_data);
             comparison_data.ch := the_sample.ch;
          -- work out our index number for this training sample
-         -- if the_sample.ch /= last_character
-         -- then
-            -- last_character := the_sample.ch;
-            -- index := 1;
-         -- else
-            -- index := index + 1;
-         -- end if;
             if Is_Empty(training_comparisons)
             then
                comparison_data.sample_number := 1;
@@ -158,8 +146,7 @@ package body Sample_Comparison is
                                training_comparisons.Last_Index + 1;
             end if;
             Comparisons_Arrays.Append(training_comparisons, comparison_data);
-            Error_Log.Debug_Data(at_level=>9, with_details=>"Setup_The_Comparison_Array: loaded data for " & Put_Into_String(comparison_data.sample_number) & ".");
-            the_sample.index := comparison_data.sample_number;  -- training_comparisons.Last_Index;
+            the_sample.index := comparison_data.sample_number;
             Replace (the_data => the_sample);
          end if;
          Next_Sample;

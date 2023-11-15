@@ -82,11 +82,9 @@ package Training_Samples is
    -- Database interaction functions to convert between blob and sample
    function Extract_The_Sample(from_blob : in GNATCOLL.SQL_BLOB.Blob) 
    return training_sample;
-         -- External_Name => "sample_read"
        -- Extract a sample from the supplied blob
    function Load_The_Sample (from : in training_sample) 
    return GNATCOLL.SQL_BLOB.Blob;
-         -- External_Name => "sample_read"
        -- Load a sample into a blob.
        -- Using unchecked conversion, pack the sample into the blob field and
        --  load it into the SQL blob for return.

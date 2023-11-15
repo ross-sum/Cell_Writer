@@ -154,5 +154,16 @@ private
        -- current user.
   
    strength_sum : natural := 0;
+   
+   -- To maintain throughput speeds, write-back to the database of statistical
+   -- information is via a separate task.
+   task Performance_Write_Back is
+      entry Set_Database(to : in GNATCOLL.SQL.Exec.Database_Description);
+      entry Record_Statistics
+                       (for_recognition : in GNATCOLL.SQL.Exec.SQL_Parameters);
+      entry Update_Usage(for_character : in text; at_sample_number: in natural;
+                         to : in natural);
+      entry Stop;
+   end Performance_Write_Back;
 
 end Recogniser;
