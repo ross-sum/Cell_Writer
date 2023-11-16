@@ -115,6 +115,10 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
  & «FIELD:2» & «FIELD:3» \tabularnewline
 «END QUERY 2»
 \hline 
+«QUERY 2:SELECT DISTINCT Logon, sum(Used) FROM Temp1 WHERE Logon=?1 ORDER BY User; »
+\textbf{\large{} } & & \textbf{\large{}«FIELD:2»}\tabularnewline
+\hline 
+«END QUERY 2»
 «END QUERY 1»
 \end{longtable}
 \end{document}"
@@ -159,6 +163,10 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 «FIELD:1» & «FIELD:2» & «FIELD:3» & «FIELD:4» \tabularnewline
 «END QUERY 1»
 \hline 
+«QUERY 1:SELECT round(avg(Avg_Durn),3), round(avg(Avg_Disqual),1) FROM Temp1; »
+\textbf{\large{} } & \textbf{\large{}«FIELD:1»} & \textbf{\large{}«FIELD:2»} & \tabularnewline
+\hline 
+«END QUERY 1»
 \end{longtable}
 \end{document}"
 WHERE ID=3;
