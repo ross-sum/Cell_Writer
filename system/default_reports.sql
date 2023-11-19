@@ -220,7 +220,7 @@ remaining <- dbReadTable(db, tbltemp3)
 postscript(outputfile,horizontal=FALSE,onefile=FALSE,width=7.4,height=10.0,pointsize=20)
 pie(result$Used, labels = result$TheChar, edges = 200, radius = 0.8,
     clockwise = FALSE, 
-    density = NULL, angle = 45, col = NULL, border = NULL,
+    density = NULL, angle = 45, col = NULL, border = bordercolours,
     lty = NULL, main = graphtitle1, family=""Blissymbolics"")
 dev.off()
 ## Disconnect from the database
