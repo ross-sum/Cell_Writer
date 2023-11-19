@@ -194,7 +194,7 @@ UPDATE Reports SET R="## Fonts ##
 # loadfonts(device=""all"", quiet=TRUE)
 ## For showtext, you do:
 library(showtext)
-font_add(""Blissymbolics"", ""/usr/share/fonts/truetype/lyx/Blissymbolics-Courier.ttf"")
+font_add(""Blissymbolics"", ""/usr/local/share/texmf/fonts/truetype/Blissymbolics-Courier.ttf"")
 showtext_auto()
 ## Constants ##
 ## --------- ##
