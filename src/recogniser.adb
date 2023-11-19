@@ -483,7 +483,7 @@ package body Recogniser is
       recog_parm          : SQL_Parameters (1 .. 9);
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                           with_details=> "Recognise_Sample: Start" & " with User ID = " & Put_Into_String(user_id));
+                           with_details=> "Recognise_Sample: Start");
       -- Set up the array of data for each training sample to be used in
       -- comparison.  Clear ratings against the training samples and otherwise
       -- get ready to find the matching sample.
@@ -491,7 +491,6 @@ package body Recogniser is
       Clear(the_list => alternatives);
    
       -- Run engines
-      Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: run the engines");
       for cntr in engines.First_Index .. engines.Last_Index loop
          rated := 0;
          if engines(cntr).func /= NULL then
@@ -503,7 +502,6 @@ package body Recogniser is
                                     engines(cntr).scale);
          end if;
          -- Compute average and maximum value
-         Error_Log.Debug_Data(at_level => 9, with_details=> "Recognise_Sample: Computing average and maximum value");
          engines(cntr).max := 0;
          engines(cntr).average := 0;
          for sample_number in training_comparisons.First_Index .. 
@@ -1322,3 +1320,6 @@ begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",
                                 for_module => "Recogniser");
 end Recogniser;
+
+
+
