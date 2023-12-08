@@ -110,7 +110,7 @@ package Keyboard is
 
    -- Because the numeric key pad is not a contiguous list of key identifiers,
    -- the Set_Of package is used to contain the set of key identifiers that are
-   -- components of hte numeric keypad.
+   -- components of the numeric keypad.
    type key_list is array (positive range <>) of key_id_types;
    package Key_Sets is new Set_Of(Element => key_id_types,
                                   Index   => positive,
@@ -156,20 +156,13 @@ package Keyboard is
 
    procedure Initialise_Keyboard(Builder : in out Gtkada_Builder;
                              DB_Descr: GNATCOLL.SQL.Exec.Database_Description);
+   procedure Resize_Grid (to_rows, to_cols : natural);
+      -- Store the new rows and columns to match the grid size
    procedure Show_Keyboard(Builder : in Gtkada_Builder);
    procedure Load_Keyboard(for_language : in positive;
                            at_object: Gtkada_Builder);
        -- Loads the keyboard key display characters and definitions from the
        --  database
-   procedure Load_Words_List(for_language : in positive;
-                             at_object: Gtkada_Builder);
-       -- Load the list of words that pertain to the specified language.  This
-       -- procedure is called by Load_Keyboard.
-
-    -- The modifier (caps lock, shift, control, alt) buttons
-   procedure Toggle_Caps       (Object : access Gtkada_Builder_Record'Class);
-       -- Display the keys in either the capitals state or the lower csse state
-       -- depending on the status of the shift and caps lock keys.
 
 private
     -- control variables
@@ -469,6 +462,11 @@ private
        -- the display of the output stream.
    function Key_As_String(key : in key_id_types) return string;
    function Text_To_UTF8(for_text : in text)return Glib.UTF8_String;
+
+    -- The modifier (caps lock, shift, control, alt) buttons
+   procedure Toggle_Caps       (Object : access Gtkada_Builder_Record'Class);
+       -- Display the keys in either the capitals state or the lower csse state
+       -- depending on the status of the shift and caps lock keys.
    
     -- The shift level radio buttons
    procedure Shift_Level_Toggled(to_level : in shift_level_types;
@@ -611,5 +609,17 @@ private
    procedure Key_Clicked_CB_F3 (Object : access Gtkada_Builder_Record'Class);
    procedure Key_Clicked_CB_F4 (Object : access Gtkada_Builder_Record'Class);
    procedure Key_Clicked_CB_F5 (Object : access Gtkada_Builder_Record'Class);
+
+   procedure Load_Words_List(for_language : in positive;
+                             at_object: Gtkada_Builder);
+       -- Load the list of words that pertain to the specified language.  This
+       -- procedure is called by Load_Keyboard.
+   procedure Load_Characters_List (for_language : in positive);
+       -- Load the list of characters for this specified language into
+       -- the grid training data.  This is essentially done here as a
+       -- by-product of loading the keyboard, also done here because
+       -- the load process needs to be done at the same time as the
+       -- keyboard is loaded.
+       -- This procedure is called by Load_Keyboard.
 
 end Keyboard;

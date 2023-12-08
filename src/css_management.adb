@@ -57,7 +57,7 @@ package body CSS_Management is
       the_provider := Gtk_Css_Provider_New;
       if Load_From_Path(the_provider, for_file, with_error) then
          if with_error /= null then
-            Error_Log.Put(the_error    => 201, 
+            Error_Log.Put(the_error    => 3, 
                           error_intro  => "Set_Up_CSS: file name error",
                           error_message=> "Error in " & 
                                           To_Wide_String(for_file) & " : "&
@@ -87,7 +87,7 @@ package body CSS_Management is
                             Error)
       then
          if Error /= null then
-            Error_Log.Put(the_error => 211, 
+            Error_Log.Put(the_error => 4, 
                        error_intro  => "Load(the_button, with_colour error",
                        error_message=> "Error in the_button : " & 
                                         To_Wide_String(Glib.Error.Get_Message 
@@ -102,7 +102,7 @@ package body CSS_Management is
             CSS_Set(gtk_widget(the_button), to_provider => css_button);
          end if;
       else
-         Error_Log.Put(the_error=>212, 
+         Error_Log.Put(the_error=>5, 
                    error_intro  =>"Load: failed Load_From_Data for CSS button",
                    error_message=>"Trying to set button colour " & 
                               To_Wide_String(Gdk.RGBA.To_String(with_colour)));
@@ -124,7 +124,7 @@ package body CSS_Management is
                             Error)
       then
          if Error /= null then
-            Error_Log.Put(the_error => 211, 
+            Error_Log.Put(the_error => 6, 
                        error_intro  => "Load(the_button, with_colour error",
                        error_message=> "Error in the toggle_button : " & 
                                         To_Wide_String(Glib.Error.Get_Message 
@@ -134,7 +134,7 @@ package body CSS_Management is
             CSS_Set(gtk_widget(the_button), to_provider => css_button);
          end if;
       else
-         Error_Log.Put(the_error=>212, 
+         Error_Log.Put(the_error=>7, 
                    error_intro  =>"Load: failed Load_From_Data for CSS button",
                    error_message=>"Trying to set toggle button colour " & 
                               To_Wide_String(Gdk.RGBA.To_String(with_colour)));
@@ -156,7 +156,7 @@ package body CSS_Management is
                             Error)
       then
          if Error /= null then
-            Error_Log.Put(the_error => 211, 
+            Error_Log.Put(the_error => 8, 
                        error_intro  => "Load(the_window, with_colour error",
                        error_message=> "Error in the_window : " & 
                                         To_Wide_String(Glib.Error.Get_Message 
@@ -166,7 +166,7 @@ package body CSS_Management is
             CSS_Set(gtk_widget(the_window), to_provider => css_window);
          end if;
       else
-         Error_Log.Put(the_error=>212, 
+         Error_Log.Put(the_error=>9, 
                    error_intro  =>"Load: failed Load_From_Data for CSS window",
                    error_message=>"Trying to set window colour " & 
                               To_Wide_String(Gdk.RGBA.To_String(with_colour)));

@@ -1,4 +1,36 @@
-
+ -----------------------------------------------------------------------
+--                                                                   --
+--                K E Y B O A R D _ E M U L A T I O N                --
+--                                                                   --
+--                              B o d y                              --
+--                                                                   --
+--                           $Revision: 1.0 $                        --
+--                                                                   --
+--  Copyright (C) 2022  Hyper Quantum Pty Ltd.                       --
+--  Written by Ross Summerfield.                                     --
+--                                                                   --
+--  This  package  emulates  the  keyboard  operation,  essentially  --
+--  acting  as  a  virtual  keyboard  for  the  currentlhy   active  --
+--  application, providing it with the keystrokes that the user has  --
+--  entered (eithe by the on-screen keyboard or by the hand-written  --
+--  keystrokes).                                                     --
+--                                                                   --
+--  Version History:                                                 --
+--  $Log$
+--                                                                   --
+--  Cell_Writer  is free software; you can redistribute  it  and/or  --
+--  modify  it under terms of the GNU  General  Public  Licence  as  --
+--  published by the Free Software Foundation; either version 2, or  --
+--  (at your option) any later version.  Cell_Writer is distributed  --
+--  in  hope  that  it will be useful, but  WITHOUT  ANY  WARRANTY;  --
+--  without even the implied warranty of MERCHANTABILITY or FITNESS  --
+--  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
+--  for  more details.  You should have received a copy of the  GNU  --
+--  General Public Licence distributed with  Urine_Records. If not,  --
+--  write  to  the Free Software Foundation,  51  Franklin  Street,  --
+--  Fifth Floor, Boston, MA 02110-1301, USA.                         --
+--                                                                   --
+-----------------------------------------------------------------------
 
 -- with dStrings;           use dStrings;
 with Error_Log;
@@ -129,8 +161,7 @@ package body Keyboard_Emulation is
    procedure Transmit_Sequence(of_characters : in Glib.UTF8_String) is
       -- Transmit the specified sequence of character to the active application.
       use Interfaces.C;
-      app_window : xdo_t_access := 
-                                  xdo_new(display=>New_String("" & ASCII.NUL));
+      app_window : xdo_t_access:= xdo_new(display=>New_String("" & ASCII.NUL));
       app_win_access : xdo_t_const_access := app_window.all'access;
       C_char     : chars_ptr := New_String(of_characters & ASCII.NUL);
    begin
@@ -143,140 +174,6 @@ package body Keyboard_Emulation is
       end if;
       xdo_free (xdo=> app_window);
    end Transmit_Sequence;
-
-   -- The following is used to transmit the key event to the active application
-   -- type key_event_type is record
-   --       key_code : wide_character;
-   --       shift    : boolean;
-   --       key_sim  : natural;
-   --    end record;
-
-   -- function Usable(the_char : in wide_character) return key_statuses is
-   -- begin
-      -- null;
-      -- return KEY_ALLOCATED;
-   -- end Usable;
--- 
-   -- procedure Allocate(the_key_event : in out key_event_type; 
-   --                    with_key_sim  : natural) is
-   --  -- Either finds the KeyCode associated with the given keysym or overwrites
-   --  --a usable one to generate it
-      -- start : natural;
-   -- begin
-   -- -- Invalid KeySym
-      -- if (with_key_sim = 0) then
-         -- the_key_event.key_code := null_char;
-         -- the_key_event.key_sim := 0;
-         -- return;
-      -- end if;
-   -- 
-   -- -- First see if our KeySym is already in the mapping */
-      -- the_key_event.shift := false;
-      -- for i in 0 .. key_max - key_min loop
-         -- if (keysyms(i * key_codes + 1) = with_key_sim) then
-            -- the_key_event.shift := true;
-         -- end if;
-         -- if (keysyms(i * key_codes) = with_key_sim or the_key_event.shift) then
-            -- the_key_event.key_code := key_min + i;
-            -- key_recycles := key_recycles + 1;
-         -- 
-         -- -- Bump the allocation count if this is an
-         -- -- allocateable KeyCode
-            -- if (Usable(the_key_event.key_code) >= KEY_USABLE) then
-               -- Usable(the_key_event.key_code) := key_statuses'Succ(the_key_event.key_code);
-            -- end if;
-         -- 
-            -- return;
-         -- end if;
-      -- end loop;
-   -- 
-   -- -- Key overwrites may be disabled, in which case we're out of luck
-      -- if (key_disable_overwrite) then
-         -- the_key_event.key_code := null_char;
-         -- the_key_event.key_sym := 0;
-         -- Error_Log.Put(the_error=>302, 
-            --            error_intro  =>"Allocate: failed keycode overwrite",
-            --            error_message=>"Not allowed to overwrite KeyCode for " &
-            --                           XKeysymToString(keysym));
-         -- return;
-      -- end if;
-   -- 
-   -- -- If not, find a usable KeyCode in the mapping
-      -- loop
-         -- key_offset := key_offset + 1;
-         -- start := key_offset;
-         -- if (key_offset > key_max - key_min) then
-            -- key_offset := 0;
-         -- end if;
-         -- if (usable(key_min + key_offset) = KEY_USABLE and then
-         -- not pressed(key_min + key_offset)) then
-            -- exit;
-         -- end if;
-      -- 
-      -- -- If we can't find one, invalidate the event */
-         -- if (key_offset = start) then
-            -- the_key_event.key_code := null_char;
-            -- the_key_event.key_sym := 0;
-            -- Error_Log.Put(the_error=>302, 
-               --            error_intro  =>"Allocate: failed keycode allocation",
-               --            error_message=>"Failed to allocate KeyCode for " &
-               --                           XKeysymToString(with_key_sim));
-            -- return;
-         -- end if;
-      -- end loop;
-      -- key_overwrites := key_overwrites + 1;
-      -- the_key_event.key_code := key_min + key_offset;
-      -- Usable(the_key_event.key_code) := KEY_ALLOCATED;
-   -- 
-   -- -- Modify the slot to hold our character
-      -- keysyms(key_offset * key_codes) := with_key_sim;
-      -- keysyms(key_offset * key_codes + 1) := with_key_sim;
-      -- XChangeKeyboardMapping(GDK_DISPLAY, key_event.key_code, key_codes,
-         --                     keysyms + key_offset * key_codes, 1);
-      -- XSync(GDK_DISPLAY, False);
-   -- 
-      -- Error_Log.Debug_Data(at_level => 7, 
-         --                with_details=> "Overwrote KeyCode %d for %s" & 
-         --                               the_key_event.key_code & 
-         --                               XKeysymToString(with_key_sim));
-   -- end Allocate;
---       
-   -- procedure New_Event(for_key_event : in out key_event_type; 
-   --                     with_keysym : natural) is
-   -- begin
-      -- current_event.key_sim := with_keysym;
-      -- Allocate(the_key_event => current_event, with_key_sim => with_keysym);
-   -- end New_Event;
---    
-   -- procedure Free(the_key_event : key_event_type) is
-   -- begin
-      -- null;
-   -- end Free;
---    
-   -- procedure Press(the_key_event : key_event_type) is
-   -- begin
-      -- null;
-   -- end Press;
---    
-   -- procedure Press_Force(the_key_event : key_event_type) is
-   -- begin
-      -- null;
-   -- end Press_Force;
---    
-   -- procedure Release(the_key_event : key_event_type) is
-   -- begin
-      -- null;
-   -- end Release;
---    
-   -- procedure Release_Force(the_key_event : key_event_type) is
-   -- begin
-      -- null;
-   -- end Release_Force;
---    
-   -- procedure Send(the_character : wide_character) is
-   -- begin
-      -- null;
-   -- end Send;
 
 begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.2$",

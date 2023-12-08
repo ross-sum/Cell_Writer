@@ -25,32 +25,40 @@
 --  without even the implied warranty of MERCHANTABILITY or FITNESS  --
 --  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
 --  for  more details.  You should have received a copy of the  GNU  --
---  General Public Licence distributed with  Urine_Records. If not,  --
+--  General  Public Licence distributed with Cell_Writer.  If  not,  --
 --  write  to  the Free Software Foundation,  51  Franklin  Street,  --
 --  Fifth Floor, Boston, MA 02110-1301, USA.                         --
 --                                                                   --
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
-with Gtk.Widget, Gtk.Image, Gtk.Toggle_Tool_Button;
-with Gtk.Main;
+-- with Gtk.Button, Gtk.Menu_Item, Gtk.Widget;
+-- with dStrings; use dStrings;
+-- with GNATCOLL.SQL.Exec;
+with Gtk.Widget, Gtk.Image, Gtk.Toggle_Tool_Button, Gtk.Drawing_Area;
+with Gtk.Tool_Button;
+with Gtk.Grid;
+with Gtk.Main, Gtk.Window;
 with Gtk.Enums;
 with Glib, Glib.Error;
--- with Gtk.Button, Gtk.Menu_Item;
 with Gtk.Menu;
--- with Handlers; use Handlers;
 with Error_Log;
--- with dStrings; use dStrings;
 with String_Conversions;
+with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with Ada.Characters.Conversions;
 with Cell_Writer_Version;
 with Help_About, Setup, CSS_Management, Keyboard, Grid_Management,
      Cursor_Management, Keyboard_Emulation;
 with Key_Sym_Def;
 with Report_Processor;
--- with GNATCOLL.SQL.Exec;
+with Recogniser, Samples;
+with Word_Frequency;
+with Grid_Event_Handlers; use Grid_Event_Handlers;
+with Grid_Training;
+with Code_Interpreter;
 package body Main_Menu is
 
    procedure Set_Up_Reports_Menu_and_Buttons (Builder : Gtkada_Builder) is
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       use Gtk.Button, Gtk.Menu, Gtk.Menu_Item;
       use Report_Processor;
       use String_Conversions;
@@ -60,15 +68,17 @@ package body Main_Menu is
       parent_menu := gtk_menu(Get_Object(Builder, "menu_reports"));
       for report_num in 1 .. Number_of_Reports loop
          -- Create the report menu item
-         Gtk_New_With_Label(report_menu, 
-                            Report_Name(for_report_number => report_num));
-         Set_Action_Name(report_menu, "on_report_click");
-         -- Attach(parent_menu, report_menu, 0, 1, 
-            --     Glib.Guint(report_num - 1), Glib.Guint(report_num));
+         report_menu := Gtk_Menu_Item_New_With_Label(Encode
+                               (Report_Name(for_report_number => report_num)));
+         -- Set_Action_Name(report_menu, "on_report_click");
          Set_Sensitive(report_menu, true);
+         Set_Visible(report_menu, true);
          -- Set the report menu item's call-back
          report_menu.On_Activate(Call=>Cell_Writer_Report_Clicked_CB'Access, 
                                  After=>False);
+         -- Attach the menu item to the report menu button
+         Attach(parent_menu, report_menu, 0, 1, 
+                Glib.Guint(report_num - 1), Glib.Guint(report_num));
       end loop;
    end Set_Up_Reports_Menu_and_Buttons;
     
@@ -84,6 +94,7 @@ package body Main_Menu is
       Builder : Gtkada_Builder;
       Error   : Glib.Error.GError_Access := null;
       count   : Glib.Guint;
+      main_window : Gtk.Window.Gtk_Window;
    begin
       -- Set the locale specific data (e.g time and date format)
       -- Gtk.Main.Set_Locale;
@@ -95,7 +106,7 @@ package body Main_Menu is
       Gtk_New (Builder);
       count := Add_From_File (Builder, path_to_temp & glade_filename, Error);
       if Error /= null then
-         Error_Log.Put(the_error    => 201, 
+         Error_Log.Put(the_error    => 2, 
                        error_intro  => "Initialise_Main_Menu: file name error",
                        error_message=> "Error in " & 
                                         To_Wide_String(glade_filename) & " : "&
@@ -103,6 +114,12 @@ package body Main_Menu is
                                                                  (Error.all)));
          Glib.Error.Error_Free (Error.all);
       end if;
+      
+      -- Register window destruction
+      main_window:= Gtk.Window.Gtk_Window(
+                              Get_Object(Gtkada_Builder(Builder),"form_main"));
+      -- main_window.On_Destroy(On_Window_Destroy'access, null);
+      -- main_window.On_C
       
       -- Register the handlers
       Register_Handler(Builder      => Builder,
@@ -139,8 +156,17 @@ package body Main_Menu is
                        Handler_Name => "btn_del_clicked_cb",
                        Handler      => Btn_Del_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_ins_clicked_cb",
+                       Handler      => Btn_Ins_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
                        Handler_Name => "btn_space_clicked_cb",
                        Handler      => Btn_Space_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_sep_clicked_cb",
+                       Handler      => Btn_Separator_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_period_clicked_cb",
+                       Handler      => Btn_Period_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
                        Handler_Name => "btn_up_clicked_cb",
                        Handler      => Btn_Up_Clicked_CB'Access);
@@ -169,15 +195,8 @@ package body Main_Menu is
                        Handler_Name => "combo_language_changed_cb",
                        Handler      => Combo_Language_Changed_CB'Access);
       -- Drawing Event handlers
-      Register_Handler(Builder      => Builder,
-                       Handler_Name => "draw_1_01_button_press_event_cb",
-                       Handler      => Btn_Draw_Press_Event_CB'Access);
-      Register_Handler(Builder      => Builder,
-                       Handler_Name => "draw_1_01_draw_cb",
-                       Handler      => Draw_CB'Access);
-      Register_Handler(Builder      => Builder,
-                       Handler_Name => "draw_1_01_motion_notify_event_cb",
-                       Handler      => Motion_Notify_CB'Access);
+      Grid_Event_Handlers.Register_Handlers(with_builder => Builder,
+                                            DB_Descr     => DB_Descr);
       
       -- Point images in Glade file to unloaded area in the temp directory
       declare
@@ -192,12 +211,20 @@ package body Main_Menu is
       
       -- Set up child forms
       Grid_Management.Initialise_Grid(Builder, DB_Descr);
+      -- We need to initialise the recogniser before initialising Setup or the
+      -- keyboard so that the training samples are available when Setup tells
+      -- Keyboard the language set we are using.  That then provides
+      -- information on whether a particular key has been trained or not.
+      Recogniser.Initialise_Recogniser(DB_Descr);
+      -- Keyboard needs to be initialised before Setup because it gets told
+      -- by Setup what language set we are using.
       Keyboard.Initialise_Keyboard(Builder, DB_Descr);
       Setup.Initialise_Setup(Builder, DB_Descr, usage);
       Help_About.Initialise_Help_About(Builder, usage);
-      -- Get_Date_Calendar.Initialise_Calendar(Builder);
-      -- Urine_Colour_Selector.Initialise_Colour_Selector(Builder, DB_Descr,
-         --                                               path_to_temp);
+      Samples.Initialise_Samples(DB_Descr);
+      Code_Interpreter.Initialise_Interpreter(with_builder      => Builder,
+                                              with_DB_Descr     => DB_Descr,
+                                              reraise_exception => False);
       Report_Processor.Initialise(with_DB_descr => DB_Descr,
                                   with_tex_path => with_tex_path,
                                   with_pdf_path => with_pdf_path,
@@ -213,9 +240,27 @@ package body Main_Menu is
       --  Find our main window, then display it and all of its children. 
       Gtk.Widget.Show_All (Gtk.Widget.Gtk_Widget 
                            (Gtkada.Builder.Get_Object (Builder, "form_main")));
+      -- Show/hide the combining character buttons (must be done after unhiding
+      -- the main window).
+      declare
+         new_language : positive;
+      begin
+         Setup.Combo_Language_Changed(Builder, to_language => new_language);
+         -- Display or hide the top row of combining accents based on language
+         Setup.Set_Up_Combining(Builder, for_language => new_language);
+         -- And set up the word frequency
+         if Word_Frequency.Word_Frequency_Is_Enabled then
+            Word_Frequency.Load_Word_Frequency(DB_Descr, 
+                                               for_language => new_language);
+         end if;
+      end;
       --form_main's kill is a kill all:
       -- c code: window.signal_connect("destroy") { Gtk.main_quit }
       -- where window=Gtkada.Builder.Get_Object (Builder, "form_main")
+      -- Kevin O'Kane, who inserts his code somewhere before doing a connect,
+      -- does the following in c:
+      -- g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+      -- where window is the main window widget
       Gtk.Main.Main;
       
       -- Clean up memory when done
@@ -224,23 +269,41 @@ package body Main_Menu is
    
    procedure Btn_Clear_Clicked_CB 
                 (Object : access Gtkada_Builder_Record'Class) is
-      use Cursor_Management;
+      use Cursor_Management, Gtk.Widget, Gtk.Grid;
+      -- If not training then clear the grid, otherwise delete all training
+      -- data for the character or word at the current cell if in training.
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                        with_details=>"Btn_Clear_Clicked_CB: Start");
-      -- clear the display
-      null;
-      -- and clear the buffer
-      Clear_String;
+                           with_details=>"Btn_Clear_Clicked_CB: Start");
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then  -- delete all training data for character at cursor position
+         Recogniser.Untrain
+              (the_character => Grid_Event_Handlers.The_Current_Cell_Contents);
+         Refresh_Current_Cell;  -- make sure it is appropriately highlighted
+      else  -- clear the grid
+         -- clear the display by queueing up a draw event
+         Grid_Event_Handlers.Clear_The_Grid;
+         -- and clear the buffer
+         Clear_String;
+         -- then send the grid cell cursor home
+         Grid_Event_Handlers.Cursor_First_Column;
+         Grid_Event_Handlers.Cursor_First_Row;
+      end if;
    end Btn_Clear_Clicked_CB;
 
    procedure Btn_Enter_Clicked_CB
             (Object : access Gtkada_Builder_Record'Class) is
      -- Enter generally means transmit the data, including the Enter key
-      use Cursor_Management;
+      use Gtk.Toggle_Tool_Button, Cursor_Management;
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                        with_details=>"Btn_Enter_Clicked_CB: Start");
+                           with_details=>"Btn_Enter_Clicked_CB: Start");
+      if not Get_Active(gtk_toggle_tool_button(
+                            Get_Object(Gtkada_Builder(Object),"btn_kbd_keys")))
+      then  -- displaying main grid - load the entered characters/words
+         Cursor_Management.Add(a_word => Grid_Event_Handlers.Entered_Text);
+         Grid_Event_Handlers.Update_Character_Usage;  -- for training sample
+      end if; 
       if Cursor_Management.Number_Of_Keystrokes > 0
       then  -- Transmit the data and clear the buffer
          Keyboard_Emulation.Transmit(the_buffer => All_Keystrokes);
@@ -248,6 +311,9 @@ package body Main_Menu is
          Cursor_Management.Clear_String;
          -- And clear the display
          null;
+         -- then send the grid cell cursor to the home position
+         Grid_Event_Handlers.Cursor_First_Column;
+         Grid_Event_Handlers.Cursor_First_Row;
       else  -- Transmit the Enter key
          Keyboard_Emulation.Transmit(key_press=> Keyboard.enter_key);
       end if;   
@@ -258,19 +324,22 @@ package body Main_Menu is
       use Gtk.Toggle_Tool_Button;
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                 with_details=>"Btn_Keys_Clicked_CB: Start");
+                           with_details=>"Btn_Keys_Clicked_CB: Start");
       if Get_Active(Gtk_Toggle_Tool_Button(
                 Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_keys")))
       then
-      -- Hide ourself
+         -- If any text has been entered into the grid, then move this to the
+         -- keyboard buffer (will add nothing if there is nothing to add).
+         Cursor_Management.Add(a_word => Grid_Event_Handlers.Entered_Text);
+         -- Hide ourself
          Gtk.Widget.Hide(Gtk.Widget.Gtk_Widget 
               (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"form_main")));
-      -- Toggle the btn_keys button in preparation for showing
-      -- ourselves again
+         -- Toggle the btn_keys button in preparation for showing
+         -- ourselves again
          Set_Active(Gtk_Toggle_Tool_Button(
                 Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_keys")),
                     Is_Active => False);
-      -- And show the Keyboard
+         -- And show the Keyboard
          Keyboard.Show_Keyboard (Gtkada_Builder(Object));
       end if;
    end Btn_Keys_Clicked_CB;
@@ -279,19 +348,23 @@ package body Main_Menu is
                 (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
-                              with_details=> "Setup_Select_CB: Start");
+                           with_details=> "Setup_Select_CB: Start");
       Setup.Show_Setup(Gtkada_Builder(Object));
    end Setup_Select_CB;
 
+   exit_process_started : boolean := false;
    procedure Menu_File_Exit_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Menu_File_Exit_Select_CB: Start");
-      -- Shut down sub-forms where required
-      --Urine_Records_Form.Finalise;
-      -- and shut ourselves down
-      Gtk.Main.Main_Quit;
+      if not exit_process_started then  -- do the following once only!
+         exit_process_started := true;
+         -- Shut down sub-forms and update database where required
+         Recogniser.Finalise_Recogniser;
+         -- and shut ourselves down
+         Gtk.Main.Main_Quit;
+      end if;
    end Menu_File_Exit_Select_CB;
 
    procedure Menu_Help_About_Select_CB 
@@ -305,9 +378,27 @@ package body Main_Menu is
 
    procedure Training_Select_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button, Gtk.Tool_Button;
+      trg_toggled : boolean renames Get_Active(
+                   gtk_toggle_tool_button(Get_Object(Object,"btn_training")));
+      ins_key : gtk_tool_button:=gtk_tool_button(Get_Object(Object,"btn_ins"));
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Training_Select_CB: Start");
+      -- Send the cursor to the grid cell home position first
+      Grid_Event_Handlers.Cursor_First_Column;
+      Grid_Event_Handlers.Cursor_First_Row;
+      -- Now toggle training mode accordingly
+      if trg_toggled
+      then  -- training button is depressed
+         Grid_Event_Handlers.Set_Training_Switch(to => true);
+         -- Hide insert key (only has meaning when not training)
+         Set_Visible(ins_key, visible => false);
+      else  -- training button is not depressed
+         Grid_Event_Handlers.Set_Training_Switch(to => false);
+         -- Show insert key (only has meaning when not training)
+         Set_Visible(ins_key, visible => true);
+      end if;
       -- Help_Manual.Show_Manual(Gtkada_Builder(Object));
    end Training_Select_CB;
 
@@ -322,101 +413,262 @@ package body Main_Menu is
    
    procedure Btn_Backspace_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Backspace_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_BackSpace));
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Backspace;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_BackSpace));
+      end if;
    end Btn_Backspace_Clicked_CB;
    
    procedure Btn_Del_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
+      in_grid_editing : boolean renames Get_Active(
+                   gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")));
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Del_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Delete));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then   -- untrain and refresh the grid cell
+         Recogniser.Untrain_Last_Sample
+            (for_the_character=>Grid_Event_Handlers.The_Current_Cell_Contents);
+         Refresh_Current_Cell;  -- make sure it is appropriately highlighted
+      else
+         if in_grid_editing
+         then  -- depressed button to use cursor control to edit the line
+            Grid_Event_Handlers.Delete_Cell_Contents;
+         else  -- don't manipulate grid cells, assume data is to be transmitted
+            Transmit(key_press => From_Key_ID(to_key_sym => XK_Delete));
+         end if;
+      end if;
    end Btn_Del_Clicked_CB;
+
+   procedure Btn_Ins_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation, Key_Sym_Def;
+      in_grid_editing : boolean renames Get_Active(
+                   gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")));
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Ins_Clicked_CB: Start");
+      if in_grid_editing
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Insert_Cell;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Insert));
+      end if;
+   end Btn_Ins_Clicked_CB;
    
    procedure Btn_Space_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      -- We assume here that if the Grid edit button is depressed, then the
+      -- user wants to put a space into the currently selected cell.  If it
+      -- isn't depressed, then the user wants to transmit the space to the
+      -- active application.
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Space_Clicked_CB: Start");
-      Transmit(key_press => ' ');
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Set_Current_Cell(to => ' ');
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => ' ');
+      end if;
    end Btn_Space_Clicked_CB;
    
+   procedure Btn_Separator_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+     -- We assume here that if training is pressed, then the key can only be
+     -- transmitted, but if unpressed, then it always goes to the currently
+     -- active grid cell.  We assume that the user never wants to transmit it
+     -- to the application when not in training mode.
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation;
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Separator_Clicked_CB: Start");
+      if not Grid_Event_Handlers.Training_Is_Switched_On
+      then  -- training button is not depressed
+         -- Load current cell with the separator (default is quarter space)
+         Grid_Event_Handlers.Set_Current_Cell(to => Setup.The_Special_Button);
+      else
+         Transmit(key_press => Setup.The_Special_Button);
+      end if;
+   end Btn_Separator_Clicked_CB;
+   
+   procedure Btn_Period_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+      -- We assume here that if the Grid edit button is depressed, then the
+      -- user wants to put a period into the currently selected cell.  If it
+      -- isn't depressed, then the user wants to transmit the period to the
+      -- active application.
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation;
+   begin
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details => "Btn_Period_Clicked_CB: Start");
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Set_Current_Cell(to => '.');
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => '.');
+      end if;
+   end Btn_Period_Clicked_CB;
+
    procedure Btn_Up_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Up_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Up));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Grid_Row_Up;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Up;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Up));
+      end if;
    end Btn_Up_Clicked_CB;
    
    procedure Btn_Down_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Down_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Down));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Grid_Row_Down;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Down;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Down));
+      end if;
    end Btn_Down_Clicked_CB;
    
    procedure Btn_Left_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Left_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Left));
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Left;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Left));
+      end if;
    end Btn_Left_Clicked_CB;
    
    procedure Btn_Right_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Right_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Right));
+      if Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Right;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Right));
+      end if;
    end Btn_Right_Clicked_CB;
    
    procedure Btn_Home_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_Home_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Home));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Point_At_Grid_Start;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_First_Column;
+         Grid_Event_Handlers.Cursor_First_Row;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Home));
+      end if;
    end Btn_Home_Clicked_CB;
    
    procedure Btn_End_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_End_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_End));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Point_At_Grid_End;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Last_Column;
+         Grid_Event_Handlers.Cursor_Last_Row;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_End));
+      end if;
    end Btn_End_Clicked_CB;
    
    procedure Btn_PageUp_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_PageUp_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Up));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Grid_Page_Up;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_First_Row;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Up));
+      end if;
    end Btn_PageUp_Clicked_CB;
    
    procedure Btn_PageDown_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation, Key_Sym_Def;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Btn_PageDown_Clicked_CB: Start");
-      Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Down));
+      if Grid_Event_Handlers.Training_Is_Switched_On
+      then
+         Grid_Training.Grid_Page_Down;
+         Grid_Event_Handlers.Display_Training_Data;
+      elsif Get_Active(gtk_toggle_tool_button(Get_Object(Object,"btn_grid_edit")))
+      then  -- depressed button to use cursor control to edit the line
+         Grid_Event_Handlers.Cursor_Last_Row;
+      else  -- don't manipulate grid cells, assume data is to be transmitted
+         Transmit(key_press => From_Key_ID(to_key_sym => XK_Page_Down));
+      end if;
    end Btn_PageDown_Clicked_CB;
 
    procedure Combo_Language_Changed_CB
@@ -428,47 +680,39 @@ package body Main_Menu is
       Setup.Combo_Language_Changed(Object, to_language => new_language);
       -- Display or hide the top row of combining accents based on language
       Setup.Set_Up_Combining(Object, for_language => new_language);
+      -- And set up the word frequency
+      if Word_Frequency.Word_Frequency_Is_Enabled then
+         Word_Frequency.Load_Word_Frequency(for_language => new_language);
+      end if;
+      -- Activate relevant training samples
+      Recogniser.Update_Enabled_Samples;
       -- And set up the keyboard to the selected language
       Keyboard.Load_Keyboard(for_language => new_language,
                              at_object => Gtkada_Builder(Object));
    end Combo_Language_Changed_CB;
 
-   function Btn_Draw_Press_Event_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean is
+    -- Window destruction management
+   procedure On_Window_Destroy(the_window : access Gtk_Widget_Record'Class;
+                               cb : Cb_Gtk_Widget_Void) is
    begin
-      Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Btn_Draw_Press_Event_CB: Start");
-      null;
-      return true;
-   end Btn_Draw_Press_Event_CB;
+      Menu_File_Exit_Select_CB(Object=>null);
+   end On_Window_Destroy;
    
-   function Draw_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean is
+   procedure On_Window_Close_Request(the_window : access Gtk_Widget_Record'Class) is
    begin
-      Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Draw_CB: Start");
-      null;
-      return true;
-   end Draw_CB;
-   
-   function Motion_Notify_CB
-                (Object : access Gtkada_Builder_Record'Class) return Boolean is
-   begin
-      Error_Log.Debug_Data(at_level => 5, 
-                           with_details => "Motion_Notify_CB: Start");
-      null;
-      return true;
-   end Motion_Notify_CB;
+      null; -- On_Window_Destroy(the_window, null);
+   end On_Window_Close_Request;
 
-   procedure Cell_Writer_Report_Clicked_CB(label : string) is
+   procedure Cell_Writer_Report_Clicked_CB(label : Glib.UTF8_string) is
      -- Print the specified report (for the defined report Name).
       use Report_Processor;
       use String_Conversions;
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details => "Cell_Writer_Report_Clicked_CB: "&
                                            To_Wide_String(label) & ".");
-      Run_The_Report(with_id => Report_ID(for_report_name => label));
+      Run_The_Report(with_id => Report_ID(for_report_name => Decode(label)));
    end Cell_Writer_Report_Clicked_CB;
 
    procedure Cell_Writer_Report_Clicked_CB

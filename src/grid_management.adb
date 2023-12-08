@@ -31,43 +31,34 @@
 --                                                                   --
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
-with Error_Log;
-with Cell_Writer_Version;
-with Gtk.Widget, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area, Gtk.Stack;
-with Gtk.Label, Glib.Object;
--- with , Gdk.RGBA;
--- with dStrings;        use dStrings;
-with String_Conversions;
+-- with Gdk.RGBA;
 -- with GNATCOLL.SQL.Exec;
+with Error_Log;
+with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
+with Gtk.Widget, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area; --, Gtk.Menu;
+with Pango.Font, Glib.Object, Glib.Values, Gdk.Color;
+with dStrings;        use dStrings;
+with String_Conversions;
 with GNATCOLL.SQL.Exec.Tasking, GNATCOLL.SQL_BLOB;
+with Cell_Writer_Version;
+with Grid_Event_Handlers;
+With Setup;
 package body Grid_Management is
 
    cDB : GNATCOLL.SQL.Exec.Database_Connection;
+   the_builder : Gtkada_Builder;
    the_grid : Gtk.Grid.Gtk_Grid;
    -- row count  We will cheat here.  the Gtk.Grid element should know its row
    -- count and column count.
    row_count,
-   column_count : natural :=0;
+   column_count : natural := 0;
    -- Note: the grid row and colummn indexes ae zero based.
    cell_width   : natural := 45;
    cell_height  : natural := 70;
    blank_background_colour : Gdk.RGBA.Gdk_RGBA := Gdk.RGBA.White_RGBA;
    used_background_colour  : Gdk.RGBA.Gdk_RGBA := Gdk.RGBA.White_RGBA;
    pen_colour              : Gdk.RGBA.Gdk_RGBA := Gdk.RGBA.Black_RGBA;
-
-   function ToString(int : in natural) return string is
-      num : natural := int;
-      result : string(1..5) := "     ";
-      len    : natural := 0;
-   begin
-      while num > 0 loop
-         len := len + 1;
-         result(5-len+1):= character'Val(character'Pos('0') + num rem 10);
-         num := (num - (num rem 10)) / 10;
-      end loop;
-      return result((5-len+1)..5);
-   end ToString;
-
+   
    procedure Initialise_Grid(Builder : in out Gtkada_Builder;
                              DB_Descr: GNATCOLL.SQL.Exec.Database_Description)
    is
@@ -79,7 +70,7 @@ package body Grid_Management is
                            with_details=> "Initialise_Grid: Start");
       -- Set up: Open the relevant tables from the database
       cDB:=GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>DB_Descr);
-      null;
+      the_builder := Builder;
       -- Set up: assign the grid to the grid variable
       the_grid := Gtk.Grid.gtk_grid(Get_Object(Builder, "grid_cells"));
       -- Set up: set the colour of the grid so you can see the drawing area
@@ -89,23 +80,23 @@ package body Grid_Management is
       else
          Override_Background_Color(the_grid, 0, Gdk.RGBA.Black_RGBA);
       end if;
-      -- Ugly hack as unable to determine how to read the row+column count
-      row_count := 5;
-      column_count := 10;
+      -- Get the initial values of row and column from the Grid_Event_Handlers
+      row_count := Grid_Event_Handlers.Grid_Row_Count;
+      column_count := Grid_Event_Handlers.Grid_Column_Count;
    end Initialise_Grid;
     
    procedure Resize_Grid (to_rows, to_cols : natural) is
-      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Widget;
-      use Gtk.Drawing_Area, Gtk.Label, Gtk.Stack;
-      use String_Conversions;
      -- Resize the grid of writing cells such that it becomes <to_rows> deep
      -- by <to_cols> wide.
       -- Rows and columns passed in are one (1) based, but the grid is zero (0)
       -- based.
-      the_cell       : Gtk.Stack.gtk_stack;
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
+      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Widget;
+      use Gtk.Drawing_Area, Glib.Object;
+      use String_Conversions;
+      use Grid_Event_Handlers;
+      txt_cell       : wide_string(1..9) := "draw_0_00";
       writing_area   : Gtk.Drawing_Area.gtk_drawing_area;
-      cell_contents  : Gtk.Label.gtk_label;
-      -- at_num         : Glib.Gint;
    begin
       Error_Log.Debug_Data(at_level => 5, with_details=> "Resize_Grid: Start");
       -- Delete excess rows
@@ -130,39 +121,31 @@ package body Grid_Management is
                               with_details => "Resize_Grid: add a row");
          -- insert the row at the bottom of the grid
          row_count := row_count + 1;
-         -- insert the contents at the bottom, which should grow out the fow
+         txt_cell(6..6) := Integer'Wide_Image(row_count)(2..2);
+         -- insert the contents at the bottom, which should grow out the row
          for col in 1..column_count loop
-            Gtk_New(the_cell);
             Gtk_New(writing_area);
-            Gtk_New(cell_contents);
-            if col < 10 then
-               Set_Name(the_cell, "stack_" & ToString(row_count) &
-                                  "_0" & ToString(col));
-               Set_Name(writing_area, "draw_" & ToString(row_count) &
-                                      "_0" &ToString(col));
-               Add_Named(the_cell, writing_area, "draw_" & 
-                         ToString(col) & "_0" & ToString(row_count));
-               Set_Name(cell_contents, "char" & ToString(row_count) &
-                                       "_0" & ToString(col));
-               Add_Named(the_cell, cell_contents, "char" & 
-                         ToString(row_count) & "_0" & ToString(col));
+            if col <= 9
+            then
+               txt_cell(8) := '0';
+               txt_cell(9..9) := Integer'Wide_Image(col)(2..2);
             else
-               Set_Name(the_cell, "stack_" & ToString(row_count) &
-                                  "_" & ToString(col));
-               Set_Name(writing_area, "char_" & ToString(row_count) &
-                                      "_" & ToString(col));
-               Add_Named(the_cell, writing_area, "draw_" & 
-                         ToString(row_count) & "_" & ToString(col));
-               Set_Name(cell_contents, "char_" & ToString(row_count) &
-                                       "_" & ToString(col));
-               Add_Named(the_cell, cell_contents, "char" & 
-                         ToString(row_count) & "_" & ToString(col));
+               txt_cell(8..9) := Integer'Wide_Image(col)(2..3);
             end if;
-            Set_Size_Request(the_cell, Gint(cell_width), Gint(cell_height));
-            Override_Background_Color(the_cell, 0, blank_background_colour);
-            Override_Color(the_cell, 0, pen_colour);
-            Attach(the_grid, the_cell,Glib.Gint(col-1),Glib.Gint(row_count-1));
-            Set_Visible(the_cell, True);  -- by default it is not visible
+            Set_Name(writing_area, Encode(txt_cell));
+            -- Set the size and colour
+            Set_Size_Request(writing_area,Gint(cell_width), Gint(cell_height));
+            Override_Background_Color(writing_area, 0, blank_background_colour);
+            -- Override_Color(the_cell, 0, pen_colour);
+            -- Set up the signal events to the writing_area
+            Register_Events(for_writing_area => writing_area);
+            -- And attach the cell into the grid
+            Attach(the_grid, writing_area,
+                             Glib.Gint(col-1), Glib.Gint(row_count-1));
+            Set_Visible(writing_area, True);  -- by default it is not visible
+            Expose_Object(the_builder, -- expose name to the builder for future
+                          name => Encode(txt_cell),  -- searches of this object
+                          object => GObject(writing_area));
          end loop;
       end loop;
       -- Append additional columns
@@ -171,103 +154,87 @@ package body Grid_Management is
                               with_details => "Resize_Grid: add a column");
          -- insert the column at the right of the grid
          column_count := column_count + 1;
+         if column_count <= 9
+         then
+            txt_cell(8) := '0';
+            txt_cell(9..9) := Integer'Wide_Image(column_count)(2..2);
+         else
+            txt_cell(8..9) := Integer'Wide_Image(column_count)(2..3);
+         end if;
          -- insert the cell contents to the right, which should grow the column
          for row in 1..row_count loop
-            Gtk_New(the_cell);
+            -- Gtk_New(the_cell);
             Gtk_New(writing_area);
-            Gtk_New(cell_contents);
-            if column_count < 10 then
-               Set_Name(the_cell, "stack_" & ToString(row) &
-                                      "_0" & ToString(column_count));
-               Set_Name(writing_area, "draw_" & ToString(row) &
-                                      "_0" & ToString(column_count));
-               Add_Named(the_cell, writing_area, "draw_" & 
-                         ToString(row) & "_0" & ToString(column_count));
-               Set_Name(cell_contents, "char" & ToString(row) &
-                                       "_0" & ToString(column_count));
-               Add_Named(the_cell, cell_contents, "char" & 
-                         ToString(row) & "_0" & ToString(column_count));
-            else
-               Set_Name(the_cell, "stack_" & ToString(row) &
-                                      "_" & ToString(column_count));
-               Set_Name(writing_area, "draw_" & ToString(row) &
-                                      "_" & ToString(column_count));
-               Add_Named(the_cell, writing_area, "draw_" & 
-                         ToString(row) & "_0" & ToString(column_count));
-               Set_Name(cell_contents, "char" & ToString(row) &
-                                       "_0" & ToString(column_count));
-               Add_Named(the_cell, cell_contents, "char" & 
-                         ToString(row) & "_0" & ToString(column_count));
-            end if;
-            Set_Size_Request(the_cell, Gint(cell_width), Gint(cell_height));
-            Override_Background_Color(the_cell, 0, blank_background_colour);
-            Override_Color(the_cell, 0, pen_colour);
-            Attach(the_grid, the_cell, Glib.Gint(column_count-1), 
-                                       Glib.Gint(row-1));
-            Set_Visible(the_cell, True);  -- by default it is not visible
+            -- Gtk_New(cell_contents);
+            txt_cell(6..6) := Integer'Wide_Image(row)(2..2);
+            Set_Name(writing_area, Encode(txt_cell));
+            -- Set the size and colour
+            Set_Size_Request(writing_area, Gint(cell_width), Gint(cell_height));
+            Override_Background_Color(writing_area, 0, blank_background_colour);
+            -- Override_Color(the_cell, 0, pen_colour);
+            -- Set up the signal events to the writing_area
+            Register_Events(for_writing_area => writing_area);
+            -- And attach the cell into the grid
+            Attach(the_grid, writing_area, Glib.Gint(column_count-1), 
+                                           Glib.Gint(row-1));
+            Set_Visible(writing_area, True);  -- by default it is not visible
          end loop;
       end loop;
+      -- Now store the new size in the grid event handlers for its use
+      Set_Grid_Size(with_rows => to_rows, with_columns => to_cols);
       Error_Log.Debug_Data(at_level => 7, with_details=> "Resize_Grid: End");
    end Resize_Grid;
 
    procedure Set_Writing_Colours(for_text, for_blank_background, 
                                  for_used_background : Gdk.RGBA.Gdk_RGBA) is
-      -- Set up the writing cell colours and make sure that the writing area is
-      -- at the front.
-      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area, Gtk.Stack;
+      -- Set up the writing cell colours.
+      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area;
+      -- use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       use String_Conversions;
-      the_cell       : Gtk.Stack.gtk_stack;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Set_Writing_Colours: Start");
       blank_background_colour := for_blank_background;
       used_background_colour  := for_used_background;
       pen_colour              := for_text;
-      for col in 0 .. column_count-1 loop
-         for row in 0 .. row_count-1 loop
-            the_cell := Gtk_Stack(Get_Child_At(the_grid, Gint(col),Gint(row)));
-            if the_cell /= null then
-               Override_Background_Color(the_cell, 0, 
-                                         blank_background_colour);
-               Override_Color(the_cell, 0, pen_colour);
-               -- suck the drawing area to the front, (in front of the text)
-               if col < 9 then
-                  Set_Visible_Child_Name(the_cell, "draw_" & ToString(row+1) &
-                                         "_0" & ToString(col+1));
-               else
-                  Set_Visible_Child_Name(the_cell, "draw_" & ToString(row+1) &
-                                         "_" & ToString(col+1));
-               end if;
-            else
-               Error_Log.Debug_Data(at_level => 6, 
-                      with_details=> "Set_Writing_Colours: did not find cell");
-            end if;
-         end loop;
-      end loop;
    end Set_Writing_Colours;
 
    procedure Set_Writing_Size(height, width : natural) is
-      -- Set up the writing size and apply the font.
-      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area, Gtk.Stack, Gtk.Widget;
-      the_cell    : Gtk.Stack.gtk_stack;
-      requisition : Gtk_Requisition;
+      -- Set up the writing cell size to that specified and attach the font
+      -- to the writing area.
+      use Glib, Gtk.Grid, Gtk.Enums, Gtk.Drawing_Area, Gtk.Widget; --, Gtk.Menu;
+      writing_area : Gtk.Drawing_Area.gtk_drawing_area;
+      -- the_menu     : Gtk.Menu.Gtk_Menu;
+      requisition  : Gtk_Requisition;
+      the_font     : Pango.Font.Pango_Font_Description :=
+                                         Pango.Font.Pango_Font_Description_New;
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Set_Writing_Size: Start");
+      Pango.Font.Set_Family(the_font, Setup.The_Font);
       cell_width  := width;
       cell_height := height;
       for col in 0 .. column_count-1 loop
          for row in 0 .. row_count-1 loop
-            the_cell := Gtk_Stack(Get_Child_At(the_grid, Gint(col),Gint(row)));
-            if the_cell /= null then
-               Set_Size_Request(the_cell, Gint(cell_width), Gint(cell_height));
-               Size_Request(the_cell, requisition);  -- Force a cell redraw to resize
+            writing_area:= gtk_drawing_area(Get_Child_At(the_grid, 
+                                                         Gint(col),Gint(row)));
+            if writing_area /= null then
+               -- Set up the size
+               Set_Size_Request(writing_area, Gint(cell_width), 
+                                              Gint(cell_height));
+               -- Set up the font
+               Override_Font(writing_area, the_font);
+               -- Force a cell redraw to resize
+               Size_Request(writing_area, requisition);
             else
                Error_Log.Debug_Data(at_level => 6, 
                          with_details=> "Set_Writing_Size: did not find cell");
             end if;
          end loop;
       end loop;
+   --    -- And set it for the pop-up menu
+      -- the_menu := Gtk_Menu(Get_Object(the_builder, "menu_alternatives"));
+      -- Override_Font(the_menu, the_font);
    end Set_Writing_Size;
 
 begin

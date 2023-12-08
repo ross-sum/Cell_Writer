@@ -32,6 +32,7 @@
 --                                                                   --
 -----------------------------------------------------------------------
 
+-- with Set_of;
 -- with dStrings;        use dStrings;
 with Error_Log;
 with Cell_Writer_Version;
@@ -53,19 +54,38 @@ package body Cursor_Management is
    
    -- Unprintable character details:
    -- note that it is assumed that all characters less than ' ' (16#20@) are
-   -- not printable.
+   -- not printable in addition to the range set by this procedure.
    procedure Set_Unprintable_Range(from, to : wide_character) is
    begin
       the_cursor.unprintable_start := from;
       the_cursor.unprintable_end   := to;
+      the_cursor.combining_characters := the_cursor.combining_characters +
+                                         Make_Set(from, to);
    end Set_Unprintable_Range;
+
+   procedure Set_Combining_to_Unprintable is
+   -- Add in the list of combining characters to the set of unprintable
+   -- characters
+   begin
+      null;
+      the_cursor.combining_characters := the_cursor.combining_characters +
+                                 Combining_Characters.The_Combining_Characters;
+   end Set_Combining_to_Unprintable;
       
    function The_Character(is_printable : in wide_character) return boolean is
    begin
       return is_printable >= wide_character'Val(16#20#) and
-         not (is_printable in 
-                   the_cursor.unprintable_start .. the_cursor.unprintable_end);
+         not (is_printable >= the_cursor.unprintable_start and 
+              is_printable <= the_cursor.unprintable_end);
+         -- not (is_printable < the_cursor.combining_characters);
    end The_Character;
+
+   function Combining_Check_On(the_character:in wide_character) return boolean
+   is
+      -- Returns true if the specified character is combining.
+   begin
+      return the_character < the_cursor.combining_characters;
+   end Combining_Check_On;
 
       -- Cursor control
    procedure Add(a_character : in wide_character) is
