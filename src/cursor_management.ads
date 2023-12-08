@@ -37,7 +37,9 @@
 --                                                                   --
 -----------------------------------------------------------------------
 
+with Set_of;
 with dStrings;        use dStrings;
+with Combining_Characters;
 package Cursor_Management is
 
    -- The Display string buffer, containing the typed text
@@ -50,6 +52,9 @@ package Cursor_Management is
    -- note that it is assumed that all characters less than ' ' (16#20@) are
    -- not printable.
    procedure Set_Unprintable_Range(from, to : wide_character);
+   procedure Set_Combining_to_Unprintable;
+   function Combining_Check_On(the_character:in wide_character) return boolean;
+      -- Returns true if the specified character is combining.
       
     -- Cursor control
    procedure Add(a_character : in wide_character);
@@ -73,13 +78,19 @@ package Cursor_Management is
      -- The total number of keystrokes, including for hidden keys such as
      -- cursor movement keys.
     
-      private
+private
+   use Combining_Characters, Combining_Characters.Combining_Sets;
+      -- There is a standard list of combining characters.  To handle all
+      -- combining characters, which are not 'printable' (i.e. they do not
+      -- consume a character space), this all needs to be set up as a set.
+      -- The Combining_Characters package does this.
       
    type cursor_details is record
          visible_cursor : natural := 0;  -- the position of the visible cursor
          absolute_pos   : natural := 0;
          unprintable_start : wide_character;
          unprintable_end   : wide_character;
+         combining_characters : combining_character_set := Empty;
       end record;
       
    the_cursor : cursor_details;

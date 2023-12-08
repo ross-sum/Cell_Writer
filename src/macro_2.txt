@@ -1,0 +1,104 @@
+-- Macro 2
+-- This macro is for Blissymbolics combining characters.
+-- Because Blissymbolics operates on 1/48 increments,
+-- measurements are multiplied by 48.
+PROCEDURE BlissModifier () IS 
+  -- calculate total 'space' width and number of spaces 
+  B := 0;   -- width of all spaces
+  C := 0;   -- number of spaces
+  G := H;  -- string containing modifiers
+  FOR A IN 1 .. S'Length LOOP
+    IF S(A) IN '' .. '' THEN 
+        B := B + WIDTH(S(A));
+        C := C + 1;
+    END IF;
+  END LOOP;
+  B := B × 48;
+  -- Are there any other modifiers?  If so count, save off and
+  -- remove them. 
+  A := 0;  -- number of existing modifiers
+  FOR F IN '' .. '' LOOP
+    IF FIND(F) > 0
+    THEN
+      A := A+1;
+      G := G & F;
+      DELETE (FIND(F));
+    END IF;
+  END LOOP;
+  -- 2/48 space between symbols, symbols 6/48 wide, minimum
+  -- 1/8 space at the start
+  D := A × (2 + 6) + 6;
+  IF D > B THEN
+    -- add some space at beginning and end as needed 
+    IF ABS(D-B)÷2 <= 6 -- <= 1/8
+    THEN 
+      INSERT S(1) WITH "";  -- 1/8 space
+      INSERT S(S'Length+1) WITH "";  -- 1/8 space
+      B := B + 6 + 6;
+    ELSIF ABS(D-B)÷2 <= 12  -- <= 1/4
+    THEN
+      INSERT S(1) WITH "";  -- 1/4 space 
+      INSERT S(S'Length+1) WITH "";  -- 1/4 space
+      B := B + 12 + 12;
+
+    ELSE  -- unlikely to be longer than 0.375 (3/8)
+      INSERT S(1) WITH ""; -- 3/8 space (not 5/48 space)
+      INSERT S(S'Length+1) WITH "";  -- 3/8 space
+      B := B + 18 + 18;
+    END IF;
+  END IF;
+  -- Work out if 'space' at mid point(s) need splitting
+  -- Assume symbol consumes 1/8 (i.e. 6/48) space and we
+  -- need half of that + 2/48 for separation.
+  D := B ÷ 2.0 + 4 - (A ÷ 2) × 8;
+  E := 0;  -- chars consumed from G
+  B := 0;  -- current char width pos'n
+  A := 1;
+  LOOP      
+    IF S(A+E) IN '' .. '' THEN 
+      B := B + WIDTH(S(A+E)) × 48;
+      IF ABS(D - B) < 2 -- less than 2/48 tolerance
+      THEN  -- no need for space 
+        E := E + 1;
+        INSERT S(A+E) WITH G(E);
+        D := D + 8;  -- add width + gap
+      ELSIF B > D + 1  -- within 1/48 tolerance 
+      THEN  -- try to carve up the space
+        C := WIDTH(S(A+E)) × 48;
+        IF C < 6  -- < 1/8 char width
+        THEN  -- split into 1/48 chunks
+          IF C > 4
+          THEN  -- split into 5
+            REPLACE S(A + E) WITH CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48);
+          ELSE  -- already split - nothing can be done here
+            ERROR_LOG ("registers");
+          END IF;
+        ELSIF C = 6  -- = 1/8
+        THEN  -- split into 6
+          REPLACE S(A + E) WITH CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48) & CHAR ('', 1÷48);
+        ELSIF C = 12  -- = 1/4
+        THEN  -- split into 2 x 1/8
+          REPLACE S(A + E) WITH CHAR ('', 0.125) & CHAR ('', 0.125);
+        ELSIF C = 24  -- = half a char width
+        THEN  -- split into 2 x 1/4
+          REPLACE S(A + E) WITH CHAR ('', 0.25) & CHAR ('', 0.25);
+        ELSIF C = 48  -- = full char width
+        THEN  -- split into 2 x 1/2
+          REPLACE S(A + E) WITH CHAR ('', 0.5) & CHAR ('', 0.5);
+        END IF;
+        IF C <= 6
+        THEN  -- crank B back to 1/48
+          B := (B - C) + 1;
+        ELSE  -- crank B back to just C/2
+          B := (B - C) + C ÷ 2;
+        END IF;
+      END IF;
+      IF E >= G'Length THEN
+        EXIT;  -- loaded all combining characters in
+      END IF;
+    END IF;
+    A := A + 1;
+    EXIT WHEN A > S'Length;
+  END LOOP;
+END BlissModifier;
+

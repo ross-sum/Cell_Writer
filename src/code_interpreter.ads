@@ -1,0 +1,351 @@
+-----------------------------------------------------------------------
+--                                                                   --
+--                  C O D E   I N T E R P R E T E R                  --
+--                                                                   --
+--                     S p e c i f i c a t i o n                     --
+--                                                                   --
+--                           $Revision: 1.0 $                        --
+--                                                                   --
+--  Copyright (C) 2023  Hyper Quantum Pty Ltd.                       --
+--  Written by Ross Summerfield.                                     --
+--                                                                   --
+--  This package is a code interpreter for the combining  character  --
+--  instruction  set.   The combining  character  instruction  sets  --
+--  operate on a single cell. If that cell contains several Unicode  --
+--  characters,  then  it  operates on all of  them.  If  the  cell  --
+--  contains  one character,  which for instance would be the  case  --
+--  for the Latin character set, then it operates on just that one.  --
+--
+--  Instruction Syntax
+-- 
+-- The command set may take a parameter, which is passed in as a constant.
+-- The syntax for defining this is below.  It is loaded into register H.  
+-- It is sourced from the database for the key to which it applies. 
+-- 
+-- Each full command is separated by a semicolon (;).
+-- White space is at least one of the space (' ' - 16#0020#), tab (16#0008#),
+-- carriage return (16#000D#) and line feed (16#000A#) characters. It is used 
+--to separate sub- components of a command. 
+-- Comments commence with a double dash (--) character pair and terminate with
+-- end of line (line feed - 16#000A#) character, and are ignored. 
+-- 
+-- Data Sources 
+-- 
+--     • 5 registers, A - E for numbers
+--     • 1 character register,  F
+--     • 1 string register,  G
+--       • where each character is addressable as G(x), where x is some integer
+--         or a numeric register containing an integer
+--       • The parameter Length (as in G'Length) returns the string length 
+--     • 1 character register,  H, which contains a parameter passed to the
+--       command set and cannot be altered by the command set
+--     • The Cell, represented by the register S
+--       • The parameter Length (as in S'Length) returns the cell's string
+--         length
+--     • Constants (as a decimal number)
+--     • Width of each 'space' character
+--       • 'space' characters specified in a character set in the database
+--       • the set of 'space' characters under operation are bounded by two
+--         ASCII space (16#0020#) characters
+--       • For the purposes of this language, these 'space' characters are non-
+--         combining characters that occupy the current cell
+--     • Position of each 'space' character. 
+-- 
+-- Command Set
+-- 
+-- PROCEDURE
+-- The PROCEDURE command is used to initiate the combining character command set.
+-- Format is:
+--   PROCEDURE <<name>> ({value}) IS
+--   PROCEDURE <<name>> () IS
+--   PROCEDURE IS
+-- Where:
+--   <<name>> is an optional procedure name;
+--   {value}  is a Unicode character to be passed in and is loaded into register
+--            H.
+-- If the {value} is not specified but the brackets () are, then the value in
+-- the H register is taken from the key tool tip help text of the launching
+-- combining character button.
+-- If no brackets are specified, then the H register is left empty.
+-- 
+-- END
+-- The END command on its own terminates combining character command set and is
+-- terminated with a semicolon. 
+-- Format is:
+--   END
+--   END <<name>>
+-- Where:
+--   <<name>> is an optional name, but if supplied, must match the procedure
+--            name (which must also then be supplied).
+-- 
+-- IF - THEN - ELSE
+-- A conditional set of operations. 
+-- Format is:
+--   IF {condition} THEN {operation}
+--   ELSIF {condition} THEN {operation}
+--   ELSE {operation} END IF
+-- Where:
+--   {condition} is some comparison of two data sources;
+--   {operation} is a set of instructions using the command set. Each operation
+--               (i.e. command) is separated by a semicolon (;) as noted above. 
+-- The ELSIF component together with its operation is optional.  There may be
+-- as many ELSIF components as is required.
+-- The ELSE and ELSIF components together with their operation is optional.
+-- 
+-- INSERT
+-- Insert just before the specified position the specified string.  To insert
+-- at the end, specify the last character plus 1.  In determining the insert
+-- point, combining characters, which take up no apparent 'space', must be
+-- taken into account. For the vast majority of character sets, and definitely
+-- for the Latin character set, just one character is used within a cell,
+-- meaning that the instruction set operates on the (only) character in the
+-- current cell (see note at the beginning about characters and cells).
+-- After the insertion, the string's length is obviously adjusted (incremented)
+-- by one. 
+-- Format is:
+--   INSERT S({position}) WITH "{string}"
+--   INSERT S({position}) WITH {register}
+-- Where:
+--   {position} is the 1 based position from the start of the 'space' sequence
+--              of the desired 'space' character to be inserted before;
+--   {string}   is the string of characters that are to insert before the
+--              specified 'space' character - it could be calculated from a
+--              string formula;
+--   {register} is one of either F (character) or G (string) to be inserted.
+-- 
+-- REPLACE
+-- Replace the specified 'space' character with the specified string. 
+-- 
+-- After the replacement, the string length is potentially modified,
+-- particularly if the replacement string is longer than one character.
+-- Format is:
+--   REPLACE S({position}) WITH "{string}"
+--   REPLACE S({position}) WITH {register}
+-- Where:
+--   {position} is the 1 based position from the start of the 'space' sequence
+--              of the desired 'space' character to be replaced;
+--   {string}   is the string of characters that are to replace the specified
+--              'space' character -  it could be calculated from a string
+--              formula;
+--   {register} is one of either F or G to replace.
+-- 
+-- DELETE
+-- Delete the specified character in the string.  This operation does affect
+-- position counters that might be in operation,  for instance in a For loop
+-- that is working through a string of characters in a cell, where whilst the
+-- loop counter is not modified, the position in the string that it may
+-- reference relates to a string that is now one character shorter.  The
+-- default register is, of course, the S register.
+-- Format is:
+--   DELETE ({position})
+--   DELETE ({register})
+--   DELETE ({register} {position})
+--   DELETE ({register} {register})
+-- Where:
+--   {position} is the 1 based position from the start of the character
+--              sequence in the cell of the desired character to be deleted;
+--   {register} is one of the numeric registers specifying the character
+--              position to be deleted or, in the case of the last two formats
+--              the first occurrence specifies the register to delete from.
+-- 
+-- FOR - LOOP
+-- For each item in a list, perform a specified series of operations.
+-- Format is:
+--   FOR {register} IN {value} .. {value} LOOP {commands} END LOOP
+--   FOR {register} IN REVERSE {value} .. {value} LOOP {commands} END LOOP
+-- Where:
+--   {register} is a numeric register,  A - E, or the character register, F,
+--              and the initial value in this register is lost for the counter
+--              register (i.e. the first instance specified in the command) if
+--              counting up (i.e. REVERSE is not specified) or if the range is
+--              specified rather than an end value register; it tracks the loop
+--              count from start to finish;
+--   {value}    specifies the start and end count ranges and must be integers
+--              or characters.  The value may be provided as either a register
+--              or as a constant or as some kind of formula, and each value is
+--              separated by the elipses (..);
+--   {commands} is a set of instructions using the command set. Each operation
+--              (i.e. command) is separated by a semicolon (;) as noted above.
+--              The block of commands that the FOR loop operates on is
+--              terminated by an 'END LOOP;' statement.
+-- 
+-- LOOP - END LOOP
+-- Perform a specified series of operations in between the LOOP and END LOOP
+-- commands, exiting when the EXIT command is encountered.
+-- Format is:
+--   LOOP {commands} END LOOP
+-- Where:
+--   {commands} is a set of instructions using the command set. Each operation
+--              (i.e. command) is separated by a semicolon (;) as noted above.
+--              The block of commands that the FOR loop operates on is
+--              terminated by an 'END LOOP;' statement.
+-- 
+-- EXIT
+--   Exit a For loop or a standard (i.e. infinite until the Exit command is
+--   encountered) loop. 
+-- Format is:
+--   EXIT
+-- 
+-- LIST
+-- This is a 'function' that lists out the sequential characters or numbers
+-- between two specified limits. It is used in a for loop (e.g.
+-- FOR A IN 1 .. 3) and in a test in an if statement (e.g. IF A IN 1 .. 3).
+-- Format is:
+--   IN '{start}' .. '{end}'
+-- Where:
+--   {start} is the starting character or number;
+--   {end}   is the ending character or number. 
+-- 
+-- FIND
+-- This is a function that finds the specified combining accent or other
+-- character position, returning the position number.  If there are multiple
+-- instances of the specified character, then it returns the position of the
+-- first instance.   If none are found then it returns 0.
+-- It, of course, operates on the S register by default.
+-- Format is:
+--   FIND ('{c}')
+--   FIND ({register})
+--   FIND ({register}, {register})
+-- Where:
+--   {c}        is a character to search on;
+--   {register} is any register other than the G register, but if any of
+--               registers A - E, then the number must be an integer and is
+--               translated into its Unicode character value.  Where specified,
+--               the second optional register specifies the register to search
+--               on, by default the S register
+-- 
+-- WIDTH
+-- Provide the width of the specified character, usually a 'space' character. 
+-- Format is:
+--   WIDTH ('{c}')
+--   WIDTH ({register})
+-- Where:
+--   {c}        is a character to search on;
+--   {register} is any register other than the G (and S) register, but if any
+--              of registers A - E, then the number must be an integer and is
+--              translated into its Unicode character value.
+-- 
+-- CHAR
+-- Provide the character that is the nearest first match for a given character
+-- width, given a character starting position.
+-- Format is:
+--   CHAR ({start}, {size})
+-- Where:
+--   {start} is the starting character, either as a quoted constant (e.g. ' ')
+--           or as a register (e.g. F). If it is a numeric register (i.e.
+--           between A and E), then the number must be an integer and is
+--           translated into its Unicode character value;
+--   {size}  is the character size (see WIDTH above) and may either be a
+--           (floating point) constant or a register. 
+-- 
+-- ABS
+-- Provide the absolute value of the supplied number as a return value.
+-- Format is:
+--   ABS ({number})
+-- Where:
+--   {number} is number to return the absolute value of.
+-- 
+-- ERROR LOG
+-- Provide a method of logging a message or a register.  The log is sent to the
+-- application’s standard logging channel with a log level of 1.
+-- Format is:
+--   ERROR_LOG ("{string}") or
+--   ERROR_LOG ({register})
+-- Where:
+--   {string}   is text string and is surrounded by double quotes ("), with a
+--              special case of 'registers' which means log all registers;
+--   {register} is a register (e.g. F). If it is a numeric register (i.e.
+--              between A and E), then the number will be logged in human
+--              readable (i.e. textual) format.
+-- 
+-- Mathematical Operators
+--   :=  : make the left hand side (a register) equal to the right hand side
+--         equation. 
+--   +   : add two registers or a register and a constant together. 
+--   -   : subtract one register or constant from another register or constant.
+--         It can also be a unary operator where it negates the register or
+--         constant to the right of it.
+--   ×   : multiply the item to its left (register or constant) by the item
+--         (register or constant) to the right. Multiplication and division
+--         have precedence over addition and subtraction. 
+--   ÷   : divide the item (register or constant) on the left of the symbol by
+--         the item (register or constant) to the right. 
+--   &   : concatenate the register (either F or G) or double quote (")
+--         enclosed constant to the operator's left with the register (either F
+--         or G) or double quote enclosed constant to the operator's right. The
+--         result must either go into register G (e.g. G := "constant" & F) or
+--         must be the component of a comparison operation.
+--   AND : boolean AND of the register or prior test with another register or
+--         subsequent test; if a register, then a content of 0 is treated as
+--         FALSE and anything else as TRUE.
+--   OR  : boolean OR of the register or prior test with another register or
+--         subsequent test; if a register, then a content of 0 is treated as
+--         FALSE and anything else as TRUE.
+--   NOT : boolean NOT of the register or subsequent test; if a register, then
+--         a content of 0 is treated as FALSE and anything else as TRUE.
+-- 
+-- Comparison Operators 
+--   =  : test that the value (if an equation, then the calculated value) on
+--        the left of the comparator is equal to that on the right, returning
+--        TRUE if so.
+--   >  : test that the value (if an equation, then the calculated value) on
+--        the left of the comparator is greater than that on the right,
+--        returning TRUE if so.
+--   >= : test that the value (if an equation, then the calculated value) on
+--        the left of the comparator is greater than or equal to that on the
+--        right, returning TRUE if so.
+--   <  : test that the value (if an equation, then the calculated value) on
+--        the left of the comparator is less than that on the right, returning
+--        TRUE if so.
+--   <= : test that the value (if an equation, then the calculated value) on
+--        the left of the comparator is less than or equal to that on the
+--        right, returning TRUE if so.
+-- 
+--                                                                   --
+--  Version History:                                                 --
+--  $Log$
+--                                                                   --
+--  Cell_Writer  is free software; you can redistribute  it  and/or  --
+--  modify  it under terms of the GNU  General  Public  Licence  as  --
+--  published by the Free Software Foundation; either version 2, or  --
+--  (at your option) any later version.  Cell_Writer is distributed  --
+--  in  hope  that  it will be useful, but  WITHOUT  ANY  WARRANTY;  --
+--  without even the implied warranty of MERCHANTABILITY or FITNESS  --
+--  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
+--  for  more details.  You should have received a copy of the  GNU  --
+--  General  Public Licence distributed with Cell_Writer.  If  not,  --
+--  write  to  the Free Software Foundation,  51  Franklin  Street,  --
+--  Fifth Floor, Boston, MA 02110-1301, USA.                         --
+--                                                                   --
+-----------------------------------------------------------------------
+with GNATCOLL.SQL.Exec;
+with Gtkada.Builder;    use Gtkada.Builder;
+with Gtk.Drawing_Area;  use Gtk.Drawing_Area;
+with dStrings;          use dStrings;
+package Code_Interpreter is
+
+   procedure Initialise_Interpreter(with_builder : in out Gtkada_Builder;
+                        with_DB_Descr : GNATCOLL.SQL.Exec.Database_Description;
+                             reraise_exception : boolean := false);
+      -- Load the macros into memory and otherwise set up the interpreter ready
+      -- for operation.  That includes stripping out comments from the macros
+      -- and simplifying spaces.  That also includes getting a handle to the
+      -- pop-up, which will be utilised by Error_Log for displaying any error
+      -- that raises the BAD_MACRO_CODE exception.  If reraise_exception is set
+      -- to true, then the exception will be reraised after the pop-up is
+      -- displayed.
+      
+   procedure Execute (the_cell : in out gtk_drawing_area;
+                      the_macro_Number : in natural;
+                      passed_in_parameter : in text);
+      -- This main macro execution procedure the following parameters:
+      --     1 The pointer to the currently selected cell;
+      --     2 A pointer to the blob containing the instructions, as pointed to
+      --       by the combining character button;
+      --     3 The 'passed-in parameter', taken from the combining character
+      --       button: if specified in the brackets after the procedure and its
+      --       optional name, then extracted from the procedure call, if the
+      --       brackets are provided but have no contents, extracted from the
+      --       button's tool tip help text, otherwise set to 16#0000# (NULL).
+   
+end Code_Interpreter;

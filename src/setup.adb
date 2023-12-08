@@ -34,26 +34,31 @@
 -----------------------------------------------------------------------
 -- with Gtkada.Builder;  use Gtkada.Builder;
 -- with Gtk.Combo_Box;
--- with Glib.Object;
+-- with Glib.Object, Gdk.RGBA, Pango.Font;
 -- with dStrings;        use dStrings;
 -- with GNATCOLL.SQL;
+with Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
 with GNATCOLL.SQL.Exec.Tasking, GNATCOLL.SQL_BLOB;
 with Database;                   use Database;
 with Gtk.Widget;
 with Error_Log;
+with dStrings;
 with Cell_Writer_Version, CSS_Management;
 with Glib.Values;
 with Gtk.List_Store, Gtk.Tree_Model, Gtk.Tree_Selection;
 with Gtk.Label, Gtk.Check_Button, Gtk.Color_Button;
 with Gtk.Cell_Renderer_Toggle, Gtk.Tree_view, Gtk.Tree_Row_Reference;
-with Gtk.Button, Gtk.Font_Button, Gtk.Spin_Button, Gtk.Adjustment;
+with Gtk.Button, Gtk.Font_Button, Gtk.Spin_Button, Gtk.Tool_Button;
+with Gtk.Adjustment;
 with String_Conversions;
 with Help_About;
 with Grid_Management, Keyboard;
+with Recogniser, Word_Frequency, Samples;
 package body Setup is
    use GNATCOLL.SQL;
    
-   cDB : GNATCOLL.SQL.Exec.Database_Connection;
+   the_builder : Gtkada_Builder;
+   cDB         : GNATCOLL.SQL.Exec.Database_Connection;
    lingo_select    : constant GNATCOLL.SQL.Exec.Prepared_Statement :=
       GNATCOLL.SQL.Exec.Prepare 
            (SQL_Select (Fields  => Languages.ID & Languages.Name &
@@ -88,7 +93,10 @@ package body Setup is
       GNATCOLL.SQL.Exec.Prepare 
            (SQL_Select (Fields  => CombiningChrs.Language & 
                                    CombiningChrs.ButtonNum &
-                                   CombiningChrs.CChar & CombiningChrs.ToolTip,
+                                   CombiningChrs.CChar & 
+                                   CombiningChrs.ToolTip &
+                                   CombiningChrs.Display &
+                                   CombiningChrs.Macro,
                         From    => CombiningChrs,
                         Where   => (CombiningChrs.Language = Integer_Param(1)),
                         Order_By=> CombiningChrs.ButtonNum),
@@ -132,6 +140,10 @@ package body Setup is
     
    type database_change_state is (unchanged, changed);
    language_list_changed : database_change_state := unchanged;
+   
+   -- Special character key 
+   special_character : wide_character := wide_character'Val(16#202F#);
+                                          -- default to non-breaking space
 
    procedure Initialise_Setup(Builder : in out Gtkada_Builder;
                               DB_Descr: GNATCOLL.SQL.Exec.Database_Description;
@@ -140,6 +152,7 @@ package body Setup is
    begin
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Initialise_Setup: Start");
+      the_builder := Builder;  -- save for later use
       -- Set up: Open the relevant tables from the database
       cDB:=GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>DB_Descr);
       -- GNATCOLL.SQL.Exec.Automatic_Transactions(cDB, Active => false);
@@ -162,13 +175,13 @@ package body Setup is
       Register_Handler(Builder      => Builder,
                        Handler_Name => "help_manual_activate_cb",
                        Handler      => Setup_Show_Help'Access);
-      -- Handlerfor "combo_language_changed_cb" already set up in main_menu.
+      -- Handler for "combo_language_changed_cb" already set up in main_menu.
       -- set up: load the fields from the database
       Load_Data_From(database => cDB, Builder => Builder);
                        
    end Initialise_Setup;
    
-   procedure Set_To_ID(Builder    : access Gtkada_Builder_Record'Class;
+   procedure Set_To_ID(Builder       : access Gtkada_Builder_Record'Class;
                           combo      : Gtk.Combo_Box.gtk_combo_box;
                           list_store : string; id : natural) is
       -- Sets the Combo box to the specified identifier based on what
@@ -197,7 +210,7 @@ package body Setup is
       use GNATCOLL.SQL.Exec, Gdk.RGBA;
       use Gtk.Spin_Button, Gtk.Check_Button, Gtk.Combo_Box, Gtk.Color_Button;
       use Gtk.Font_Button;
-      use Keyboard, String_Conversions;
+      use Keyboard, String_Conversions, dStrings;
       R_lingo    : Forward_Cursor;
       lang_no     : positive := 1;
       R_config   : Forward_Cursor;
@@ -359,6 +372,8 @@ package body Setup is
                check_box := gtk_check_button(Get_Object(Builder, 
                                         "checkbox_setup_disable_basic_latin"));
                Set_Active(check_box, (Value(R_config,3) /= "0"));
+               Samples.Set_Disable_Basic_Latin_Letters
+                                            (to => (Value(R_config,3) /= "0"));
             elsif Value(R_config,1) = "enable_right_to_left" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                        "checkbox_setup_enable_right_to_left"));
@@ -373,6 +388,13 @@ package body Setup is
                                                "spin_setup_samples_per_char"));
                Set_Value(spin_entry, 
                         Glib.GDouble(Float(Integer'Value(Value(R_config,3)))));
+               Samples.Set_Maximum_Samples(to=> Integer'Value(Value(R_config,3)));
+            elsif Value(R_config,1) = "accuracy_margin" then
+               spin_entry := gtk_spin_button(Get_Object(Builder, 
+                                               "spin_setup_accuracy_margin"));
+               Set_Value(spin_entry, 
+                        Glib.GDouble(Float(Integer'Value(Value(R_config,3)))));
+               Samples.Set_Maximum_Samples(to=> Integer'Value(Value(R_config,3)));
             elsif Value(R_config,1) = "enable_word_context" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                            "checkbox_setup_enable_english_context"));
@@ -384,6 +406,12 @@ package body Setup is
             elsif Value(R_config,1) = "match_diff_stroke_nos" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                            "checkbox_setup_match_diff_stroke_nos"));
+               Set_Active(check_box, (Value(R_config,3) /= "0"));
+            elsif Value(R_config,1) = "enable_word_frequency" then
+               Word_Frequency.Set_Word_Frequency_Enablement
+                                            (to => (Value(R_config,3) /= "0"));
+               check_box := gtk_check_button(Get_Object(Builder,
+                                           "checkbox_word_frequency_enabled"));
                Set_Active(check_box, (Value(R_config,3) /= "0"));
             -- Set the current working language on the main form
             elsif Value(R_config,1) = "language" then
@@ -400,6 +428,11 @@ package body Setup is
                   Set_Up_Combining(Builder, for_language => lingo_num);
                   lang_no := lingo_num;
                end;
+            elsif Value(R_config,1) = "current_sample" then
+               null;
+               -- Samples.Set_Current_Sample(to => Integer'Value(Value(R_config,3)));
+            elsif Value(R_config,1) = "engine_ranges" then
+               Recogniser.Set_Engine_Ranges(to=>Value(from=>Value(R_config,3)));
             else
                Error_Log.Debug_Data(at_level => 6, 
                                  with_details=> "Load_Data_From: nothing for "&
@@ -408,14 +441,16 @@ package body Setup is
             Next(R_config);  -- next record(Configurations)
          end loop;
       end if;
+      Error_Log.Debug_Data(at_level => 9, 
+                                 with_details=> "Load_Data_From: loaded details");
       -- And set the grid up for the right number of rows and columns
       Grid_Management.Resize_Grid (to_rows => grid_rows, to_cols => grid_cols);
+      Keyboard.Resize_Grid (to_rows => grid_rows, to_cols => grid_cols);
       Grid_Management.Set_Writing_Colours(for_text             => grid_FG, 
                                           for_blank_background => grid_NBG, 
                                           for_used_background  => grid_UBG);
       Grid_Management.Set_Writing_Size(width=>cell_horiz, height=>cell_vert);
       Keyboard.Load_Keyboard(for_language=> lang_no, at_object=> Builder);
-      Keyboard.Toggle_Caps(Object => Builder);
    end Load_Data_From;
       
    procedure Load_Data_To(database : GNATCOLL.SQL.Exec.Database_Connection;
@@ -609,6 +644,7 @@ package body Setup is
                end if;
                c_cw_update:= (1 => +Integer_Value(R_config,0), 2 => +result);
                execute_it := true;
+               Samples.Set_Disable_Basic_Latin_Letters(to=>(result /= "0"));
             elsif Value(R_config,1) = "enable_right_to_left" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                        "checkbox_setup_enable_right_to_left"));
@@ -633,7 +669,15 @@ package body Setup is
                                                "spin_setup_samples_per_char"));
                c_cw_update:= (1 => +Integer_Value(R_config,0),
                               2 => +Get_Value_As_Int(spin_entry)'Image);
+               Samples.Set_Maximum_Samples
+                                   (to=>Integer(Get_Value_As_Int(spin_entry)));
                execute_it := true;
+            elsif Value(R_config,1) = "accuracy_margin" then
+               spin_entry := gtk_spin_button(Get_Object(Builder, 
+                                               "spin_setup_accuracy_margin"));
+               c_cw_update:= (1 => +Integer_Value(R_config,0),
+                              2 => +Get_Value_As_Int(spin_entry)'Image);
+               execute_it := true;   
             elsif Value(R_config,1) = "enable_word_context" then
                check_box := gtk_check_button(Get_Object(Builder, 
                                      "checkbox_setup_enable_english_context"));
@@ -661,6 +705,19 @@ package body Setup is
                end if;
                c_cw_update:= (1 => +Integer_Value(R_config,0), 2 => +result);
                execute_it := true;
+            elsif Value(R_config,1) = "enable_word_frequency" then
+               check_box := gtk_check_button(Get_Object(Builder, 
+                                      "checkbox_word_frequency_enabled"));
+               if Get_Active(check_box)
+               then 
+                  result := "1";
+                  Word_Frequency.Set_Word_Frequency_Enablement (to => true);
+               else 
+                  result := "0";
+                  Word_Frequency.Set_Word_Frequency_Enablement (to => false);
+               end if;
+               c_cw_update:= (1 => +Integer_Value(R_config,0), 2 => +result);
+               execute_it := true;
             -- Get the current working language from the main form
             elsif Value(R_config,1) = "language" then
                declare
@@ -683,6 +740,15 @@ package body Setup is
                      Set_To_ID(Builder, combo_box, "my_languages_table", 1);
                   end if;
                end;
+            elsif Value(R_config,1) = "current_sample" then
+               -- c_cw_update:= (1 => +Integer_Value(R_config,0),
+                  --             2 => +Samples.The_Current_Sample_Number'Image);
+               -- execute_it := true;
+               null;
+            elsif Value(R_config,1) = "engine_ranges" then
+               c_cw_update:=(1 =>+Integer_Value(R_config,0),
+                             2 =>+Value(of_string=>Recogniser.The_Engine_Ranges));
+               execute_it := true;
             else
                Error_Log.Debug_Data(at_level    =>6, 
                                     with_details=>"Load_Data_To: nothing for "&
@@ -895,79 +961,145 @@ package body Setup is
      -- are used to apply an accent type (i.e. on the top of the character)
      -- combining characters to the character/word currently written.
      -- for_language is the language ID in the list of languages.
-      use GNATCOLL.SQL.Exec, Gtkada.Builder, Gtk.Label, Gtk.Button;
+      use GNATCOLL.SQL.Exec, Gtkada.Builder;
+      use Gtk.Label, Gtk.Button, Gtk.Tool_Button;
+      use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       -- use Gtk.Box, Gtk.Grid;
       function ToString(int : in natural) return string is
          num : natural := int;
          result : string(1..5) := "     ";
          len    : natural := 0;
       begin
-         while num > 0 loop
-            len := len + 1;
-            result(5-len+1):= character'Val(character'Pos('0') + num rem 10);
-            num := (num - (num rem 10)) / 10;
-         end loop;
-         return result((5-len+1)..5);
+         if num = 0
+         then
+            return "0";
+         else
+            while num > 0 loop
+               len := len + 1;
+               result(5-len+1):=character'Val(character'Pos('0') + num rem 10);
+               num := (num - (num rem 10)) / 10;
+            end loop;
+            return result((5-len+1)..5);
+         end if;
       end ToString;
       R_combine  : Forward_Cursor;
       lingo_parm : SQL_Parameters (1 .. 1);
       combine_btn: gtk.Button.Gtk_Button;
       combine_lbl: gtk.Label.Gtk_Label;
+      combine_chr: wide_string(1..1);
+      special_btn: Gtk.Tool_Button.gtk_tool_button;
+      special_c_display : text := To_Text("' '");
+      special_c_tooltip : text := To_Text("No-break Space");
+      the_font   : Pango.Font.Pango_Font_Description :=
+                                                    Setup.The_Font_Description;
    begin
       Error_Log.Debug_Data(at_level => 6, 
                            with_details => "Set_Up_Combining: Start (" &
                 String_Conversions.To_Wide_String(ToString(for_language))&")");
+      Error_Log.Debug_Data(at_level => 7, 
+                              with_details=>"Set_Up_Combining: Hide buttons.");
+      -- Hide the buttons to start with
+      for button_number in 1..10 loop
+         combine_btn := gtk_button(Get_Object(Gtkada_Builder(Object),
+                                      "btn_combine_"&ToString(button_number)));
+         if combine_btn /= null then
+            Hide(combine_btn);
+         else
+            Error_Log.Debug_Data(at_level => 6, 
+                                 with_details=>"Set_Up_Combining: no handle.");
+         end if;
+      end loop;
+      special_btn:= Gtk_Tool_Button(Get_Object(Gtkada_Builder(Object),
+                                               "btn_sep"));
+      if special_btn /= null then
+         Hide(special_btn);
+      else
+         Error_Log.Debug_Data(at_level => 6, 
+                              with_details=>"Set_Up_Combining: no handle.");
+      end if;
+      -- Work out if buttons should be displayed by querying database
       lingo_parm := (1 => +for_language);
       R_combine.Fetch (Connection => cDB, Stmt => combine_select,
                        Params => lingo_parm);
       if Success(cDB) and then Has_Row(R_combine) then
-         -- show the buttons
-         for button_number in 1..10 loop
-            combine_btn := gtk_button(Get_Object(Gtkada_Builder(Object),
-                                      "btn_combine_"&ToString(button_number)));
-            Show(combine_btn);
-         end loop;
          Error_Log.Debug_Data(at_level => 7, 
                               with_details=>"Set_Up_Combining: Setting up...");
          -- Load the characters to each button
          while Has_Row(R_combine) loop  -- while not end_of_table
-            combine_lbl := gtk_label(Get_Object(Gtkada_Builder(Object),
+            if Integer_Value(R_combine,1) = 0
+            then  -- First one is the special button - assign and show it
+               special_character := Wide_Element(
+                  Value_From_Wide(Decode(UTF_8_String(Value(R_combine,2)),UTF_8)),1);
+               special_btn:= Gtk_Tool_Button(Get_Object(Gtkada_Builder(Object),
+                                                        "btn_sep"));
+               Set_Label(special_btn, Value(R_combine,4));
+               Set_Tooltip_Markup(special_btn, Value(R_combine,4));
+               Show(special_btn);  -- show the button
+            elsif Integer_Value(R_combine,1) > 10
+            then  -- out of range of our buttons
+               null;   -- ignore as no where to put them
+            else  -- Ordinary combining button - label, tool tip and show
+               combine_lbl := gtk_label(Get_Object(Gtkada_Builder(Object),
                                      "btn_combine_label_" & 
                                      ToString(Integer_Value(R_combine,1))));
-            combine_btn := gtk_button(Get_Object(Gtkada_Builder(Object),
+               combine_btn := gtk_button(Get_Object(Gtkada_Builder(Object),
                                       "btn_combine_" & 
                                       ToString(Integer_Value(R_combine,1))));
-            Set_Label(combine_lbl, "▦" & Value(R_combine,2));
-            Set_Tooltip_Markup(combine_btn, Value(R_combine,3));
+               -- while we are here, set up the button font
+               Modify_Font(combine_btn, the_font);
+               Set_Label(combine_lbl, Value(R_combine,4));
+               -- set up the tool-tip, coding in the tip and the macro number
+               combine_chr(1) := Wide_Element(Value_From_Wide(
+                            Decode(UTF_8_String(Value(R_combine,2)),UTF_8)),1);
+               Set_Tooltip_Markup(combine_btn, Value(R_combine,3) & " [ " &
+                                   Encode(combine_chr) & "] (" & 
+                                   ToString(Integer_Value(R_combine,5)) & ')');
+               Show(combine_btn);  -- show the button
+            end if;
             Next(R_combine);  -- next record(Configurations)
          end loop;
       else
-         Error_Log.Debug_Data(at_level => 7, 
-                              with_details=>"Set_Up_Combining: Hide buttons.");
-         -- hide the buttons
-         for button_number in 1..10 loop
-            combine_btn := gtk_button(Get_Object(Gtkada_Builder(Object),
-                                      "btn_combine_"&ToString(button_number)));
-            if combine_btn /= null then
-               Hide(combine_btn);
-            else
-               Error_Log.Debug_Data(at_level => 6, 
-                                 with_details=>"Set_Up_Combining: no handle.");
-            end if;
-         end loop;
          -- Queue_Resize(gtk_grid(Get_Object(Object, "grid_cells")));
-         -- Queue_Resize(gtk_box(Get_Object(Object, "box_main_cells_and_menus")));
+         -- Queue_Resize(gtk_window(Get_Object(Object, "form_main")));
+         null;
       end if;
    end Set_Up_Combining;
   
-   function The_Font(Builder : in Gtkada_Builder) return UTF8_string is
+   function The_Font return UTF8_string is
       -- The currently selected font for the system
       use Gtk.Font_Button;
       font_btn   : Gtk.Font_Button.gtk_font_button;
    begin
-      font_btn := gtk_font_button(Get_Object(Builder, "cellwriter_font"));
+      font_btn := gtk_font_button(Get_Object(the_builder, "cellwriter_font"));
       return Get_Font(font_btn);
    end The_Font;
+  
+   function The_Font_Name return UTF8_string is
+      -- The currently selected font for the system
+      use Gtk.Font_Button, Pango.Font;
+      font_btn   : Gtk.Font_Button.gtk_font_button;
+   begin
+      font_btn := gtk_font_button(Get_Object(the_builder, "cellwriter_font"));
+      return Get_Family(Get_Font_Desc(font_btn));
+   end The_Font_Name;
+   
+   function Font_Size return gDouble is
+      -- The currently selected font size for the system.
+      use Gtk.Font_Button;
+      font_btn   : Gtk.Font_Button.gtk_font_button;
+   begin
+      font_btn := gtk_font_button(Get_Object(the_builder, "cellwriter_font"));
+      return gDouble(Get_Font_Size(font_btn));
+   end Font_Size;
+   
+   function The_Font_Description return Pango.Font.Pango_Font_Description is
+      -- The currently selected font in Pango font description format
+      use Gtk.Font_Button, Pango.Font;
+      font_btn   : Gtk.Font_Button.gtk_font_button;
+   begin
+      font_btn := gtk_font_button(Get_Object(the_builder, "cellwriter_font"));
+      return Get_Font_Desc(font_btn);
+   end The_Font_Description;
    
    function Font_Start_Character return wide_character is
       -- The character to start switching from the default font to the
@@ -976,53 +1108,178 @@ package body Setup is
       return font_start_char;
    end Font_Start_Character;
 
-   function Button_Colour(Builder: in Gtkada_Builder) return Gdk.RGBA.Gdk_RGBA
+   function Button_Colour return Gdk.RGBA.Gdk_RGBA
    is
       -- The currently selected keyboard button colour for the system
       use Gtk.Color_Button, Gdk.RGBA;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
    begin
-      colour_btn:= gtk_color_button(Get_Object(Builder,"colour_key_face"));
+      colour_btn:= gtk_color_button(Get_Object(the_builder,"colour_key_face"));
       Get_Rgba(colour_btn, the_colour);
       return the_colour;
    end Button_Colour;
 
-   function Used_Cell_Colour(Builder: in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA is
+   function Used_Cell_Colour return Gdk.RGBA.Gdk_RGBA is
       -- The currently selected used cell colour for the system
       use Gtk.Color_Button, Gdk.RGBA;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
    begin
-      colour_btn:= gtk_color_button(Get_Object(Builder,"colour_used_cell"));
+      colour_btn:=gtk_color_button(Get_Object(the_builder,"colour_used_cell"));
       Get_Rgba(colour_btn, the_colour);
       return the_colour;
    end Used_Cell_Colour;
+   
+   function Untouched_Cell_Colour return Gdk.RGBA.Gdk_RGBA is
+      -- The currently selected untouched cell background colour for the system
+      use Gtk.Color_Button, Gdk.RGBA;
+      colour_btn : Gtk.Color_Button.gtk_color_button;
+      the_colour : Gdk.RGBA.Gdk_RGBA;
+   begin
+      colour_btn := gtk_color_button(Get_Object(the_builder,
+                                                "colour_blank_cell"));
+      Get_Rgba(colour_btn, the_colour);
+      return the_colour;
+   end Untouched_Cell_Colour;
+    
+   function Highlight_Colour return Gdk.RGBA.Gdk_RGBA is
+      -- The currently selected highlight colour for the system
+      use Gtk.Color_Button, Gdk.RGBA;
+      colour_btn : Gtk.Color_Button.gtk_color_button;
+      the_colour : Gdk.RGBA.Gdk_RGBA;
+   begin
+      colour_btn:=gtk_color_button(Get_Object(the_builder,"colour_highlight"));
+      Get_Rgba(colour_btn, the_colour);
+      return the_colour;
+   end Highlight_Colour;
 
-   function Text_Colour(Builder : in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA is
+   function Text_Colour return Gdk.RGBA.Gdk_RGBA is
       -- The currently selected background colour for the system
       use Gtk.Color_Button, Gdk.RGBA;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
    begin
-      colour_btn:= gtk_color_button(Get_Object(Builder,"colour_text_and_ink"));
+      colour_btn:= gtk_color_button(Get_Object(the_builder,
+                                               "colour_text_and_ink"));
       Get_Rgba(colour_btn, the_colour);
       return the_colour;
    end Text_Colour;
 
-   function Button_Text_Colour(Builder : in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA is
+   function Button_Text_Colour return Gdk.RGBA.Gdk_RGBA is
       -- The currently selected background colour for the system
       use Gtk.Color_Button, Gdk.RGBA;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
    begin
-      colour_btn:= gtk_color_button(Get_Object(Builder,"colour_key_text"));
+      colour_btn:= gtk_color_button(Get_Object(the_builder,"colour_key_text"));
       Get_Rgba(colour_btn, the_colour);
       return the_colour;
    end Button_Text_Colour;
+
+   function Grid_Cell_Columns return natural is
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                               "setup_dimension_grid_horiz"));
+      return Integer(Get_Value_As_Int(spin_entry));
+   end Grid_Cell_Columns;
+      
+   function Grid_Cell_Rows return natural is
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                               "setup_dimension_grid_vert"));
+      return Integer(Get_Value_As_Int(spin_entry));
+   end Grid_Cell_Rows;
+
+   function Cell_Height return natural is
+      -- The height of each cell in the grid (to the nearest whole number)
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                               "setup_dimension_cells_vert"));
+      return Integer(Get_Value_As_Int(spin_entry));
+   end Cell_Height;
+      
+   function Cell_Width return natural is
+      -- The width of  each cell in the grid (to the nearest whole number)
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                               "setup_dimension_cells_horiz"));
+      return Integer(Get_Value_As_Int(spin_entry));
+   end Cell_Width;
+   
+   function Is_Right_to_Left return boolean is
+      -- Return true if the right to left check box is checked.
+      use Gtk.Check_Button;
+      check_box  : Gtk.Check_Button.gtk_check_button;
+   begin
+      check_box := gtk_check_button(Get_Object(the_builder, 
+                                       "checkbox_setup_enable_right_to_left"));
+      return Get_Active(check_box);
+   end Is_Right_to_Left;
+   
+   function Match_Differing_Stroke_Numbers return boolean is
+      -- Return true if the requirement to match differing stroke numbers (when
+      -- recognising a test sample) check box is checked.
+      use Gtk.Check_Button;
+      check_box  : Gtk.Check_Button.gtk_check_button;
+   begin
+      check_box := gtk_check_button(Get_Object(the_builder, 
+                                      "checkbox_setup_match_diff_stroke_nos"));
+      return Get_Active(check_box);
+   end Match_Differing_Stroke_Numbers;
+   
+   function Ignore_Stroke_Direction return boolean is
+      -- Return true if the ignore stroke direction (when recognising a test
+      -- sample) check box is checked.
+      use Gtk.Check_Button;
+      check_box  : Gtk.Check_Button.gtk_check_button;
+   begin
+      check_box := gtk_check_button(Get_Object(the_builder, 
+                                    "checkbox_setup_ignore_stroke_direction"));
+      return Get_Active(check_box);
+   end Ignore_Stroke_Direction;
+   
+   function Max_Samples_Per_Character return natural is
+      -- Return the user's preference of the maximum number of samples that
+      -- should be recorded for training for each character or word that is
+      -- trained up.
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                    "spin_setup_samples_per_char"));
+      return Integer(Get_Value_As_Int(spin_entry));
+   end Max_Samples_Per_Character;
+
+   function Recognition_Accuracy_Margin return sample_rating is
+      -- Return the user's preference for the accuracy margin (that is, the
+      -- allowed rating gap before a cell's recognised content is highlighted
+      -- after recognition.  Such a highlight indicates to the user that they
+      -- could right mouse click to show a pop-up list of alternative samples
+      -- that could be what the user really meant when they drew their
+      -- character or word.
+      use Gtk.Spin_Button;
+      spin_entry : Gtk.Spin_Button.gtk_spin_button;
+   begin
+      spin_entry := gtk_spin_button(Get_Object(the_builder, 
+                                    "spin_setup_accuracy_margin"));
+      return sample_rating(Get_Value(spin_entry)/100.0);
+   end Recognition_Accuracy_Margin;
+   
+   function The_Special_Button return wide_character is
+      -- The special character that is emitted when the special button is
+      -- pressed on the main form.
+   begin
+      return special_character;
+   end The_Special_Button;
   
 begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",

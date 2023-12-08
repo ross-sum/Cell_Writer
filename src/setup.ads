@@ -34,11 +34,13 @@
 -----------------------------------------------------------------------
 with Gtkada.Builder;  use Gtkada.Builder;
 with Gtk.Combo_Box;
-with Glib.Object, Gdk.RGBA;
+with Glib.Object, Gdk.RGBA, Pango.Font;
 with dStrings;        use dStrings;
 with GNATCOLL.SQL.Exec;
 package Setup is
    use GLib;
+   
+   type sample_rating is digits 5 range 0.0 .. 1.0;  -- per cent value
 
    procedure Initialise_Setup(Builder : in out Gtkada_Builder;
                               DB_Descr: GNATCOLL.SQL.Exec.Database_Description;
@@ -55,26 +57,64 @@ package Setup is
       -- are used to apply an accent type (i.e. on the top of the character)
       -- combining characters to the character/word currently written.
 
-   function The_Font(Builder : in Gtkada_Builder) return UTF8_string;
+   function The_Font return UTF8_string;
       -- The currently selected font for the system
+   function The_Font_Name return UTF8_string;
+      -- The currently selected font name for the system
    function Font_Start_Character return wide_character;
       -- The character to start switching from the default font to the
       -- specified font.
+   function Font_Size return gDouble;
+      -- The currently selected font size for the system.
+   function The_Font_Description return Pango.Font.Pango_Font_Description;
+      -- The currently selected font in Pango font description format
 
-   function Button_Colour(Builder: in Gtkada_Builder) return Gdk.RGBA.Gdk_RGBA;
-      -- The currently selected keyboard button colour for the system
-
-   function Used_Cell_Colour(Builder: in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA;
-      -- The currently selected used cell colour for the system
-
-   function Text_Colour(Builder : in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA;
-      -- The currently selected text colour for the system
-
-   function Button_Text_Colour(Builder : in Gtkada_Builder) 
-   return Gdk.RGBA.Gdk_RGBA;
+   function Button_Text_Colour return Gdk.RGBA.Gdk_RGBA;
       -- The currently selected key text colour for the system
+   function Button_Colour return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected keyboard button (background) colour for the system
+   function Text_Colour return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected text colour for the system
+   function Used_Cell_Colour return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected used cell colour for the system
+   function Untouched_Cell_Colour return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected untouched cell background colour for the system
+   function Highlight_Colour return Gdk.RGBA.Gdk_RGBA;
+      -- The currently selected highlight colour for the system
+    
+   function Grid_Cell_Columns return natural;
+      -- The number of columns in the matrix of cells in the writing grid
+   function Grid_Cell_Rows return natural;
+      -- The number of rows in the matrix of cells in the writing grid
+   function Cell_Height return natural;
+      -- The height of each cell in the grid (to the nearest whole number)
+   function Cell_Width return natural;
+      -- The width of  each cell in the grid (to the nearest whole number)
+      
+   function Is_Right_to_Left return boolean;
+      -- Return true if the right to left check box is checked.
+   function Match_Differing_Stroke_Numbers return boolean;
+      -- Return true if the requirement to match differing stroke numbers (when
+      -- recognising a test sample) check box is checked.
+   function Ignore_Stroke_Direction return boolean;
+      -- Return true if the ignore stroke direction (when recognising a test
+      -- sample) check box is checked.
+   function Max_Samples_Per_Character return natural;
+      -- Return the user's preference of the maximum number of samples that
+      -- should be recorded for training for each character or word that is
+      -- trained up.
+      
+   function Recognition_Accuracy_Margin return sample_rating;
+      -- Return the user's preference for the accuracy margin (that is, the
+      -- allowed rating gap before a cell's recognised content is highlighted
+      -- after recognition.  Such a highlight indicates to the user that they
+      -- could right mouse click to show a pop-up list of alternative samples
+      -- that could be what the user really meant when they drew their
+      -- character or word.
+     
+   function The_Special_Button return wide_character;
+      -- The special character that is emitted when the special button is
+      -- pressed on the main form.
 
 private
 
