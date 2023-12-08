@@ -933,7 +933,7 @@ INSERT INTO Words VALUES (142,926,"
 INSERT INTO Words VALUES (142,927,"","fan");
 INSERT INTO Words VALUES (142,928,"","head with hair");
 INSERT INTO Words VALUES (142,929,"","beard (GS)");
---INSERT INTO Words VALUES (142,930,"","");
+--INSERT INTO Words VALUES (142,930,"","");
 --INSERT INTO Words VALUES (142,931,"","");
 --INSERT INTO Words VALUES (142,932,"","");
 --INSERT INTO Words VALUES (142,933,"","");
