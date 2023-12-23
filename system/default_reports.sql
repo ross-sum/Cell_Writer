@@ -22,6 +22,7 @@ INSERT INTO Queries VALUES (4, 8, "", "INSERT INTO Temp2 SELECT Logon, 0, NULL, 
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
 \documentclass[32pt,a4paper,australian]{bliss_article}
+\usepackage[blissymbolics]{babel}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -38,7 +39,9 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \providecommand{\tabularnewline}{\\}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\selectlanguage{blissymbolics}
 \usepackage{fancyhdr}  \pagestyle{fancy}
+\setlength{\footskip}{37.4pt}
 \lhead{} \chead{}  \rhead{}
 \lfoot{: \today}  \cfoot{  \thepage}  \rfoot{  }
 \renewcommand\headrulewidth{2pt}
@@ -96,6 +99,7 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 %\usepackage{datetime2-bliss-utf8}
 \usepackage{fancyhdr}  \pagestyle{fancy}
+\setlength{\footskip}{37.4pt}
 \lhead{} \chead{ }  \rhead{}
 \lfoot{: \today}  \cfoot{  \thepage}  \rfoot{ }
 \renewcommand\headrulewidth{2pt}
@@ -146,6 +150,7 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \usepackage{fancyhdr}  \pagestyle{fancy}
+\setlength{\footskip}{37.4pt}
 \lhead{} \chead{  }  \rhead{}
 \lfoot{: \today}  \cfoot{  \thepage}  \rfoot{   }
 \renewcommand\headrulewidth{2pt}
@@ -236,7 +241,7 @@ q()
 WHERE ID=4;
 UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-\documentclass[32pt,a4paper,australian]{bliss_article}
+\documentclass[32pt,a4paper,blissymbolics]{bliss_article}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -248,8 +253,12 @@ UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more in
 
 \makeatletter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\selectlanguage{blissymbolics}
 %\usepackage{datetime2-bliss-utf8}
 \usepackage{fancyhdr}  \pagestyle{fancy}
+\setlength{\footskip}{37.4pt}
+\setlength{\headheight}{37.0pt}
+\addtolength{\topmargin}{-22.77364pt}
 \lhead{} \chead{ }  \rhead{}
 \lfoot{: \today}  \cfoot{  \thepage}  \rfoot{ }
 \renewcommand\headrulewidth{2pt}
