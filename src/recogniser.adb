@@ -1320,18 +1320,3 @@ begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",
                                 for_module => "Recogniser");
 end Recogniser;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
