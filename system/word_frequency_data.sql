@@ -15027,3 +15027,7 @@ INSERT INTO WordFrequency VALUES (142, "�
 INSERT INTO WordFrequency VALUES (142, "",239,"foreigner");
 INSERT INTO WordFrequency VALUES (142, "",57863,"government");
 INSERT INTO WordFrequency VALUES (142, "1.",22662,"Prime Minister");
+INSERT INTO WordFrequency VALUES (142, "",1447,"letter correspondence");
+INSERT INTO WordFrequency VALUES (142, "",1447,"email correspondence");
+INSERT INTO WordFrequency VALUES (142, "",20358,"evidence");
+INSERT INTO WordFrequency VALUES (142, "",7449,"to judge, verdict");
