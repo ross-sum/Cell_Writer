@@ -1673,13 +1673,13 @@ package body Keyboard is
                then  -- Toggle
                   the_toggle:= gtk_toggle_button(
                                  Get_Object(at_object,Key_As_String(the_key)));
-                  CSS_Management.load(the_button => key_button, 
+                  CSS_Management.Load(the_button => the_toggle, 
                                       with_colour => btn_colour,
                                       and_text_colour => btn_txt_col);
                else  -- Must be a button
                   key_button:=gtk_button(Get_Object(at_object,
                                                     Key_As_String(the_key)));
-                  CSS_Management.load(the_button => key_button, 
+                  CSS_Management.Load(the_button => key_button, 
                                       with_colour => btn_colour,
                                       and_text_colour => btn_txt_col);
                end if;

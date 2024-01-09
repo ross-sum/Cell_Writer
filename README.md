@@ -20,11 +20,15 @@ Cell Writer uses the following packages:
    library and they are expeced  to also be at the same directory
    level as the top level of Cell writer, namely in its own
    ../tools/ directory.
+6. Jordan Sissel's xdoTool 
+   (see https://github.com/jordansissel/xdotool/tree/master)
 
 
 ## Installation
 
+Install xDoTool viz 'apt-get install xdotool'.
 Compile and load the Ada software.
+
 
 ## Execution
 

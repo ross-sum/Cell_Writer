@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 
+<!-- Generated with glade 3.40.0 
 
 Copyright (C) 2022
 
@@ -1442,7 +1442,7 @@ Author: Ross Summerfield, Michael Levin
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="tooltip-text" translatable="yes">Configure Cell Writer's appearance and edit options</property>
-                    <property name="label" translatable="yes">_Configure</property>
+                    <property name="label" translatable="yes">C_onfigure</property>
                     <property name="use-underline">True</property>
                     <property name="stock-id">gtk-properties</property>
                     <signal name="clicked" handler="btn_setup_clicked_cb" swapped="no"/>
@@ -1483,11 +1483,26 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkToggleToolButton" id="btn_unicode">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Switch betwwn normal output (straight Unicode characters) or Unicode (&lt;Shift&gt;+&lt;Ctl&gt;+Uxxxx&lt;Ret&gt; for each character) output</property>
+                    <property name="label" translatable="yes">_Unicode</property>
+                    <property name="use-underline">True</property>
+                    <property name="stock-id">gtk-convert</property>
+                    <signal name="toggled" handler="btn_unicode_toggled_cb" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkToolButton" id="btn_enter">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="tooltip-text" translatable="yes">Insert input or press Enter key</property>
-                    <property name="label" translatable="yes">_Enter</property>
+                    <property name="label" translatable="yes">E_nter</property>
                     <property name="use-underline">True</property>
                     <property name="stock-id">gtk-ok</property>
                     <signal name="clicked" handler="btn_enter_clicked_cb" swapped="no"/>
@@ -1814,8 +1829,8 @@ Written by Ross Summerfield and Michael Levin</property>
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Cell Writer  is  a  grid-entry  natural  handwriting recognition input panel.  As you write characters into the cells, your writing is instantly recognised at  the  character  level.  When  you  press  'Enter' on the panel, the input you entered is sent to the currently focused application as if typed on the keyboard.
-This application is a fork of the cellwriter program written in C by Michael Levin &lt;risujin@risujin.org&gt; (main  author  whose intellectual property exists throughout the product) and .
-It is completely based on their edition, but written in Ada and also written to accommodate Blissymbolocs.  The main  objective of  the  rewrite  is to allow for the output  of  a  string  of combining  characters in response to input.   While  Cellwriter does handle combining characters, it does not in this way. This method  is important to making it highly useful for a  language like Blissymbolics.
+This application is a fork of the cellwriter program written in C by Michael Levin &lt;risujin@risujin.org&gt; (main  author  whose intellectual property exists throughout the product for recognition and layout approach) and redeveloped by Ross Summerfield.
+It is based on Michael Levin's edition, but written in Ada and also written to accommodate Blissymbolocs.  The main  objective of  the rewrite is to allow for the output  of a string of combining  characters in response to input.   While  Cellwriter does handle combining characters, it does not in this way. This method  is important to making it highly useful for a  language like Blissymbolics.
 The  other main change is to use Glade for the  graphical  user interface and to use a database to store its principal configuration and its data.
 </property>
                     <property name="wrap">True</property>

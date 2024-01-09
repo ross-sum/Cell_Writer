@@ -144,6 +144,9 @@ package body Main_Menu is
                        Handler_Name => "btn_keys_clicked_cb",
                        Handler      => Btn_Keys_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_unicode_toggled_cb",
+                       Handler      => Btn_Unicode_Clicked_CB'Access);
+      Register_Handler(Builder      => Builder,
                        Handler_Name => "btn_enter_clicked_cb",
                        Handler      => Btn_Enter_Clicked_CB'Access);
       Register_Handler(Builder      => Builder,
@@ -343,6 +346,21 @@ package body Main_Menu is
          Keyboard.Show_Keyboard (Gtkada_Builder(Object));
       end if;
    end Btn_Keys_Clicked_CB;
+
+   procedure Btn_Unicode_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class) is
+      -- Toggle the method of transmission 
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation;
+   begin
+      if Get_Active(Gtk_Toggle_Tool_Button(
+              Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_unicode")))
+      then  -- depressed - set to unicode
+         Keyboard_Emulation.Set_Transmission_Method(to => as_unicode);
+      else  -- popped out - set to normal
+         Keyboard_Emulation.Set_Transmission_Method(to => normal);
+      end if;
+   end Btn_Unicode_Clicked_CB;
 
    procedure Setup_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is

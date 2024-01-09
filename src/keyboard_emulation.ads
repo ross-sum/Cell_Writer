@@ -36,6 +36,10 @@ with dStrings;        use dStrings;
 with GLib;
 package Keyboard_Emulation is
 
+   type transmission_methods is (normal, as_unicode);
+   procedure Set_Transmission_Method(to : in transmission_methods);
+   function Current_Transmission_Method_Is return transmission_methods;
+    
    procedure Transmit(key_press : in wide_character);
       -- Transmit to the active application the specified key_press character.
     
@@ -51,8 +55,13 @@ package Keyboard_Emulation is
                       with_modifier : key_modifiers);
       -- Transmit to the active application the specified 'the_key; character
       -- with the relevant modifier applied.
+      -- Note that, as it is a character being sent with a modifier, it is
+      -- always sent as a normal character!  (This won't work for LyX if you
+      -- meant to send a non-ASCII character with a modifier.)
       
 private
+
+   transmission_method : transmission_methods := normal;
 
    procedure Transmit_Sequence(of_characters : in Glib.UTF8_String);
       -- Transmit the specified sequence of character to the active application.

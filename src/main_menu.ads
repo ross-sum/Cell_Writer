@@ -64,6 +64,8 @@ private
                 (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Keys_Clicked_CB
                 (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Unicode_Clicked_CB
+                (Object : access Gtkada_Builder_Record'Class);
                 
     -- Combo box drop down list selection handler
    procedure Combo_Language_Changed_CB
