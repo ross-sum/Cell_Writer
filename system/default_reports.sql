@@ -21,8 +21,8 @@ INSERT INTO Queries VALUES (4, 7, "", "CREATE TABLE Temp3 AS SELECT DISTINCT T1.
 INSERT INTO Queries VALUES (4, 8, "", "INSERT INTO Temp2 SELECT Logon, 0, NULL, 0, TotalUsed FROM Temp3;");
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
-\documentclass[32pt,a4paper,australian]{bliss_article}
-\usepackage[blissymbolics]{babel}
+\documentclass[32pt,a4paper,blissymbolics]{bliss_article}
+\usepackage[main=blissymbolics]{babel}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -39,18 +39,18 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \providecommand{\tabularnewline}{\\}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[useregional,showdow]{datetime2}
+\DTMusemodule{blissymbolics}{blissymbolics}
 \selectlanguage{blissymbolics}
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \setlength{\footskip}{37.4pt}
 \lhead{} \chead{}  \rhead{}
-\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{  }
+\lfoot{: \DTMnow}  \cfoot{  \thepage}  \rfoot{  }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{polyglossia}
-\setdefaultlanguage[variant=australian]{english}
 \begin{document}
 {\huge{}}%
 \begin{longtable}[l]{|c|c|c|}
@@ -80,7 +80,8 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 WHERE ID = 1;
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[32pt,a4paper,australian]{bliss_article}
+\documentclass[32pt,a4paper,blissymbolics]{bliss_article}
+\usepackage[main=blissymbolics]{babel}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -97,18 +98,18 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \providecommand{\tabularnewline}{\\}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
-%\usepackage{datetime2-bliss-utf8}
+\usepackage[useregional,showdow]{datetime2}
+\DTMusemodule{blissymbolics}{blissymbolics}
+\selectlanguage{blissymbolics}
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \setlength{\footskip}{37.4pt}
 \lhead{} \chead{ }  \rhead{}
-\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{ }
+\lfoot{: \DTMnow}  \cfoot{  \thepage}  \rfoot{ }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{polyglossia}
-\setdefaultlanguage[variant=australian]{english}
 \begin{document}
 \begin{longtable}[c]{|l|l|l|}
 \hline 
@@ -132,7 +133,8 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 WHERE ID = 2;
 UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[32pt,a4paper,australian]{bliss_article}
+\documentclass[32pt,a4paper,blissymbolics]{bliss_article}
+\usepackage[main=blissymbolics]{babel}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
@@ -149,17 +151,18 @@ UPDATE Reports SET LaTex="%% LyX 2.3.6 created this file.  For more info, see ht
 \providecommand{\tabularnewline}{\\}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[useregional,showdow]{datetime2}
+\DTMusemodule{blissymbolics}{blissymbolics}
+\selectlanguage{blissymbolics}
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \setlength{\footskip}{37.4pt}
 \lhead{} \chead{  }  \rhead{}
-\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{   }
+\lfoot{: \DTMnow}  \cfoot{  \thepage}  \rfoot{   }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{polyglossia}
-\setdefaultlanguage[variant=australian]{english}
 \begin{document}
 \begin{longtable}[c]{|c|c|c|c|}
 \hline 
@@ -242,31 +245,33 @@ WHERE ID=4;
 UPDATE Reports SET LaTex="%% LyX 2.3.2 initially created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing (i.e. you know LaTex).
 \documentclass[32pt,a4paper,blissymbolics]{bliss_article}
+\usepackage[main=blissymbolics]{babel}
 \usepackage{fontspec}
 \setmainfont[Mapping=tex-text]{Blissymbolics}
 \setsansfont[Mapping=tex-text]{Blissymbolics}
 \setmonofont{Blissymbolics}
 \usepackage[portrait,a4paper]{geometry}
-\geometry{verbose,tmargin=1.5cm,bmargin=1.2cm,lmargin=1.5cm,rmargin=1.5cm,headheight=0.5cm,headsep=0.5cm,footskip=0.5cm}
+\geometry{verbose,tmargin=1.8cm,bmargin=1.8cm,lmargin=1.5cm,rmargin=1.5cm,headheight=0.5cm,headsep=0.5cm,footskip=0.5cm}
 \usepackage{graphicx}
 \usepackage{setspace}
 
 \makeatletter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
 \selectlanguage{blissymbolics}
-%\usepackage{datetime2-bliss-utf8}
+\usepackage[useregional,showdow]{datetime2}
+\DTMusemodule{blissymbolics}{blissymbolics}
+\selectlanguage{blissymbolics}
 \usepackage{fancyhdr}  \pagestyle{fancy}
 \setlength{\footskip}{37.4pt}
 \setlength{\headheight}{37.0pt}
 \addtolength{\topmargin}{-22.77364pt}
 \lhead{} \chead{ }  \rhead{}
-\lfoot{: \today}  \cfoot{  \thepage}  \rfoot{ }
+\lfoot{: \DTMnow}  \cfoot{  \thepage}  \rfoot{ }
 \renewcommand\headrulewidth{2pt}
 \renewcommand\footrulewidth{0.4pt}
 
 \makeatother
 
-\usepackage{babel}
 \begin{document}
 \begin{singlespace}
 \noindent \includegraphics[width=180mm,height=230mm]{result1} 
