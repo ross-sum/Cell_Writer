@@ -25,7 +25,7 @@
 --  like Blissymbolics.                                              --
 --  The  other main change is to use Glade for the  graphical  user  --
 --  interface and the use of xdotool for XKB keyboard emulation.     --
-   --                                                                   --
+--                                                                   --
 --  Version History:                                                 --
 --  $Log$
 --                                                                   --
@@ -52,6 +52,7 @@ with Generic_Command_Parameters;
 with Cell_Writer_Version;
 with Main_Menu;
 with Database;
+with Recogniser;
 with GNATCOLL.SQL.Sqlite;   -- or Postgres
 with GNATCOLL.SQL.Exec;
 with GNATCOLL.SQL, GNATCOLL.SQL.Exec.Tasking, GNATCOLL.SQL_BLOB;
@@ -232,7 +233,7 @@ procedure Cell_Writer is
    temp_path: text := Parameter(with_flag => flag_type'('z'));
       
 begin  -- Cell_Writer
-   Cell_Writer_Version.Register(revision   => "$Revision: 1.0 $",
+   Cell_Writer_Version.Register(revision   => "$Revision: v1.0.1 $",
                                 for_module => "Cell_Writer");
    if Parameter(with_flag => flag_type'('i')) then
       Put_Line("Cell Writer");
@@ -247,6 +248,8 @@ begin  -- Cell_Writer
        Parameters.is_help_parameter or
        Parameters.is_version_parameter then
       -- abort Cell_Writer;
+      Recogniser.Finalise_Early;
+      -- raise Host_Functions.Terminate_Application;  -- eject us to the end
       return;
    end if;
    
@@ -371,7 +374,9 @@ begin  -- Cell_Writer
       when Host_Functions.Naming_Error =>
          Usage("Error in daemonising this application.");
       when Host_Functions.Terminate_Application =>
-         if Is_Open(lock_file) then
+         if Ada.Directories.Exists(lock_file_name) and then
+            Is_Open(lock_file) 
+         then
             dStrings.IO.Delete(lock_file);
          end if;
          Terminate_Us;

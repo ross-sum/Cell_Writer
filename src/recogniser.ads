@@ -50,6 +50,7 @@ package Recogniser is
    procedure Initialise_Recogniser
                    (DB_Descr : GNATCOLL.SQL.Exec.Database_Description);
    procedure Finalise_Recogniser;
+   procedure Finalise_Early;  -- in case need to finalise before initialising.
    
    -- Alternative possible characters or words for a particular
    -- sample being recognised

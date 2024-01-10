@@ -347,6 +347,14 @@ package body Recogniser is
       end if;
       Performance_Write_Back.Stop;
    end Finalise_Recogniser;
+
+   procedure Finalise_Early is
+      -- This is called in the case where we need to finalise before
+      -- initialising.
+   begin
+      Performance_Write_Back.Set_Database(to => null);
+      Performance_Write_Back.Stop;
+   end Finalise_Early;
           
    procedure Set_Engine_Ranges(to : in text) is
       -- Get a space/comma delimited list of numbers to load into the
@@ -1243,7 +1251,9 @@ package body Recogniser is
       time_to_exit : boolean := true;
    begin
       accept Set_Database(to : in GNATCOLL.SQL.Exec.Database_Description) do
-         tDB := GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>to);
+         if to /= null then
+            tDB := GNATCOLL.SQL.Exec.Tasking.Get_Task_Connection(Description=>to);
+         end if;
          time_to_exit := false;
       end;
       while not time_to_exit loop
@@ -1320,3 +1330,9 @@ begin
    Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",
                                 for_module => "Recogniser");
 end Recogniser;
+
+
+
+
+
+

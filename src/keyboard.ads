@@ -455,6 +455,7 @@ private
    procedure Setup_Select_CB     (Object : access Gtkada_Builder_Record'Class);
    procedure Keyboard_Show_Help  (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Keys_UnClicked  (Object : access Gtkada_Builder_Record'Class);
+   procedure Btn_Unicode_Clicked (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Send_Characters (Object : access Gtkada_Builder_Record'Class);
    procedure Btn_Word_Selected   (Object : access Gtkada_Builder_Record'Class);
        -- When the Word Selected "Apply" button is clicked, add the word

@@ -1422,6 +1422,7 @@ Author: Ross Summerfield, Michael Levin
                 <property name="can-focus">False</property>
                 <property name="margin-top">1</property>
                 <property name="margin-bottom">15</property>
+                <property name="show-arrow">False</property>
                 <child>
                   <object class="GtkToggleToolButton" id="btn_training">
                     <property name="visible">True</property>
@@ -1486,7 +1487,7 @@ Author: Ross Summerfield, Michael Levin
                   <object class="GtkToggleToolButton" id="btn_unicode">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">Switch betwwn normal output (straight Unicode characters) or Unicode (&lt;Shift&gt;+&lt;Ctl&gt;+Uxxxx&lt;Ret&gt; for each character) output</property>
+                    <property name="tooltip-text" translatable="yes">Switch between normal output (straight Unicode characters) or Unicode (&lt;Shift&gt;+&lt;Ctl&gt;+Uxxxx&lt;Ret&gt; for each character) output</property>
                     <property name="label" translatable="yes">_Unicode</property>
                     <property name="use-underline">True</property>
                     <property name="stock-id">gtk-convert</property>
@@ -1498,13 +1499,27 @@ Author: Ross Summerfield, Michael Levin
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkToggleToolButton" id="btn_grid_edit">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">When depressed, cursor movement keys, backspace and delete work on key strokes line.</property>
+                    <property name="label" translatable="yes">_Edit</property>
+                    <property name="use-underline">True</property>
+                    <property name="stock-id">gtk-edit</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkToolButton" id="btn_enter">
                     <property name="visible">True</property>
                     <property name="can-focus">False</property>
                     <property name="tooltip-text" translatable="yes">Insert input or press Enter key</property>
-                    <property name="label" translatable="yes">E_nter</property>
+                    <property name="label" translatable="yes">_Send</property>
                     <property name="use-underline">True</property>
-                    <property name="stock-id">gtk-ok</property>
+                    <property name="stock-id">gtk-apply</property>
                     <signal name="clicked" handler="btn_enter_clicked_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -1533,20 +1548,6 @@ Author: Ross Summerfield, Michael Levin
                         </child>
                       </object>
                     </child>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="homogeneous">True</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkToggleToolButton" id="btn_grid_edit">
-                    <property name="visible">True</property>
-                    <property name="can-focus">False</property>
-                    <property name="tooltip-text" translatable="yes">When depressed, cursor movement keys, backspace and delete work on key strokes line.</property>
-                    <property name="label" translatable="yes">_Edit</property>
-                    <property name="use-underline">True</property>
-                    <property name="stock-id">gtk-edit</property>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -3394,6 +3395,9 @@ The  other main change is to use Glade for the  graphical  user interface and to
             <property name="can-focus">True</property>
             <property name="orientation">vertical</property>
             <child>
+              <placeholder/>
+            </child>
+            <child>
               <object class="GtkBox" id="keyboard_box_function">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
@@ -4975,7 +4979,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">7</property>
+                <property name="position">8</property>
               </packing>
             </child>
             <child>
@@ -5013,14 +5017,14 @@ The  other main change is to use Glade for the  graphical  user interface and to
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkToolButton" id="btn_kbd_help">
+                  <object class="GtkToggleToolButton" id="btn_kbd_unicode">
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="tooltip-text" translatable="yes">Bring up the help dialogue box to display information about Cell Writer, revision details, command line usage instructions, the user manual and copyright information.</property>
-                    <property name="label" translatable="yes">_Help</property>
+                    <property name="can-focus">False</property>
+                    <property name="tooltip-text" translatable="yes">Switch between normal output (straight Unicode characters) or Unicode (&lt;Shift&gt;+&lt;Ctl&gt;+Uxxxx&lt;Ret&gt; for each character) output</property>
+                    <property name="label" translatable="yes">_Unicode</property>
                     <property name="use-underline">True</property>
-                    <property name="stock-id">gtk-help</property>
-                    <signal name="clicked" handler="kbd_help_about_select_cb" swapped="no"/>
+                    <property name="stock-id">gtk-convert</property>
+                    <signal name="toggled" handler="btn_kbd_unicode_toggled_cb" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -5050,6 +5054,21 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="use-underline">True</property>
                     <property name="stock-id">gtk-apply</property>
                     <signal name="clicked" handler="btn_kbd_send_clicked_cb" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="homogeneous">True</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkToolButton" id="btn_kbd_help">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="tooltip-text" translatable="yes">Bring up the help dialogue box to display information about Cell Writer, revision details, command line usage instructions, the user manual and copyright information.</property>
+                    <property name="label" translatable="yes">_Help</property>
+                    <property name="use-underline">True</property>
+                    <property name="stock-id">gtk-help</property>
+                    <signal name="clicked" handler="kbd_help_about_select_cb" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">False</property>
@@ -5087,7 +5106,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
-                <property name="position">8</property>
+                <property name="position">9</property>
               </packing>
             </child>
           </object>

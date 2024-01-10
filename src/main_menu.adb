@@ -57,6 +57,9 @@ with Grid_Training;
 with Code_Interpreter;
 package body Main_Menu is
 
+   exit_process_started : boolean := true;
+      -- set to true in case initialise is not called before use
+
    procedure Set_Up_Reports_Menu_and_Buttons (Builder : Gtkada_Builder) is
       use Ada.Strings.UTF_Encoding, Ada.Strings.UTF_Encoding.Wide_Strings;
       use Gtk.Button, Gtk.Menu, Gtk.Menu_Item;
@@ -96,6 +99,7 @@ package body Main_Menu is
       count   : Glib.Guint;
       main_window : Gtk.Window.Gtk_Window;
    begin
+      exit_process_started := false;  -- initialise to sensible value
       -- Set the locale specific data (e.g time and date format)
       -- Gtk.Main.Set_Locale;
       -- Create a Builder and add the XML data
@@ -206,7 +210,7 @@ package body Main_Menu is
          use Gtk.Image;
          no_2_image : Gtk.Image.gtk_image;
          image_name : constant string := "chkbtn_no2_image";
-         file_name  : constant string := path_to_temp & "toilet_action.jpeg";
+         file_name  : constant string := path_to_temp & "cell_writer.jpeg";
       begin
          no_2_image := gtk_image(Get_Object(Builder, image_name));
          --Set(image => no_2_image, Filename=> file_name);
@@ -352,14 +356,33 @@ package body Main_Menu is
       -- Toggle the method of transmission 
       use Gtk.Toggle_Tool_Button;
       use Keyboard_Emulation;
+      the_button : Gtk.Toggle_Tool_Button.Gtk_Toggle_Tool_Button;
    begin
+      -- Get the Unicode button on the Keyboard to mimic this state
+      if Get_Active(Gtk_Toggle_Tool_Button(
+           Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_unicode"))) /=
+         Get_Active(Gtk_Toggle_Tool_Button(
+                         Get_Object(Gtkada_Builder(Object),"btn_kbd_unicode")))
+      then -- toggle it
+         the_button := Gtk_Toggle_Tool_Button(
+                         Get_Object(Gtkada_Builder(Object),"btn_kbd_unicode"));
+         Set_Active(the_button, is_active => (not Get_Active(the_button)));
+      end if;
+      -- Alter the toggle state
       if Get_Active(Gtk_Toggle_Tool_Button(
               Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_unicode")))
+         and then Keyboard_Emulation.Current_Transmission_Method_Is = normal
       then  -- depressed - set to unicode
          Keyboard_Emulation.Set_Transmission_Method(to => as_unicode);
-      else  -- popped out - set to normal
+      elsif Keyboard_Emulation.Current_Transmission_Method_Is = as_unicode
+      then  -- popped out - set to normal
          Keyboard_Emulation.Set_Transmission_Method(to => normal);
+      -- else already in the correct state
       end if;
+      Error_Log.Debug_Data(at_level => 5, 
+                           with_details=>"Btn_Unicode_Clicked_CB: Set to "&
+                           Transmission_Methods'Wide_Image(Keyboard_Emulation.
+                                              Current_Transmission_Method_Is));
    end Btn_Unicode_Clicked_CB;
 
    procedure Setup_Select_CB  
@@ -370,7 +393,6 @@ package body Main_Menu is
       Setup.Show_Setup(Gtkada_Builder(Object));
    end Setup_Select_CB;
 
-   exit_process_started : boolean := false;
    procedure Menu_File_Exit_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is
    begin
@@ -751,6 +773,6 @@ package body Main_Menu is
    end Cell_Writer_Report_Clicked_CB;
 
 begin
-   Cell_Writer_Version.Register(revision => "$Revision: v1.0.2$",
+   Cell_Writer_Version.Register(revision => "$Revision: v1.0.3$",
                                  for_module => "Main_Menu");
 end Main_Menu;

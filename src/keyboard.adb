@@ -131,6 +131,9 @@ package body Keyboard is
                        Handler_Name => "btn_kbd_keys_toggled_cb",
                        Handler      => Btn_Keys_UnClicked'Access);
       Register_Handler(Builder      => Builder,
+                       Handler_Name => "btn_kbd_unicode_toggled_cb",
+                       Handler      => Btn_Unicode_Clicked'Access);
+      Register_Handler(Builder      => Builder,
                        Handler_Name => "btn_kbd_send_clicked_cb",
                        Handler      => Btn_Send_Characters'Access);
       -- Other buttons
@@ -594,6 +597,23 @@ package body Keyboard is
             (Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"form_keyboard")));
       end if;
    end Btn_Keys_UnClicked;
+
+   procedure Btn_Unicode_Clicked(Object: access Gtkada_Builder_Record'Class) is
+      use Gtk.Toggle_Tool_Button;
+      use Keyboard_Emulation;
+      the_button : Gtk.Toggle_Tool_Button.Gtk_Toggle_Tool_Button;
+   begin
+      -- Get the Unicode button on the main grid to mimic this state
+      if Get_Active(Gtk_Toggle_Tool_Button(
+           Gtkada.Builder.Get_Object(Gtkada_Builder(Object),"btn_unicode"))) /=
+         Get_Active(Gtk_Toggle_Tool_Button(
+                         Get_Object(Gtkada_Builder(Object),"btn_kbd_unicode")))
+      then -- toggle it (and  this will toggle the normal/ujicode state)
+         the_button := Gtk_Toggle_Tool_Button(
+                             Get_Object(Gtkada_Builder(Object),"btn_unicode"));
+         Set_Active(the_button, is_active => (not Get_Active(the_button)));
+      end if;
+   end Btn_Unicode_Clicked;
 
    procedure Setup_Select_CB  
                 (Object : access Gtkada_Builder_Record'Class) is
@@ -1861,6 +1881,6 @@ package body Keyboard is
    end Load_Characters_List;
                              
 begin
-   Cell_Writer_Version.Register(revision => "$Revision: v1.0.0$",
+   Cell_Writer_Version.Register(revision => "$Revision: v1.0.1$",
                                 for_module => "Keyboard");
 end Keyboard;

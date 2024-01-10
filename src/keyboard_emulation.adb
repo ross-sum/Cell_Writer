@@ -232,6 +232,6 @@ package body Keyboard_Emulation is
    end Transmit_Sequence;
 
 begin
-   Cell_Writer_Version.Register(revision => "$Revision: v1.0.2$",
+   Cell_Writer_Version.Register(revision => "$Revision: v1.1.0$",
                                 for_module => "Keyboard_Emulation");
 end Keyboard_Emulation;
