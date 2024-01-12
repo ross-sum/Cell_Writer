@@ -1,0 +1,233 @@
+General
+=======
+
+Cell Writer is a grid-entry natural handwriting recognition input panel.  As you write characters into the cells, your writing is instantly recognised at the character level.  When you press 'Send' on the panel, the input you entered is sent to the currently focused application as if typed on the keyboard.
+
+For handling special case applications, such as LyX, it can also output in a 'u+XXXX' format (where XXXX is the hexadecimal number representing a character), thus enabling it to work in conjunction with ibus.
+
+To Do:
+-------
+Outstanding features required of the application and other work required are as follows:
+* A complete rewrite of the recognition engine is required.  This should speed up the recognition and make it less susceptible to the number of characters or words that it is trained to recognise.  Right now, it slows down considerably as you approach 100 words.  For Blissymbolics, the average user would have as many as 500 words trained and an advanced user would have maybe 2000 words trained.
+* Display/hide navigation keys with swipe left (left button down) over the key area and swipe right over the edge.
+* Check the Blissymbolics words against documentation by Dr Charles K Bliss (the designer of Blissymbolics) to confirm correctness.  Then check against BCI's outlines.  Because Dr Bliss designed the symbols and as he has noted in  his documentation that he wishes to avoid symbol shape drift over time, the approach taken here has been to assume his documentation takes precedence.  (But if you disagree, you can edit the symbol set yourself - it is in the database that comes with this application.)
+* Compare the word table against BCI words and add in any that are missing.
+* Error repair including for cell redraw (error number 20), for changing the fonts, for closing the main form by clicking the X (in the top right hand corner) on the Grid Entry's application bar, and for the race hazard with report generation.
+* Allow editing and update of the CSS in the Setup dialogue box and make the changes take effect straight away.  See Gtk.Text_Buffer for the hooks for editing (e.g. cut, copy, paste, selection and iterators).
+* Get the cursor to operate and display correctly in the data entry display area of the on-screen keyboard.  It doesn't display and it sometimes does not work.
+* Modify Cell writer so that all components of the system, including hints, about text and help, use the selected language in the selected font.
+* Provide a configuration key that allows memory of the Number Lock ('NL' key) status.
+* Get window docking to work.
+* Add or replace training samples from characters where recognition was previously unclear, that is, where there were many possible alternatives and that with the highest score was not selected.  In particular:
+- Add training samples when sample counts is less than the user setting (and certainly when less than the maximum number permitted).
+-- Decide based on deviation Decide based on deviation from average for each training sample for that character or word.
+- Replace unmatched or rarely matched samples when the training sample count has reached or exceeded maximum.
+* Provide a PostgreSQL option for the main database.
+
+This Manual should be displayed using a mark-up to highlight headings and the like.  At the moment it does not do that, rather it just displays plain text (with the mark-up/mark-down displayed as plain text).
+
+Updates
+--------
+Updates are available from Hyper Quantum's website, www.hyperquantum.com, or in particular from the ftp website ftp.hyperquantum.com.  The application is also available on GitHub in source code format.  Written in Ada, it can be compiled to run on pretty much any operating system.  However, expertise in compiling Ada software on that operating system is assumed, since I only have experience in compiling on Linux.
+
+Prerequisites
+=============
+
+For its database, Cell Writer by default uses SQLite 3.  SQLite 3 is also used for report generation to hold temporary tables, so must be installed.
+
+Cell writer uses Jordan Sissel's xdoTool (see https://github.com/jordansissel/xdotool/tree/master), which must be installed prior to usage.
+
+For report generation, Cell Writer uses LaTeX (in particular, the TexLive edition), as well as the mathematics package, GNU R.  In addition, for R to work with SQLite, the r-cran-rsqlite package needs to be installed.  These packages must be installed prior to installing Cell Writer.
+
+If using Cell Writer for Blissymbolics recognition, then you must install Hyper Quantum's Blissymbolics suite of configurations and fonts from GitHub.  This suite contains the Blissymbolics font set and the Blissymbolics language configurations for LaTeX.
+
+If using LyX to publish (LyX is a front-end to LaTeX, which is a desktop publishing system, producing either PDFs or LaTeX output), then you will need to install ibus.  The installation script in the Blissymbolics repository on GitHub contains the required commands for that installation.
+
+Setup
+=========
+
+Initially, prior to all else, you must set up the font to be used by Cell Writer.  You must also, in Setup, select the languages that you will be using.
+
+Providing training samples must be done as the very first operation with this application.  Not all symbols need to be trained for, just the ones you use.  For Blissymbolics, it is probably better to not train up any of the shape-drawing symbols, rather just the numbers (and, as you should train all of the ASCII characters so that you can type people's names, numbers and grammar, best to do something like underline these numbers when training on them so the recogniser can distinguish between the two) and the words that you use.  As a general note with training, it doesn't actually matter to the recogniser what squiggles you use for a character or a word, just so long as it is unique and that you consistently use it for that particular character or word.
+
+It should be noted that, for colours of the on-screen keyboard keys, the CSS needs to be edited.  It can be displayed in the Setup dialogue box, but cannot yet be edited there.
+
+Keyboard
+========
+
+The on-screen keyboard is for typing out a stream of characters.  It is okay for a traditional European-based language, but cumbersome for a language like Blissymbolics.  However, for Blissymbolics, it is useful for generating a new word that is to be added to the database of words.
+
+The on-screen keyboard uses the Language set in the main 'Grid Entry' form.  The keys shown on the keyboard are relative to the selection of location to the left, which is specifically designed for Blissymbolics.  For European languages, leave it set to 'Mid'.
+
+Note that, if in Blissymbolics, you wish to type a person's name or a street or suburb name, you will need to switch the language back to 'Latin' (or another appropriate language) in the drop-down list of valid languages on the tool bar of the main 'Grid Entry' form before switching to the on-screen keyboard.
+
+Just above the tool bar and just below the Ctrl, Su, Alt and space bar keys is the tool bar.  It features the following buttons:
+* Configure - This button displays the Setup dialogue box.
+* Keys - This toggle button displays the on-screen keyboard when depressed and the main 'Grid Entry' form when popped out.  There is a matching button on the tool bar of the on-screen keyboard that performs exactly the same function.
+* Unicode - This toggle button causes Cell Writer to send the current active application the text in the data entry display area in the format of <ctl><shift>uXXXX<ret> (where XXXX is the Unicode code for the character being sent) for every character in that text being sent when you press the Send (->) button.
+* Edit - This toggle button affects the action of the buttons in the navigation keys.  When depressed, most of the navigation keys apply to the typed characters.  When popped out, all buttons in the navigation area apply to the current active application.
+* Send - This key sends  the contents of the data entry display area to the current active application (that is, the application that is in the foreground, in front of everything except Cell Writer, has the highlighted application bar (if your window manager shows that up - some don't) and is where anything output from Cell Writer goes).  In doing so, it does the transmission in accordance with the status of the Unicode toggle button (see above).
+* Help - Pressing this button pops up the Help About dialogue box, which includes details about Cell Writer and includes this manual.
+
+To enter a word, type the word by:
+1. select the location of the symbol by clicking on the location radio button to the left (doesn't apply to European languages);
+2. press Shift if an upper case letter is required (applies to European languages, and does affect Blissymbolics);
+3. click on the relevant symbol;
+4. repeat from 1 for the next symbol.
+The output will appear in the display at the bottom to the right.
+
+Words may be selected and added to the display at the bottom from the drop-down list to the right by selecting the word and clicking on the Apply button, but this list contains ALL words in the database of words for the selected language, so can be very, very long.
+
+To send the words to the currently active application, click on the Send (->) button (to the left of the Help (?) button) on the keyboard's tool bar.
+
+Grid Entry
+==========
+
+The main 'Grid Entry' form is divided into 4 regions.  They are the modifier area (which is the row of buttons at the top), the navigation area (which consists of the arrow keys and other buttons to the right), the tool bar (the row of buttons and the drop-down list at the bottom) and the grid of cells.
+
+Modifier Area
+-------------
+The modifier area is a row of buttons along the top of the main 'Grid Entry' form, which contains modifiers (for example, in the case of Blissymbolics) or accents (for example, in the case of non-English European languages) and is sensitive to the language selected from the drop-down list on the tool bar.  It can have up to 10 possible modifiers or accents.  If there are less defined for a particular language, then the unused buttons are blank.  After writing text in a cell and that text being recognised, clicking on the modifier button will apply that modifier to that text in that selected cell.
+
+The modifier buttons actually execute a macro, which is applied to the contents of the currently selected cell.  Details of how the macro works is in the source code for Cell Writer and for Hyper Quantum Ada tools (both are available from GitHub).  The macros are stored in Cell Writer's database.
+
+Navigation Area
+---------------
+The navigation area contains both navigation buttons, special keyboard buttons and special character buttons.  If the Edit toggle button on the tool bar is depressed (called 'Edit mode' below), then these buttons apply to Cell Writer, but if the Edit toggle button is not depressed (that is, it is popped out), then the buttons apply to the current active application.
+
+The buttons are:
+|← - Home button - send the Home key stroke signal to the current active application when not in Edit mode, to the very first character in the grid of cells in Training mode, otherwise move the selected cell in the grid of cells to the first cell (top left hand corner in the case of left to right languages, top right hand corner in the case of right to left languages).
+↑ - Up Arrow button - send the up arrow key stroke to the current active application when not in Edit mode, move the selected cell in the grid of cells up (unless already at the top) when in Training mode (where 'top' means the start of the characters or syllables or words) or up (unless at the first row in the grid of cells) when in Edit mode.
+⤒ - Page Up button - send the page up key stroke to the current active application when not in Edit mode, or move up one page (that is, one grid's worth of cells) though the characters and syllables or words when in Training mode or go to the top of the grid of cells otherwise.
+← - Left Arrow button - send the left arrow key stroke to the current active application when not in Edit mode, move the selected cell in the grid of cells to the left (unless already at the start for left to right languages) when in Training mode, otherwise move the currently selected cell one cell to the left (unless already at the left-most cell) when in Edit mode.
+- - Space button - send a <space> character to the current active application when not in Edit mode, otherwise insert a <space> character into the currently selected cell in the grid of cells when in Edit mode.
+→ - Right Arrow button - send the right arrow key stroke to the current active application when not in Edit mode, move the selected cell in the grid of cells to the right (unless already at the end for left to right languages) when in Training mode, otherwise move the currently selected cell one cell to the right (unless already at the right-most cell) when in Edit mode.
+→| - End button - send the End key stroke to the current active application when not in Edit mode, to the very last character in the grid of cells in Training mode, otherwise move the selected cell in the grid of cells to the last cell (bottom right hand corner in the case of left to right languages, bottom left hand corner in the case of right to left languages).
+↓ - Down Arrow button - send the down arrow key stroke to the current active application when not in Edit mode, move the selected cell in the grid of cells down (unless already at the bottom) when in Training mode (where 'bottom' means the end of the characters, syllables and words) or down (unless at the last row in the grid of cells) when in Edit mode.
+⤓ - Page Down button - send the page down key stroke to the current active application when not in Edit mode, or move down one page (that is, one grid's worth of cells) though the characters and syllables or words when in Training mode or go to the bottom of the grid of cells otherwise.
+◁◁ - Backspace - send the backspace key stroke to the current active application when not in Edit mode, otherwise delete the symbol in the cell to the left (for left to right languages) and move the contents of the current cell and all those to the right one character left when in edit mode.
+▷▷| - Tab - send the tab key to the current active application irrespective of whether in Edit mode or not.
+▬ - Delete - send the delete key stroke to the current active application when not in Edit mode, delete the last training entry for character or syllable or word in the currently selected cell when in training mode, otherwise delete the symbol in the currently selected cell to the left and move the contents of the all those cells to the right one character left (for left to right languages) when in edit mode.
+. (dot) - send the period (.) character to the current active application when not in Edit mode, otherwise insert a period (.) in the currently selected cell.  It operates on the currently selected application when in Training mode.
+|1/4| - [note that this is a configurable character that is configured in the Cell Writer database, set to the 1/4 space character for the Blissymbolics character set, double quote (") character for Latin] - send the 1/4 space or " character (as is shown on the key) to the currently selected application if in Edit mode, otherwise to the currently selected cell if not in Edit mode.  It operates on the currently selected application when in Training mode.
+✚ - Insert - send the delete key stroke to the current active application when not in Edit mode or when in Training mode, otherwise move the symbol at the current cursor position and all symbols to the right (in left to right languages) to the right one character (other way around for right to left languages).
+
+Tool bar
+--------
+The tool bar is located along the bottom of the main 'Grid Entry' form and contains tool bar buttons and a drop-down selection box for selecting the current language.  The tool bar buttons are:
+* Training - This toggle button switches between training mode and hand writing recognition mode.
+* Configure - This button displays the Setup dialogue box.
+* Clear - When not in training mode, this button clears all cells in the grid of cells.  When in training mode, this button clears all training for the character, syllable or word for the currently selected cell.
+* Keys - This toggle button displays the on-screen keyboard when depressed and the main 'Grid Entry' form when popped out.  There is a matching button on the tool bar of the on-screen keyboard that performs exactly the same function.
+* Unicode - This toggle button causes Cell Writer to send the current active application the text in the grid of cells in the format of <ctl><shift>uXXXX<ret> (where XXXX is the Unicode code for the character being sent) for every character in that text being sent when you press the Send (->) button.
+* Edit - This toggle button affects the action of the buttons in the Navigation area.  When depressed, most of the buttons in the navigation area apply to the grid of cells.  When popped out, all buttons in the navigation area apply to the current active application.
+* Send - This key sends  the contents of the grid of cells to the current active application.  In doing so, it does the transmission in accordance with the status of the Unicode toggle button (see above).
+* Reports - This button pops up a list of reports.  A report is then printed by clicking on that report in the list.  More details can be found below in the section on Reports.
+* Help - Pressing this button pops up the Help About dialogue box, which includes details about Cell Writer and includes this manual.
+* Exit - Pressing this button will exit Cell Writer.  Due to a bug in Cell Writer, you should click this button to exit rather than the X in the top right hand corner of the window in order to exit Cell Writer cleanly.
+* Language drop-down list - this is a list of enabled languages.  The one displayed is that currently selected.  You select the currently active language from this drop-down list.  The list is those languages that are selected in the Setup dialogue box.
+
+Cell Grid
+---------
+The cell grid area contains a grid of cells.  The number of cells in the grid is set in the Setup, but by default is 10 columns by 5 rows.  Each cell is coloured by a blue background (by default - this can be changed in the Setup) when no symbol has been drawn in it and is coloured by a white background (also by default) when a symbol has been drawn in it, and the text or symbol drawing is normally black (by default).  The currently selected cell is given a coloured border that is red by default.
+
+Training mode:
+In this mode, the language that is selected in the toolbar is displayed in the grid cells.  This language starts with the characters (letters, numbers and other symbols) that make up the language, followed by any words the are in Cell Writer's database for that language.  Cells that have had no training applied are displayed on a background of blue (by default) and  those that have been trained are displayed on a white (by default) background.
+
+Hand writing recognition mode:
+In this mode, the background colour is blue where no hand writing recognition has been done and white when hand writing recognition has taken place.  Also, if you draw a symbol in a cell (and Cell Writer then recognises it) and then skip a cell and draw the next symbol in the cell after that, Cell Writer will insert a <space> character in that skipped cell.
+If you draw a symbol and Cell Writer recognises more than one strong candidates, it will display the strongest candidate in red (by default).  You can right click with the mouse over the cell and a pop-up list of candidates will display, from which you can select an alternative candidate.
+
+Configuration
+=============
+
+The Setup dialogue box is displayed by clicking on the Configure button on the tool bar of either the main 'Cell Grid' form or the on-screen keyboard.
+
+It contains the following sections:
+- Interface: Settings for cell dimensions and the size of the grid, as well as the size of the on-screen keyboard.  It also controls window display (not all check boxes or entries do anything in this initial version).
+- Colours: Here you select the colours for various aspects of Cell Writer.  You also select the display font for Cell Writer on this tab.  You should note that the colours of the buttons on the on-screen keyboard are not set from here but rather from the CSS.
+- Languages: Here you select the languages for Cell Writer to work with.  It is those languages selected that appear in the list of languages in the drop-down list on the tool bar of the main 'Grid Entry' form.  You may also stop the use of letters in Basic Latin if you have another Latin language such as Cyrillic selected.  Left-to-right and Right-to-left mode is set here as well.
+- Recognition: Not all check boxes are fully implemented, but this does set the preferred number of training samples per character, whether recognition will work with a list of words and syllables as a hint to the recogniser to help it select as well as other aspects of recognition.
+- CSS: This is where the CSS that applies to buttons on the on-screen keyboard is displayed.  You can change their entire look and feel from here (but you need to understand CSS to do so effectively).  Changes do not take effect until Cell Writer is restarted.
+
+Help About
+==========
+
+Help About dialogue box contains the following sections:
+- About: A brief overview of Cell Writer, including the application's Revision number.
+- Revision Details: A list of the versions of each component that makes up Cell Writer.
+- Usage: Instructions on the command line options when executing Cell Writer.
+- Manual: This document.
+- Copyright: The full copyright notice for Cell Writer.
+
+Reports
+=======
+
+Introduction
+------------
+
+The Reports  processes queries ready for a report.   It  then  takes  the  output of those queries (in temporary tables  in  a  temporary  database) and produces a report.  The report may  be  either  tabular  or graphical.  The output is LaTeX,  which  is  then processed by Xetex, which produces a PDF file ready for printing.  The PDF file is displayed with a PDF viewer; on Linux this is typically xPDF.
+
+The reports are stored in the Reports table and related queries are stored in the Queries table.  The list of reports in the Reports menu is generated at application start-up from the Reports table.
+
+The reports generation tool is made up of the following components:
+. Initialise
+. Run_The_Report, which calls
+  . Run_Queries
+  . Generate_Graphs
+  . Generate_LaTeX
+  . Display_Report
+
+Initialise
+----------
+
+Initialise sets up details about the database that will be operated on by the SQL queries.  It is also the location where the SQL queries are kept, in the Queries table, pointed to by the Reports table.  Additionally, initialise sets up the temporary database where the results of the queries are stored and, if necessary, further manipulated.
+
+Initialise also configures, ultimately from the command line, the following parameters:
+. --tex (-t) - Path to LaTeX PDF output generator
+. --pdf (-p) - Path to PDF display tool
+. --R (-r) - Path to GNU R graph generating tool
+
+Initialise also configures the path to the temporary directory, which is set to be consistent with the operating system type (e.g. it is /tmp under Linux).
+
+Run_The_Report
+-----------------
+
+Run the specified report number, executing the queries pointed to by the report number in their numerical sequence, then, if required, generating any diagrams or graphs, then generating the LaTeX and finally producing a PDF using Xetex (Xetex and its partner, Luatex, are the two tools in LaTeX that are Unicode capable).
+
+Using nesting, the reports may have groups (and groups within groups) as group headers and footers to contain detailed data.   All data used in the report is taken from a temporary database, temp.db, which is stored in the temporary directory (/tmp/ on Unix).  This database is in SQLite (version 3) format, so this module is compiled with the GNATCOLL.SQL.Sqlite package.
+
+Full details on the syntax or format is with the sub-component declarations in the sub-sections below.
+
+Run_Queries
+-------------
+
+In the specified sequence, run the report queries.  If the TargetTbl field contains a value (that is, is not blank), then the data is drawn (in all cases) from the main database and the result of the query is dumped into the temp.db.  If the TargetTbl field is blank or null, then the query operates entirely on the temporary database, temp.db.
+
+Generate_Graphs
+------------------
+
+Following the loaded up instructions, generate graphs using R.  It requires the RSQLite package for GNU R to be installed.
+ 
+The outputted encapsulated postscript graph files, stored in the specified temporary directory, need to have their names synchronised with the matching LaTeX and need to have the .eps extension, for example, "result1.eps", which should be similarly referenced in the LaTeX file.
+
+Generate_LaTeX
+----------------
+
+In accordance with instructions and folding in any generated graphs, output the LaTeX that describes the report.  The LaTeX, stored in the LaTeX field of the Reports table, is processed line by line.  Lines starting with a chevron and the word Query and a number («QUERY <num>:) and terminated by the closing chevron (»)are treated specially.  The query encapsulated in between is executed on the temporary database and then, for each row returned in the result set, the following rows, up to the closing chevron encapsulated «END QUERY <num>» statement, are processed recursively.  These two statements need to be on their own line.
+
+Substitution of parameters into the query from the parent query is via the "?" statement as is standard for SQLite, but you need to make sure that the number of "?" is no more than the number of parameters available.  The parameter number follows the "?", for instance to push in parameter 2, it would be "?2".
+
+Fields are referenced by column number (starting from 0) as per the format «FIELD:<num>», with the (text converted) result substituted in as the LaTeX is written out to its temporary <Filename.tex> file.
+
+Encapsulated postscript files, generated by the Generate_Graphs process, are referenced directly by the name used in the LaTeX file.  This is typically done by referencing in the epstopdf package (viz \usepackage{epstopdf}), then if the encapsulated postscript file is called result1.eps, running the command, \includegraphics[width=1\linewidth]{result1}.
+
+Supplied Reports
+----------------
+
+The following reports are supplied with the application (but you can, using the information above, write your own or modify these):
+* Enrolled Words, which lists all words (but not individual characters) that have been trained on and how many training samples are recorded for each word.
+* Usage Statistics, which shows, for each character or word used, how many times it has been recognised.  Note that this information can be a little misleading, since the recogniser might have incorrectly recognised and that fact is not represented in this report.
+* Performance Statistics, which shows recognition statistics for words used.
+* Top 20 Words, which shows a pie chart of the top 20 words recognised (but see note above about usage statistics).
+All of the above reports are written to display their results in Blissymbolics (i.e. the headers, titles and footer details are all in Blissymbolics).
