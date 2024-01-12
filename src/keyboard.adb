@@ -1592,9 +1592,9 @@ package body Keyboard is
       R_keyboard : Forward_Cursor;
       lingo_parm : SQL_Parameters (1 .. 1);
       key_entry  : Gtk.GEntry.gtk_entry;
-      btn_colour : Gdk.RGBA.Gdk_RGBA := Setup.Button_Colour;
-      btn_txt_col: Gdk.RGBA.Gdk_RGBA := Setup.Button_Text_Colour;
-      txt_colour : Gdk.RGBA.Gdk_RGBA := Setup.Text_Colour;
+      -- btn_colour : Gdk.RGBA.Gdk_RGBA := Setup.Button_Colour;
+      -- btn_txt_col: Gdk.RGBA.Gdk_RGBA := Setup.Button_Text_Colour;
+      -- txt_colour : Gdk.RGBA.Gdk_RGBA := Setup.Text_Colour;
    begin  -- Load_Keyboard
       Error_Log.Debug_Data(at_level => 5, 
                            with_details=> "Load_Keyboard: Start Lingo.");
@@ -1693,15 +1693,11 @@ package body Keyboard is
                then  -- Toggle
                   the_toggle:= gtk_toggle_button(
                                  Get_Object(at_object,Key_As_String(the_key)));
-                  CSS_Management.Load(the_button => the_toggle, 
-                                      with_colour => btn_colour,
-                                      and_text_colour => btn_txt_col);
+                  CSS_Management.Load(the_button => the_toggle);
                else  -- Must be a button
                   key_button:=gtk_button(Get_Object(at_object,
                                                     Key_As_String(the_key)));
-                  CSS_Management.Load(the_button => key_button, 
-                                      with_colour => btn_colour,
-                                      and_text_colour => btn_txt_col);
+                  CSS_Management.Load(the_button => key_button);
                end if;
                -- Load the key with the lower case character
                case the_key is
@@ -1738,9 +1734,9 @@ package body Keyboard is
                         Modify_Font(key_disp, null);
                      end if;
                      Set_Label(key_disp, Text_To_UTF8(char.unshifted_display));
-                     -- and set the colour for the button itself
-                     Override_Background_Color(key_disp, 0, btn_colour);
-                     Override_Color(key_disp, 0, btn_txt_col);
+                  --    -- and set the colour for the button itself
+                     -- Override_Background_Color(key_disp, 0, btn_colour);
+                     -- Override_Color(key_disp, 0, btn_txt_col);
                   when others =>
                      -- enter the value into the custom content, after setting
                      -- the font
@@ -1765,8 +1761,8 @@ package body Keyboard is
                         Modify_Font(key_disp, null);
                      end if;
                      Set_Label(key_disp, Text_To_UTF8(char.unshifted_display));
-                     Override_Background_Color(key_disp, 0, btn_colour);
-                     Override_Color(key_disp, 0, btn_txt_col);
+                     -- Override_Background_Color(key_disp, 0, btn_colour);
+                     -- Override_Color(key_disp, 0, btn_txt_col);
                end case;
                exit when the_key >= Last_In(the_set => Full);
                the_key := Next_In(the_set => Full, from => the_key);

@@ -361,5 +361,7 @@ UPDATE Configurations SET Details=readfile('cell_writer.css') WHERE ID=29;
 INSERT INTO Configurations VALUES(31,"engine_ranges",'S',"100 100 100 100");
 INSERT INTO Configurations VALUES(33,"error_terminator",'S',"Please see your system administrator or email the log to the developer along with an explanation of what you were doing just before the error");
 INSERT INTO Configurations VALUES(34,"macro_err_no",'N',"2");
+INSERT INTO Configurations VALUES(35,"manual",'S',"");
+UPDATE Configurations SET Details=readfile('manual.txt') WHERE ID=35;
 
 INSERT INTO UserIDs VALUES (0, "", "", 1);

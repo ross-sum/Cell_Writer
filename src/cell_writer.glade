@@ -76,6 +76,7 @@ Author: Ross Summerfield, Michael Levin
     <property name="window-position">center-on-parent</property>
     <property name="default-width">400</property>
     <property name="default-height">100</property>
+    <property name="icon">cell_writer.xpm</property>
     <property name="type-hint">dialog</property>
     <property name="gravity">center</property>
     <signal name="delete-event" handler="dialogue_error_delete_event_cb" object="box_error_message" swapped="no"/>
@@ -182,7 +183,7 @@ Author: Ross Summerfield, Michael Levin
     <property name="name">CellWriter</property>
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Cell Writer</property>
-    <property name="icon-name">/tmp/cell_writer.xpm</property>
+    <property name="icon">cell_writer.xpm</property>
     <property name="accept-focus">False</property>
     <property name="focus-on-map">False</property>
     <property name="gravity">static</property>
@@ -1421,7 +1422,7 @@ Author: Ross Summerfield, Michael Levin
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="margin-top">1</property>
-                <property name="margin-bottom">15</property>
+                <property name="margin-bottom">1</property>
                 <property name="show-arrow">False</property>
                 <child>
                   <object class="GtkToggleToolButton" id="btn_training">
@@ -1623,132 +1624,22 @@ Author: Ross Summerfield, Michael Levin
       </object>
     </child>
   </object>
+  <object class="GtkTextBuffer" id="textbuffer_css"/>
   <object class="GtkTextBuffer" id="textbuffer_manual">
-    <property name="text" translatable="yes">General
-=====
-
-Cell Writer is designed to .
-
-To Do:
--------
-Outstanding features required of the application are a.  This will allow, for instance, .
-
-This Manual should be displayed using a mark-up to highlight headings and the like.  At the moment it does not do that, rather it just displays plain text (with the mark-up/mark-down displayed as plain text).
-
-Updates
---------
-Updates are available from Hyper Quantum's website, www.hyperquantum.com, or in particular from the ftp website ftp.hyperquantum.com.  The application is also available on GitHub in source code format.  Written in Ada, it can be compiled to run on pretty much any operating system.
-
-Setup
-=========
-
-Patient Details must be set up as the very first operation with this application.  A patient is required for recording volumes for both the catheter and straight urine expulsion against.
-
-For Patient Details, there is a separate tool bar for the Events table.  This tool bar must be used for editing the Events table.  The main tool bar only applies to the main Patient Details information, not the Events table.
-
-When pressing the New tool bar button, or selecting File|New from the menus, a new record is set up, with the patient number defaulting to the next patient number.  The minimum provision in Patient Details is the patient's name.
-Information is saved when the Save button on the tool bar or File|Save is selected.  Nothing is saved until the Save operation is executed.  If you wish to revert, you can press the Undo tool bar button or selecting File|Undo.
-
-The Events sub-table is for recording significant events, for instance, when the catheter was removed, any events where 'dilation' is performed, specific drugs are commenced or stopped or any other noteworthy information.  It is principally for personal use.
-
-To create a new Event, click on the New button on the Events tool bar (the vertical tool bar next to the Events table).  Then click on the Zoom tab to enter details for this event.  The event date can be selected using a date picker by clicking on the small button within the Date entry box.  The event takes a short title and has an unlimited length description field to enter details about the event into.  When done, press the Save button on the Events tool bar.
-
-Keyboard
-==============
-
-The Catheter Urine Records form allows the entry of information relating to the catheter.  It records details of whenever the bag is emptied.  Details recorded are the volume, the colour of the urine (used to identify the amount of blood still leaking into the urine, in addition to other matters such as whether enough water is being consumed), leakage into a pad (it can be that there is some leakage, for instance if you endure spasms - this can be a side effect of the catheter being in for an extended period of time for instance), and whether there are any particles ("floaties") such as blood clots or other material in the urine.
-
-To create a new record, click on the New button on the tool bar or select File|New from the menu.  The Insert button is a short cut for New.  Select the patient if necessary, select the date (defaults to the current day), time (defaults to the current time), enter the volume, select the colour from the drop-down list or alternatively from the colour selector by clicking on the icon in the Colour entry box, then select the level of leakage and the degree of floaties.  To save, click on Save or choose File|Save (short cut is Ctrl-s).
-
-To move between records, Ctrl-&lt;right arrow&gt; goes forward, Ctrl-&lt;left arrow&gt; goes backward.  View menu contains the menu entries for record movement.
-
-Main Entry Form
-=========
-
-Urine Records is where, after you have the catheter removed, you record your urine volumes and pad volumes (actually, the pad weight, including urine, which the system back calculates the urine volume in the pad from).  It also records the leakage noticed, the number of urges experienced between emptying the bladder and the intensity an number of spasms.  For completeness, it records when stools are passed, since this is a statistic that influences other urine data.  You can use a small jar for capturing urine when passing stools and, if large volumes of urine are involved, often this can be captured in a large container prior to passing stools.
-
-To create a new entry, click on the New button or choose File|New (short-cut is Insert).  If there is only one patient, then this will default, otherwise select from the drop-down list.  The date will be selected as the current date.  If necessary change this by either over typing or alternatively select from the date picker by clicking on the icon in the edit box for Date.  The time also defaults to the current time.  Over type to change.
-Enter the volume and, if the pad or nappy was changed, enter the weight.  Otherwise leave that pad weight at the default of 0.  If the pad was changed select the type and also adjust leakage to Pad Change or whatever is the appropriate selection.  If no pad change, then appropriately select leakage to be either None or Some as appropriate.  Hold is for recording the success of being able to hold the flow mid-stream.  It is not uncommon, particularly somewhat early in the piece, for the urologist to want you to try this about 3 times a day.  The Notes field is a free form entry field of unlimited length.  It might be a good idea to record things like the pre and during urine volumes amount when doing a bowel motion.  Any other important details that should be brought to the urologist's attention can be recorded here.
-
-Tab will tab between fields and Home and End will move to the start of text or end of text within a field.  Shift-&lt;left arrow&gt; and Shift-&lt;right arrow&gt; will select text within a field as you might expect.
-
-To save, press the Save button or choose File|Save (short-cut is Ctrl-s).
-
-Undo (File|Undo from the menus, short-cut Ctrl-z) undoes any changes and reverts back.
-
-Delete (File|Delete from the menus) will confirm that you really mean to delete the record then, if you click OK, will delete the currently visible urine recording record.
-
-To move between records, Ctrl-&lt;right arrow&gt; goes forward, Ctrl-&lt;left arrow&gt; goes backward.  Alt-&lt;left arrow&gt; goes back 10 records and Alt-&lt;right arrow&gt; goes forward 10 records.  Ctrl-Home goes to the first urine recording and Ctrl-End goes to the last urine recording.  View menu contains the menu entries for record movement.
-
-Reports
-=====
-
-Introduction
-------------
-
-The Reports  processes queries ready for a report.   It  then  takes  the  output of those queries (in temporary tables  in  a  temporary  database) and produces a report.  The report may  be  either  tabular  or graphical.  The output is LaTex,  which  is  then processed by pdflatex, which produces a PDF file ready for printing.  The PDF file is displayed with a PDF viewer; on Linux this is typically xPDF.
-
-The reports are stored in the Reports table and related queries are stored in the Queries table.  The list of reports in the Reports menu is generated at application start-up from the Reports table.
-
-The reports generation tool is made up of the following components:
-. Initialise
-. Run_The_Report, which calls
-  . Run_Queries
-  . Generate_Graphs
-  . Generate_LaTex
-  . Display_Report
-
-Initialise
---------
-
-Initialise sets up details about the database that will be operated on by the SQL queries.  It is also the location where the SQL queries are kept, in the Queries table, pointed to by the Reports table.  Additionally, initialise sets up the temporary database where the results of the queries are stored and, if necessary, further manipulated.
-
-Initialise also configures, ultimately from the command line, the following parameters:
-. --tex (-t) - Path to LaTex PDF output generator
-. --pdf (-p) - Path to PDF display tool
-. --R (-r) - Path to GNU R graph generating tool
-
-Initialise also configures the path to the temporary directory, which is set to be consistent with the operating system type (e.g. it is /tmp under Linux).
-
-Run_The_Report
------------------
-
-Run the specified report number, executing the queries pointed to by the report number in their numerical sequence, then, if required, generating any diagrams or graphs, then generating the LaTex and finally producing a PDF using pdf2latex.
-
-Using nesting, the reports may have groups (and groups within groups) as group headers and footers to contain detailed data.   All data used in the report is taken from a temporary database, temp.db, which is stored in the temporary directory (/tmp/ on Unix).  This database is in SQLite (version 3) format, so this module is compiled with the GNATCOLL.SQL.Sqlite package.
-
-Full details on the syntax or format is with the sub-component declarations in the sub-sections below.
-
-Run_Queries
--------------
-
-In the specified sequence, run the report queries.  If the TargetTbl field contains a value (that is, is not blank), then the data is drawn (in all cases) from the main database and the result of the query is dumped into the temp.db.  If the TargetTbl field is blank or null, then the query operates entirely on the temporary database, temp.db.
-
-Generate_Graphs
-------------------
-
-Following the loaded up instructions, generate graphs using R.  It requires the RSQLite package for GNU R to be installed.
- 
-The outputted encapsulated postscript graph files, stored in the specified temporary directory, need to have their names synchronised with the matching LaTex and need to have the .eps extension, for example, "result1.eps", which should be similarly referenced in the LaTex file.
-
-Generate_LaTex
-----------------
-
-In accordance with instructions and folding in any generated graphs, output the LaTex that describes the report.  The LaTeX, stored in the LaTeX field of the Reports table, is processed line by line.  Lines starting with a chevron and the word Query and a number («QUERY &lt;num&gt;:) and terminated by the closing chevron (»)are treated specially.  The query encapsulated in between is executed on the temporary database and then, for each row returned in the result set, the following rows, up to the closing chevron encapsulated «END QUERY &lt;num&gt;» statement, are processed recursively.  These two statements need to be on their own line.
-
-Substitution of parameters into the query from the parent query is via the "?" statement as is standard for SQLite, but you need to make sure that the number of "?" is no more than the number of parameters available.  The parameter number follows the "?", for instance to push in parameter 2, it would be "?2".
-
-Fields are referenced by column number (starting from 0) as per the format «FIELD:&lt;num&gt;», with the (text converted) result substituted in as the LaTex is written out to its temporary &lt;Filename.tex&gt; file.
-
-Encapsulated postscript files, generated by the Generate_Graphs process, are referenced directly by the name used in the LaTeX file.  This is typically done by referencing in the epstopdf package (viz \usepackage{epstopdf}), then if the encapsulated postscript file is called result1.eps, running the command, \includegraphics[width=1\linewidth]{result1}.
-</property>
+    <property name="text" translatable="yes" comments="Cell Writer is not set up to handle multiple languages (yet) through its use of Glade (which is what this is written in).  Best approach is to copy the manual from the database, edit it, then loading that file back into the database.  It might be useful to load the variant up into GitHub for the benefit of others.">&lt;INSERT MANUAL HERE&gt;</property>
   </object>
   <object class="GtkDialog" id="dialogue_about">
+    <property name="width-request">100</property>
+    <property name="height-request">500</property>
     <property name="can-focus">False</property>
+    <property name="halign">start</property>
+    <property name="valign">start</property>
+    <property name="border-width">1</property>
     <property name="title" translatable="yes">Help</property>
-    <property name="default-width">500</property>
+    <property name="default-width">100</property>
     <property name="default-height">500</property>
     <property name="destroy-with-parent">True</property>
+    <property name="icon">cell_writer.xpm</property>
     <property name="type-hint">dialog</property>
     <signal name="delete-event" handler="dialogue_about_delete_event_cb" object="box_about" swapped="no"/>
     <signal name="destroy" handler="dialogue_about_destroy_cb" swapped="no"/>
@@ -1804,7 +1695,6 @@ Encapsulated postscript files, generated by the Generate_Graphs process, are ref
                     <property name="label" translatable="yes">Revision 1.0.0
 </property>
                     <property name="justify">center</property>
-                    <property name="max-width-chars">51</property>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -1818,7 +1708,6 @@ Encapsulated postscript files, generated by the Generate_Graphs process, are ref
                     <property name="label" translatable="yes">Copyright (C) 2022 Hyper Quantum Pty Ltd, prior Michael Levin.
 See copyright tab for full details.
 Written by Ross Summerfield and Michael Levin</property>
-                    <property name="max-width-chars">51</property>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -1835,7 +1724,6 @@ It is based on Michael Levin's edition, but written in Ada and also written to a
 The  other main change is to use Glade for the  graphical  user interface and to use a database to store its principal configuration and its data.
 </property>
                     <property name="wrap">True</property>
-                    <property name="max-width-chars">51</property>
                   </object>
                   <packing>
                     <property name="left-attach">0</property>
@@ -1908,7 +1796,6 @@ The  other main change is to use Glade for the  graphical  user interface and to
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">label</property>
-                <property name="max-width-chars">51</property>
               </object>
               <packing>
                 <property name="position">2</property>
@@ -1972,7 +1859,6 @@ The  other main change is to use Glade for the  graphical  user interface and to
                 <property name="can-focus">False</property>
                 <property name="label" translatable="yes">Cell Writer is free software; you can redistribute it  and/or  modify  it under terms of the GNU  General  Public  Licence  as published by the Free Software Foundation; either version 2, or (at   your  option)  any  later  version.  Cell Writer is distributed in hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public Licence for  more details.  You should have received a copy  of the GNU General Public Licence distributed with Cell Writer.  If not, write to the Free Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</property>
                 <property name="wrap">True</property>
-                <property name="max-width-chars">51</property>
               </object>
               <packing>
                 <property name="position">4</property>
@@ -2028,6 +1914,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
   <object class="GtkDialog" id="dialogue_setup">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Cell Writer Setup</property>
+    <property name="icon">cell_writer.xpm</property>
     <property name="type-hint">dialog</property>
     <signal name="delete-event" handler="dialogue_setup_delete_event_cb" object="box_setup" swapped="no"/>
     <signal name="destroy" handler="dialogue_setup_destroy_cb" swapped="no"/>
@@ -2942,7 +2829,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
-                    <property name="tooltip-text" translatable="yes">When enabled, input characters will be used as training samples when 'Enter' is pressed.  This is a good way to quickly build up many samples, but can generate poor samples if your writing gest sloppy.</property>
+                    <property name="tooltip-text" translatable="yes">When enabled, input characters will be used as training samples when 'Enter' is pressed.  This is a good way to quickly build up many samples, but can generate poor samples if your writing gets sloppy.</property>
                     <property name="halign">start</property>
                     <property name="margin-start">10</property>
                     <property name="draw-indicator">True</property>
@@ -3160,6 +3047,35 @@ The  other main change is to use Glade for the  graphical  user interface and to
                 <property name="tab-fill">False</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkScrolledWindow" id="scroll_window_css">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <child>
+                  <object class="GtkTextView" id="textview_css">
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="buffer">textbuffer_css</property>
+                    <property name="monospace">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="position">4</property>
+              </packing>
+            </child>
+            <child type="tab">
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">CSS</property>
+              </object>
+              <packing>
+                <property name="position">4</property>
+                <property name="tab-fill">False</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -3183,6 +3099,7 @@ The  other main change is to use Glade for the  graphical  user interface and to
   <object class="GtkWindow" id="form_keyboard">
     <property name="name">keyboardd</property>
     <property name="can-focus">False</property>
+    <property name="icon">cell_writer.xpm</property>
     <property name="accept-focus">False</property>
     <property name="focus-on-map">False</property>
     <property name="deletable">False</property>

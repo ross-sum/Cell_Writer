@@ -42,15 +42,9 @@ package CSS_Management is
    procedure Set_Up_CSS(for_file : string);
       -- Set up the CSS file so that the colours of the buttons can be adjusted.
 
-   procedure Load(the_button      : in out Gtk.Button.gtk_button; 
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA);
-   procedure Load(the_button      : in out Gtk.Toggle_Button.gtk_toggle_button; 
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA);
-   procedure Load(the_window      : in out Gtk.Window.gtk_window; 
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA);
+   procedure Load(the_button : in out Gtk.Button.gtk_button);
+   procedure Load(the_button : in out Gtk.Toggle_Button.gtk_toggle_button);
+   procedure Load(the_window : in out Gtk.Window.gtk_window);
 
 private
 

@@ -41,6 +41,7 @@ with Cell_Writer_Version;
 with Glib, Glib.Error, Gdk.Display, Gdk.Screen, 
      Gtk.Style_Context, Gtk.Style_Provider;
 with String_Conversions;
+with dStrings;
 package body CSS_Management is
    use Gtk.Widget;
 
@@ -51,8 +52,8 @@ package body CSS_Management is
       use String_Conversions;
       type GError_Access is access Glib.Error.GError;
       with_error  : GError_Access := null;
-      the_display : Gdk.Display.gdk_display;
-      the_screen  : Gdk.Screen.gdk_screen;
+      -- the_display : Gdk.Display.gdk_display;
+      -- the_screen  : Gdk.Screen.gdk_screen;
    begin
       the_provider := Gtk_Css_Provider_New;
       if Load_From_Path(the_provider, for_file, with_error) then
@@ -64,114 +65,44 @@ package body CSS_Management is
                                           To_Wide_String(Glib.Error.Get_Message
                                                             (with_error.all)));
             Glib.Error.Error_Free (with_error.all);
-         else
-            the_display := Get_Default;
-            the_screen  := Get_Default_Screen(the_display);
-            Add_Provider_For_Screen(the_screen, +the_provider, 0);
-            null;
+         else  -- if we wanted to, we could apply to the whole application viz:
+            -- the_display := Get_Default;
+            -- the_screen  := Get_Default_Screen(the_display);
+            -- Add_Provider_For_Screen(the_screen, +the_provider, Priority_User);
+            null;  -- If the above is done, the below is not needed.
          end if;
       end if;
    end Set_Up_CSS;
 
-   procedure Load(the_button      : in out Gtk.Button.gtk_button; 
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA) is
-      use Gtk.CSS_Provider, Glib, Glib.Error, String_Conversions;
-      css_button : Gtk_Css_Provider;
-      Error : Glib.Error.GError_Access := null;
+   procedure Load(the_button : in out Gtk.Button.gtk_button) is
+      use Gtk.CSS_Provider;
+      use Gtk.Style_Context, Gtk.Style_Provider;
+      use Gtk.Button; use dStrings;
+      context : Gtk.Style_Context.Gtk_Style_Context;
    begin
-      Gtk_New(css_button);
-      if not Load_From_Data(css_button, 
-                            "{ background-color: " & 
-                               Gdk.RGBA.To_String(with_colour) & "; }",
-                            Error)
-      then
-         if Error /= null then
-            Error_Log.Put(the_error => 4, 
-                       error_intro  => "Load(the_button, with_colour error",
-                       error_message=> "Error in the_button : " & 
-                                        To_Wide_String(Glib.Error.Get_Message 
-                                                                 (Error.all)));
-            Glib.Error.Error_Free (Error.all);
-         else
-            Error_Log.Debug_Data(at_level => 7, 
-                  with_details=>"Load: Load_From_Data for CSS button viz " &
-                                "{ background-colour: " & 
-                                To_Wide_String(Gdk.RGBA.To_String(with_colour))
-                                & "; }");
-            CSS_Set(gtk_widget(the_button), to_provider => css_button);
-         end if;
-      else
-         Error_Log.Put(the_error=>5, 
-                   error_intro  =>"Load: failed Load_From_Data for CSS button",
-                   error_message=>"Trying to set button colour " & 
-                              To_Wide_String(Gdk.RGBA.To_String(with_colour)));
-      end if;
-               
+      context := Get_Style_Context(the_button);
+      Gtk.Style_Context.Add_Provider(context, +the_provider,
+                                     Priority_User);
    end Load;
  
-   procedure Load(the_button      : in out Gtk.Toggle_Button.gtk_toggle_button; 
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA) is
-      use Gtk.CSS_Provider, Glib, Glib.Error, String_Conversions;
-      css_button : Gtk_Css_Provider;
-      Error : Glib.Error.GError_Access := null;
+   procedure Load(the_button : in out Gtk.Toggle_Button.gtk_toggle_button) is
+      use Gtk.CSS_Provider;
+      use Gtk.Style_Context, Gtk.Style_Provider;
+      context : Gtk.Style_Context.Gtk_Style_Context;
    begin
-      Gtk_New(css_button);
-      if not Load_From_Data(css_button, 
-                            "{ background-color: " & 
-                               Gdk.RGBA.To_String(with_colour) & "; }",
-                            Error)
-      then
-         if Error /= null then
-            Error_Log.Put(the_error => 6, 
-                       error_intro  => "Load(the_button, with_colour error",
-                       error_message=> "Error in the toggle_button : " & 
-                                        To_Wide_String(Glib.Error.Get_Message 
-                                                                 (Error.all)));
-            Glib.Error.Error_Free (Error.all);
-         else
-            CSS_Set(gtk_widget(the_button), to_provider => css_button);
-         end if;
-      else
-         Error_Log.Put(the_error=>7, 
-                   error_intro  =>"Load: failed Load_From_Data for CSS button",
-                   error_message=>"Trying to set toggle button colour " & 
-                              To_Wide_String(Gdk.RGBA.To_String(with_colour)));
-      end if;
-               
+      context := Get_Style_Context(the_button);
+      Gtk.Style_Context.Add_Provider(context, +the_provider,
+                                     Priority_User);
    end Load;
    
-   procedure Load(the_window      : in out Gtk.Window.gtk_window;
-                  with_colour     : Gdk.RGBA.Gdk_RGBA;
-                  and_text_colour : Gdk.RGBA.Gdk_RGBA) is
-      use Gtk.CSS_Provider, Glib, Glib.Error, String_Conversions;
-      css_window : Gtk_Css_Provider;
-      Error : Glib.Error.GError_Access := null;
+   procedure Load(the_window : in out Gtk.Window.gtk_window) is
+      use Gtk.CSS_Provider;
+      use Gtk.Style_Context, Gtk.Style_Provider;
+      context : Gtk.Style_Context.Gtk_Style_Context;
    begin
-      Gtk_New(css_window);
-      if not Load_From_Data(css_window, 
-                            "{ background-color: " & 
-                               Gdk.RGBA.To_String(with_colour) & "; }",
-                            Error)
-      then
-         if Error /= null then
-            Error_Log.Put(the_error => 8, 
-                       error_intro  => "Load(the_window, with_colour error",
-                       error_message=> "Error in the_window : " & 
-                                        To_Wide_String(Glib.Error.Get_Message 
-                                                                 (Error.all)));
-            Glib.Error.Error_Free (Error.all);
-         else
-            CSS_Set(gtk_widget(the_window), to_provider => css_window);
-         end if;
-      else
-         Error_Log.Put(the_error=>9, 
-                   error_intro  =>"Load: failed Load_From_Data for CSS window",
-                   error_message=>"Trying to set window colour " & 
-                              To_Wide_String(Gdk.RGBA.To_String(with_colour)));
-      end if;
-               
+      context := Get_Style_Context(the_window);
+      Gtk.Style_Context.Add_Provider(context, +the_provider,
+                                     Priority_User);
    end Load;
 
    procedure CSS_Set(the_widget : in out GTK.Widget.gtk_widget;

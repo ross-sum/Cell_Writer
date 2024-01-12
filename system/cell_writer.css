@@ -15,24 +15,23 @@ button {
   min-width: 20px;
   transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
-  border: 5px solid; /* border width */
-/* xxx   border: 1px solid; */
+  border: 1px solid; /* border width */
 
   border-radius: 3px; /* roundness of corners */
-/* xxx  border-radius: 3px; */
 
-  padding: 115px 8px;
+  padding: 5px 4px;
 
-  color: #00ff00; /* green text */
+  color: #000000; /* black text */
+/*  color: #00ff00; green text */
 /* xxx  color: #303030; */
 
   outline-color: rgba(48, 48, 48, 0.3);
 
-  border-color: #0000ff; /* blue border */
-/* xxx border-color: #BDBDBD; */
+/*  border-color: #0000ff; blue border */
+  border-color: #BDBDBD;
 
 /* xxx added line */
-  background-image: radial-gradient(ellipse at center, yellow 20%, blue 80%); /* see button active */
+/*  background-image: radial-gradient(ellipse at center, yellow 20%, blue 80%);  see button active */
 
   background-color: whitesmoke; } 
 
@@ -58,8 +57,7 @@ button {
     color: #ffffff;
     outline-color: rgba(255, 255, 255, 0.3);
     border-color: #BDBDBD;
-/* xxx */
-  background-image: radial-gradient(ellipse at center, blue 20%, yellow 80%); /* see button active */
+/* xxx   background-image: radial-gradient(ellipse at center, blue 20%, yellow 80%); see button active */
     background-color: #92b372;
     background-clip: border-box;
     transition-duration: 50ms; }

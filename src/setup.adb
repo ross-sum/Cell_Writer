@@ -48,6 +48,7 @@ with Glib.Values;
 with Gtk.List_Store, Gtk.Tree_Model, Gtk.Tree_Selection;
 with Gtk.Label, Gtk.Check_Button, Gtk.Color_Button;
 with Gtk.Cell_Renderer_Toggle, Gtk.Tree_view, Gtk.Tree_Row_Reference;
+with Gtk.Text_Buffer, Gtk.Text_Iter;
 with Gtk.Button, Gtk.Font_Button, Gtk.Spin_Button, Gtk.Tool_Button;
 with Gtk.Adjustment;
 with String_Conversions;
@@ -110,7 +111,9 @@ package body Setup is
                         Where   => (Configurations.ID > 0) AND
                                    ((Configurations.DetFormat = "S") OR -- str
                                     (Configurations.DetFormat = "N") OR -- num
-                                    (Configurations.DetFormat = "L")),  -- bool
+                                    (Configurations.DetFormat = "L") OR -- bool
+                                    ((Configurations.DetFormat = "T") AND
+                                     (Configurations.ID = 29))),        -- CSS
                         Order_By=> Configurations.ID),
             On_Server => True,
             Use_Cache => True);
@@ -210,6 +213,7 @@ package body Setup is
       use GNATCOLL.SQL.Exec, Gdk.RGBA;
       use Gtk.Spin_Button, Gtk.Check_Button, Gtk.Combo_Box, Gtk.Color_Button;
       use Gtk.Font_Button;
+      use Gtk.Text_Buffer;
       use Keyboard, String_Conversions, dStrings;
       R_lingo    : Forward_Cursor;
       lang_no     : positive := 1;
@@ -217,6 +221,7 @@ package body Setup is
       spin_entry : Gtk.Spin_Button.gtk_spin_button;
       check_box  : Gtk.Check_Button.gtk_check_button;
       combo_box  : Gtk.Combo_Box.gtk_combo_box;
+      text_buffer: Gtk.Text_Buffer.gtk_text_buffer;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
       grid_UBG   : Gdk.RGBA.Gdk_RGBA := White_RGBA;
@@ -319,6 +324,14 @@ package body Setup is
                                                 "combo_setup_window_docking"));
                Set_Active(combo_box, 
                           Glib.Gint(integer'Value(Value(R_config,3))));
+            elsif Value(R_config,1) = "cell_writer.css" then
+               text_buffer := gtk_text_buffer(Get_Object(Builder, 
+                                                "textbuffer_css"));
+               Set_Text(text_buffer, Value(R_config,3));
+            elsif Value(R_config,1) = "manual" then
+               text_buffer := gtk_text_buffer(Get_Object(Builder, 
+                                                "textbuffer_manual"));
+               Set_Text(text_buffer, Value(R_config,3));
             -- Colours and Font
             elsif Value(R_config,1) = "used_cell_colour" then
                colour_btn := gtk_color_button(Get_Object(Builder, 
@@ -457,6 +470,7 @@ package body Setup is
                           Builder : in Gtkada_Builder) is
       use GNATCOLL.SQL.Exec, Gtk.Check_Button, Gtk.Combo_Box, Gtk.Spin_Button;
       use Gtk.Font_Button, Gtk.Color_Button, Gdk.RGBA;
+      use Gtk.Text_Buffer;
       use String_Conversions;
       function Get_Combo_ID(Builder : access Gtkada_Builder_Record'Class;
                             combo, 
@@ -482,6 +496,9 @@ package body Setup is
       R_config   : Forward_Cursor;
       spin_entry : Gtk.Spin_Button.gtk_spin_button;
       check_box  : Gtk.Check_Button.gtk_check_button;
+      text_buffer: Gtk.Text_Buffer.gtk_text_buffer;
+      tb_start,
+      tb_end     : Gtk.Text_Iter.Gtk_Text_Iter;
       colour_btn : Gtk.Color_Button.gtk_color_button;
       the_colour : Gdk.RGBA.Gdk_RGBA;
       grid_UBG   : Gdk.RGBA.Gdk_RGBA := White_RGBA;
@@ -582,6 +599,17 @@ package body Setup is
                                        combo=>"combo_setup_window_docking", 
                                        liststore=>"liststore_window_docking"));
                execute_it := true;
+            elsif Value(R_config,1) = "cell_writer.css" then
+               text_buffer := gtk_text_buffer(Get_Object(Builder, 
+                                                "textbuffer_css"));
+               if Get_Modified(text_buffer)
+               then  -- set the iterators to start and end and load
+                  Gtk.Text_Buffer.Get_Start_Iter(text_buffer, tb_start);
+                  Get_End_Iter(text_buffer, tb_end);
+                  c_cw_update:= (1 => +Integer_Value(R_config,0), 
+                                 2 => +Get_Text(text_buffer,tb_start,tb_end));
+                  execute_it := true;
+               end if;
             -- Colours and Font
             elsif Value(R_config,1) = "used_cell_colour" then
                colour_btn := gtk_color_button(Get_Object(Builder, 

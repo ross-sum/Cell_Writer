@@ -105,7 +105,7 @@ package body Main_Menu is
       -- Create a Builder and add the XML data
       Gtk.Main.Init;
       -- Connect to the style sheet
-      CSS_Management.Set_Up_CSS(for_file => path_to_temp & "cell_writer,css");
+      CSS_Management.Set_Up_CSS(for_file => path_to_temp & "cell_writer.css");
       -- Set up the Builder whti the Glade file
       Gtk_New (Builder);
       count := Add_From_File (Builder, path_to_temp & glade_filename, Error);
@@ -124,6 +124,13 @@ package body Main_Menu is
                               Get_Object(Gtkada_Builder(Builder),"form_main"));
       -- main_window.On_Destroy(On_Window_Destroy'access, null);
       -- main_window.On_C
+      --form_main's kill is a kill all:
+      -- c code: window.signal_connect("destroy") { Gtk.main_quit }
+      -- where window=Gtkada.Builder.Get_Object (Builder, "form_main")
+      -- Kevin O'Kane, who inserts his code somewhere before doing a connect,
+      -- does the following in c:
+      -- g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+      -- where window is the main window widget
       
       -- Register the handlers
       Register_Handler(Builder      => Builder,
@@ -261,13 +268,6 @@ package body Main_Menu is
                                                for_language => new_language);
          end if;
       end;
-      --form_main's kill is a kill all:
-      -- c code: window.signal_connect("destroy") { Gtk.main_quit }
-      -- where window=Gtkada.Builder.Get_Object (Builder, "form_main")
-      -- Kevin O'Kane, who inserts his code somewhere before doing a connect,
-      -- does the following in c:
-      -- g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-      -- where window is the main window widget
       Gtk.Main.Main;
       
       -- Clean up memory when done

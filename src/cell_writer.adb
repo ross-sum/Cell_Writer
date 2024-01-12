@@ -249,7 +249,6 @@ begin  -- Cell_Writer
        Parameters.is_version_parameter then
       -- abort Cell_Writer;
       Recogniser.Finalise_Early;
-      -- raise Host_Functions.Terminate_Application;  -- eject us to the end
       return;
    end if;
    
@@ -294,36 +293,7 @@ begin  -- Cell_Writer
          (to => Parameter(with_flag => flag_type'('d')) );
    Error_Log.Debug_Data(at_level => 1, 
                         with_details => "Cell_Writer: Start processing");
-   -- if not Parameter(with_flag => flag_type'('i')) then
-      -- if Host_Functions.Daemonise = 0 then
-      --    -- we are the child - continue on
-         -- Error_Log.Debug_Data(at_level => 2, 
-            --                   with_details => "Cell_Writer: Daemonised");
-         -- declare -- log the SIGTERM reservation for the daemon
-            -- attached, installed : boolean;
-         -- begin
-            -- Host_Functions.Check_Reservation(attached, installed);
-            -- if attached then
-               -- Error_Log.Debug_Data(at_level=>3, with_details=> "attached");
-            -- else
-               -- Error_Log.Debug_Data(at_level=>3, with_details=> "unattached");
-            -- end if;
-            -- if installed then
-               -- Error_Log.Debug_Data(at_level=>3, with_details=> "installed");
-            -- else
-               -- Error_Log.Debug_Data(at_level=>3, with_details=> "uninstalled");
-            -- end if;
-         -- end;
-         -- null;
-      -- else  -- we are the parent or there was an error
-         -- Error_Log.Debug_Data(at_level => 2, 
-            --           with_details => "Cell_Writer: Daemon parent exiting");
-         -- return;  -- exit gracefully
-      -- end if;
-   -- else  -- interactive, set up and run as per normal
-      -- null;
    still_running := false;
-   -- end if;
    
    -- Set up the database
    declare
@@ -368,9 +338,6 @@ begin  -- Cell_Writer
          Put_Line("Application is already running"); 
       when Name_Error | Use_Error =>
          Usage("Error in configuration file name.");
-      -- when dStrings.IO.Serial_Error =>
-         -- Error_Log.Put(the_error => 1, error_intro => "I/O Device Error", 
-            --  error_message => "Error with setting up or operating the device");
       when Host_Functions.Naming_Error =>
          Usage("Error in daemonising this application.");
       when Host_Functions.Terminate_Application =>

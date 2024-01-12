@@ -6,8 +6,12 @@
    --                                                                   --
    --                           $Revision: 1.0 $                        --
    --                                                                   --
-   --  Copyright (C) 2022  Hyper Quantum Pty Ltd, prior Michael Levin.  --
-   --  Written by Ross Summerfield and Michael Levin.                   --
+   --  Copyright (C) 2022-24 Hyper Quantum Pty Ltd,                     --
+   --  prior Michael Levin.                                             --
+   --  Written by Ross Summerfield, with the original version  written  --
+   --  by  Michael  Levin.  Michael's screen layout approach  and  his  --
+   --  recogniser  design are still contained within this  (Ada-based)  --
+   --  fork.                                                            --
    --                                                                   --
    --  Cell Writer  is  a grid-entry natural  handwriting  recognition  --
    --  input  panel.   As you write characters into  the  cells,  your  --
@@ -19,15 +23,15 @@
    --  Version History:                                                 --
    --  $Log$
    --                                                                   --
-   --  Urine_Records is free software; you can redistribute it  and/or  --
+   --  Cell Writer  is free software; you can redistribute  it  and/or  --
    --  modify  it under terms of the GNU  General  Public  Licence  as  --
    --  published by the Free Software Foundation; either version 2, or  --
-   --  (at   your  option)  any  later  version.    Urine_Records   is  --
-   --  distributed  in  hope that it will be useful, but  WITHOUT  ANY  --
-   --  WARRANTY; without even the implied warranty of  MERCHANTABILITY  --
-   --  or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public  --
-   --  Licence for  more details.  You should have received a copy  of  --
-   --  the GNU General Public Licence distributed with  Urine_Records.  --
+   --  (at your option) any later version.  Cell Writer is distributed  --
+   --  in  hope  that  it will be useful, but  WITHOUT  ANY  WARRANTY;  --
+   --  without even the implied warranty of MERCHANTABILITY or FITNESS  --
+   --  FOR  A PARTICULAR PURPOSE. See the GNU General  Public  Licence  --
+   --  for  more details.  You should have received a copy of the  GNU  --
+   --  General Public Licence distributed with  Cell Writer.            --
    --  If  not,  write to the Free Software  Foundation,  51  Franklin  --
    --  Street, Fifth Floor, Boston, MA 02110-1301, USA.                 --
    --                                                                   --
