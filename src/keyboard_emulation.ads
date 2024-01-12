@@ -26,7 +26,7 @@
 --  without even the implied warranty of MERCHANTABILITY or FITNESS  --
 --  FOR  A PARTICULAR PURPOSE.  See the GNU General Public  Licence  --
 --  for  more details.  You should have received a copy of the  GNU  --
---  General Public Licence distributed with  Urine_Records. If not,  --
+--  General  Public Licence distributed with Cell_Writer.  If  not,  --
 --  write  to  the Free Software Foundation,  51  Franklin  Street,  --
 --  Fifth Floor, Boston, MA 02110-1301, USA.                         --
 --                                                                   --
