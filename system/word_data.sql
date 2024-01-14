@@ -379,7 +379,7 @@ INSERT INTO Words VALUES (142,372,"
 INSERT INTO Words VALUES (142,373,"","conscious of emotions");
 INSERT INTO Words VALUES (142,374,"","conscious of reason");
 INSERT INTO Words VALUES (142,375,"","conscious of conscience");
-INSERT INTO Words VALUES (142,376,"","beauty");
+INSERT INTO Words VALUES (142,376,"","beauty");
 INSERT INTO Words VALUES (142,377,"","science/philosophy/mind contemplating nature/research");
 INSERT INTO Words VALUES (142,378,"","science of mathematics");
 INSERT INTO Words VALUES (142,379,"","knowledge of mathematics");
@@ -937,7 +937,7 @@ INSERT INTO Words VALUES (142,930,"
 INSERT INTO Words VALUES (142,931,"","computer disk/disc (BCI)");
 INSERT INTO Words VALUES (142,932,"","contents out");
 INSERT INTO Words VALUES (142,933,"","Fire-like thinking");
---INSERT INTO Words VALUES (142,934,"","");
+INSERT INTO Words VALUES (142,934,"","put into mind/increase mind");
 --INSERT INTO Words VALUES (142,935,"","");
 --INSERT INTO Words VALUES (142,936,"","");
 --INSERT INTO Words VALUES (142,937,"","");
