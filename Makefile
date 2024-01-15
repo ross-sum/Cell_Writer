@@ -68,13 +68,6 @@ ifneq (,$(wildcard $(VAR)/$(DB)))
 else
 	cp $(SD)/$(DB) $(VAR)
 endif
-	cp $(SD)/$(TA).xsd $(ETC)
-	mkdir -p $(ETC)/init.d/
-	cp $(SD)/$(TA).rc $(ETC)/init.d/$(TA)
-	mkdir -p $(ETC)/default/
-	cp $(SD)/$(TA).default $(ETC)/default/$(TA)
-	mkdir -p $(ETC)/systemd/system/
-	cp $(SD)/$(TA).service $(ETC)/systemd/system/
 	mkdir -p /var/log/$(TA)
 	chgrp users /var/log/$(TA)
 	chmod u+w /var/log/$(TA)
