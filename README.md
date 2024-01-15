@@ -81,6 +81,10 @@ tool (by default, on Linux, it is xPDF).
     `mkdir obj_amd64  obj_arm  obj_pi  obj_pi64  obj_x86`
     `make ; sudo make install`
 
+* Set-up when logged on as each Cell Writer user (to get around a bug):
+
+    `cd ; mkdir -P var/lib/cellwriter/ ; cp /var/local/lib/cellwriter.db var/lib/cellwriter/`
+
 ## Usage
 
 The full instructions for using Cell Writer are contained in the on-line manual,
@@ -200,8 +204,8 @@ previously unclear, that is, where there were many possible alternatives and
 that with the highest score was not selected.  In particular:
    - Add training samples when sample counts is less than the user setting (and 
      certainly when less than the maximum number permitted).
-      + Decide based on deviation Decide based on deviation from average for 
-        each training sample for that character or word.
+      + Decide based on deviation from average for each training sample for 
+        that character or word.
    - Replace unmatched or rarely matched samples when the training sample count 
      has reached or exceeded maximum.
 * Provide a PostgreSQL option for the main database.
