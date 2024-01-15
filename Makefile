@@ -70,6 +70,7 @@ install:
 ifneq (,$(wildcard $(VAR)/$(DB))) 
 	echo "Not overwriting $(VAR)/$(DB)."
 else
+	mkdir -p $(VAR)
 	cp $(SD)/$(DB) $(VAR)
 endif
 	mkdir -p /var/log/$(TA)
