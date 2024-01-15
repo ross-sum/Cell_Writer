@@ -40,18 +40,18 @@ else
 endif
 FLAGS+=-largs -lxdo
 
+# Define the target "all"
+all: cellwriter tobase64s
+.PHONY : all
+
 cellwriter:
 	$(ACC) -P $(TS) $(FLAGS)
 
 tobase64s:
 	$(ACC) -P $(BS) $(FLAGS)
 
-# Define the target "all"
-all:
-	cellwriter:
-	tobase64s:
-
 # Clean up to force the next compilation to be everything
+.PHONY: clean
 clean:
 	gprclean -P $(TS)
 	gprclean -P $(BS)
@@ -76,4 +76,6 @@ endif
 	mkdir -p $(ETC)/systemd/system/
 	cp $(SD)/$(TA).service $(ETC)/systemd/system/
 	mkdir -p /var/log/$(TA)
+	chgrp users /var/log/$(TA)
+	chmod u+w /var/log/$(TA)
 
