@@ -21,8 +21,8 @@ Cell Writer uses the following packages:
    package (and pre-dates it in its origin).  it is expected to be at
    the same directory level as the top level of Cell writer, but in
    its own ../dynamic-strings/ directory.
-5. Hyper Quantum's Tools library - various tools are used from this
-   library and they are expeced  to also be at the same directory
+5. Hyper Quantum's Ada Tools library - various tools are used from 
+   this library and they are expeced  to also be at the same directory
    level as the top level of Cell writer, namely in its own
    ../tools/ directory.
 6. Jordan Sissel's xdoTool 
@@ -35,25 +35,50 @@ tool (by default, on Linux, it is xPDF).
 
 * It may be wise to install the Blissymbolics package first.
 * Ensure Gnat is installed:
+
     `apt-get install gnat`
+
 * Ada sockets is required by the Hyper Quantum Ada tools; install viz:
+
     `apt-get install libadasockets12-dev libadasockets10`
+
 * Install xDoTool viz: 
-    `apt-get install xdotool`
+
+    `apt-get install xdotool libxdo3 libxdo-dev`
+
 * Install GnatColl, with the last 3 packages being the runtime librearies, viz:
+
     `apt-get install libgnatcoll-sql5-dev libgnatcoll-sqlite21-dev libgnatcoll-sql3 libgnatcoll-sqlite20 libgnatcoll21`
-  Install TexLive, which should load additional required TexLive packages, viz:
+
+* Install TexLive, which should load additional required TexLive packages, viz:
+
     `apt-get install texlive texlive-fonts-extra texlive-fonts-recommended`
+
 * Install R and RSQLite viz:
+
     `apt-get install r-base  r-cran-rsqlite`
-  Install xPDF viz:
+
+* Install xPDF viz:
+
     `apt-get install xpdf`
+
 * Install the ToBase64 application, which is a sub-package to the Urine Records 
   repository.  Download the Urine Records repository, then do the following:
+
     `make tobase64s'
-  Then pop the executable (in one of the obj_* direcotories) into a location
+
+* Then pop the executable (in one of the obj_* direcotories) into a location
   where it can be found by the Cell Writer installation script.
+* Ensure prerequisites outlined in Building (above) are installed, in particular
+  dynamic-strings and ada tools.  Make sure the directories for those are called
+  `dynamic-strings` and `tools` and have appropriate read and write permissions.
+* In each of the `dynamic-strings` and `tools` directories, execute the following:
+
+    `mkdir obj_amd64  obj_arm  obj_pi  obj_pi64  obj_x86`
+
 * Compile and load the Ada software, viz from the top level Cell Writer directory:
+
+    `mkdir obj_amd64  obj_arm  obj_pi  obj_pi64  obj_x86`
     `make ; sudo make install`
 
 ## Usage

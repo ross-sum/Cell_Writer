@@ -27,7 +27,10 @@ else ifeq ($(HOST_TYPE),arm)
 	TARGET=pi
 else ifeq ($(HOST_TYPE),armv7l)
 	TARGET=pi
+else ifeq ($(HOST_TYPE),aarch64)
+	TARGET=pi64
 endif
+
 BIN=/usr/local/bin
 ETC=/usr/local/etc
 VAR=/var/local/lib
@@ -45,6 +48,7 @@ all: cellwriter tobase64s
 .PHONY : all
 
 cellwriter:
+	echo "TARGET='$(TARGET)'."
 	$(ACC) -P $(TS) $(FLAGS)
 
 tobase64s:
